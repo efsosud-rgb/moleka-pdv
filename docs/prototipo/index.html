@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Moleka PDV — Abertura e login</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@700;800;900&amp;display=swap">
+<style>
+body{margin:0;background:#FFB759;font-family:Inter,system-ui,sans-serif;color:#2B2320}
+a{color:#8C3212}a:hover{color:#5E200A}
+.btn3d{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:16px;line-height:1;padding:14px 20px;min-height:50px;border:1px solid #9C8F7B;border-radius:12px;cursor:pointer;color:#2B2320;background:linear-gradient(#FFFFFF 0%,#F2ECE1 55%,#E3DACB 100%);box-shadow:inset 0 1px 0 #FFFFFF,inset 0 -1px 0 rgba(0,0,0,.06),0 4px 0 #B3A693,0 8px 14px rgba(60,40,10,.22);transition:transform .08s ease,box-shadow .08s ease,filter .15s ease;text-decoration:none}
+.btn3d:hover{filter:brightness(1.04)}
+.btn3d:active{transform:translateY(4px);box-shadow:inset 0 1px 0 #FFFFFF,0 0 0 #B3A693,0 2px 4px rgba(60,40,10,.25)}
+.btn3d:focus-visible{outline:3px solid #2B6CB0;outline-offset:2px}
+.btn3d.green{color:#FFFFFF;border-color:#136435;background:linear-gradient(#4CCB7B 0%,#23A151 55%,#1B7F41 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(0,0,0,.1),0 4px 0 #0F5A2C,0 8px 14px rgba(20,60,30,.3)}
+.btn3d.green:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 0 0 #0F5A2C,0 2px 4px rgba(20,60,30,.3)}
+.field3d{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:16px;color:#2B2320;background:#FFFDF8;border:1px solid #B2A48F;border-radius:10px;padding:13px 14px;min-height:50px;box-shadow:inset 0 3px 6px rgba(60,40,10,.16),inset 0 1px 2px rgba(60,40,10,.2),0 1px 0 #FFFFFF}
+.field3d::placeholder{color:#7D7262}
+.field3d:focus{outline:none;border-color:#E58A1F;box-shadow:inset 0 3px 6px rgba(60,40,10,.16),0 0 0 3px rgba(255,183,89,.6)}
+.label{font-weight:700;font-size:12px;color:#4C4138;letter-spacing:.06em;text-transform:uppercase}
+.card3d{background:#FBF8F2;border:1px solid #D9CFBE;border-radius:20px;box-shadow:inset 0 1px 0 #FFFFFF,0 8px 0 #D3C8B5,0 18px 30px rgba(60,40,10,.2)}
+.chip{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#4C4138;background:#FFFFFF;border:1px solid #D9CFBE;border-radius:999px;padding:6px 12px;box-shadow:inset 0 1px 0 #FFFFFF,0 2px 0 #D3C8B5}
+.dot{width:9px;height:9px;border-radius:50%;background:#B3A693;border:1px solid #8A7E6E}
+.oval3d{display:block;width:330px;height:auto;filter:drop-shadow(0 2px 0 #C9B600) drop-shadow(0 4px 0 #A89700) drop-shadow(0 6px 0 #877A00) drop-shadow(0 18px 16px rgba(60,20,0,.42));transform:perspective(900px) rotateX(10deg) rotateY(-8deg);transition:transform .45s ease}
+.oval-wrap{position:relative;margin-top:40px}
+.oval-wrap:hover .oval3d{transform:perspective(900px) rotateX(0deg) rotateY(0deg) scale(1.04)}
+.anim .oval-wrap{animation:glow 3.6s ease-in-out infinite}
+@keyframes glow{0%,58%,100%{filter:none}72%{filter:drop-shadow(0 0 22px #FFF27A) brightness(1.08)}}
+.mascote-wrap{position:relative;width:190px;height:320px}
+.lean{transform-origin:50% 100%}
+.mascote{display:block;height:320px;width:auto;filter:drop-shadow(0 12px 8px rgba(60,20,0,.35));transform-origin:50% 100%}
+.anim .mascote{animation:sway 4s ease-in-out infinite}
+.anim .lean{animation:point 3.6s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-1.5deg) translateY(0)}50%{transform:rotate(2deg) translateY(-5px)}}
+@keyframes point{0%,55%,100%{transform:translateX(0) rotate(0deg)}68%{transform:translateX(-16px) rotate(-5deg)}80%{transform:translateX(-8px) rotate(-3deg)}}
+.heart{position:absolute;left:-4px;top:112px;width:34px;height:34px;opacity:0;pointer-events:none}
+.anim .heart{animation:kiss 3.6s ease-out infinite}
+.anim .heart.h2{animation-delay:1.2s;left:6px;top:118px;width:26px;height:26px}
+.anim .heart.h3{animation-delay:2.4s;left:-12px;top:108px;width:22px;height:22px}
+@keyframes kiss{0%{opacity:0;transform:translate(0,0) scale(.3)}12%{opacity:1;transform:translate(-14px,-14px) scale(1)}100%{opacity:0;transform:translate(-130px,-95px) scale(1.2) rotate(-12deg)}}
+.floor{position:absolute;left:50%;bottom:-22px;width:560px;height:48px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse at center,rgba(80,30,0,.38),rgba(80,30,0,0) 70%)}
+.scoop{position:absolute;border-radius:50%;background:rgba(255,255,255,.16)}
+.anim .scoop.a{animation:drift 14s ease-in-out infinite}
+.anim .scoop.b{animation:drift 18s ease-in-out infinite reverse}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(18px,-22px)}}
+
+.proto-nav{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:99;display:flex;flex-direction:column;gap:4px;align-items:center;padding:6px 3px;border-radius:12px 0 0 12px;background:rgba(43,35,32,.9);box-shadow:0 6px 18px rgba(0,0,0,.35);font:800 11px/1 Inter,system-ui,sans-serif}
+.proto-nav a{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#4A3E38;color:#FFF27A;text-decoration:none}
+.proto-nav a:hover{background:#FFB759;color:#2B2320}
+.proto-nav a.atual{background:#FFB759;color:#2B2320}
+</style>
+</head>
+<body>
+<div class="anim" style="min-height:100vh;display:flex;flex-wrap:wrap;background:#FFB759">
+  <section style="flex:1 1 620px;min-width:0;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 24px 72px;gap:36px;background:#FFB759">
+    <div class="scoop a" style="left:-120px;top:-140px;width:420px;height:420px" aria-hidden="true"></div>
+    <div class="scoop b" style="right:-160px;bottom:-200px;width:520px;height:520px" aria-hidden="true"></div>
+    <div style="position:relative;display:flex;align-items:flex-end;justify-content:center;gap:24px">
+      <div class="floor" aria-hidden="true"></div>
+      <div class="oval-wrap">
+        <img class="oval3d" src="../../assets/brand/logo_oval.png" alt="Moleka Sorvetes">
+      </div>
+      <div class="mascote-wrap">
+        <div class="lean">
+          <img class="mascote" src="../../assets/brand/mascote.png" alt="Mascote da Moleka apontando para o nome da marca">
+        </div>
+        <svg class="heart h1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.5-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.5 5.6C19 16.4 12 21 12 21z" fill="#E43238" stroke="#51222B" stroke-width="1.2"></path></svg>
+        <svg class="heart h2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.5-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.5 5.6C19 16.4 12 21 12 21z" fill="#FF6B70" stroke="#51222B" stroke-width="1.2"></path></svg>
+        <svg class="heart h3" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.5-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.5 5.6C19 16.4 12 21 12 21z" fill="#E43238" stroke="#51222B" stroke-width="1.2"></path></svg>
+      </div>
+    </div>
+    <div style="position:relative;text-align:center;display:flex;flex-direction:column;gap:6px">
+      <div style="font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:34px;line-height:1.1;color:#5A1A1F;text-shadow:0 1px 0 #FFD9A6,0 3px 0 rgba(90,26,31,.18)">Frente de Loja</div>
+      <div style="font-weight:600;font-size:15px;color:#6B2A2F">Caixa · Estoque · Financeiro · NFC-e</div>
+    </div>
+  </section>
+  <section style="flex:1 1 480px;min-width:0;display:flex;align-items:center;justify-content:center;padding:24px 24px;background:#F3EDE2;box-shadow:inset 6px 0 14px rgba(60,40,10,.12)">
+    <form class="card3d" style="width:100%;max-width:440px;box-sizing:border-box;padding:28px 32px 22px;display:flex;flex-direction:column;gap:14px" action="#" method="get">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:28px;line-height:1.1;color:#2B2320">Bem-vindo(a)!</div>
+        <div style="font-size:14px;color:#5C5147">Identifique-se para abrir o caixa.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label class="label" for="operador">Operador</label>
+        <input class="field3d" id="operador" name="operador" type="text" placeholder="Nome ou código do operador" autocomplete="username">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label class="label" for="senha">Senha</label>
+        <input class="field3d" id="senha" name="senha" type="password" placeholder="••••••" autocomplete="current-password">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label class="label" for="caixa">Caixa</label>
+        <select class="field3d" id="caixa" name="caixa">
+          <option>Caixa 01</option>
+          <option>Caixa 02</option>
+        </select>
+      </div>
+      <label style="display:flex;align-items:center;gap:10px;font-size:14px;color:#4C4138;cursor:pointer">
+        <input type="checkbox" name="lembrar" style="width:18px;height:18px;accent-color:#23A151">
+        Lembrar operador neste computador
+      </label>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:6px">
+        <button class="btn3d green" type="submit" style="font-size:18px;min-height:56px">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 17l5-5-5-5"></path><path d="M15 12H3"></path><path d="M21 3v18"></path></svg>
+          Entrar
+        </button>
+        <button class="btn3d" type="button">Abrir caixa com fundo de troco</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px">
+        <span class="chip"><span class="dot" aria-hidden="true"></span>SEFAZ: —</span>
+        <span class="chip"><span class="dot" aria-hidden="true"></span>Certificado A1: —</span>
+        <span class="chip"><span class="dot" aria-hidden="true"></span>Impressora: —</span>
+      </div>
+      <div style="text-align:center;font-size:12px;color:#7D7262">Moleka PDV v0.1 (prévia) · Enter = Entrar · Esc = Sair</div>
+    </form>
+  </section>
+</div>
+
+<nav class="proto-nav" aria-label="Telas do protótipo" title="Protótipo — clique para trocar de tela"><a href="index.html" class="atual" title="1 · Abertura / Login">1</a><a href="inicio.html" class="" title="2 · Início">2</a><a href="caixa.html" class="" title="3 · Caixa (PDV)">3</a><a href="financeiro.html" class="" title="4 · Financeiro / DRE">4</a></nav>
+
+<script>
+document.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); location.href = 'inicio.html'; });
+</script>
+</body>
+</html>

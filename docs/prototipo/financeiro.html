@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Moleka PDV — Financeiro, DRE e fluxo de caixa</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@700;800;900&amp;display=swap">
+<style>
+body{margin:0;background:#EDE7DC;font-family:Inter,system-ui,sans-serif;color:#2B2320}
+a{color:#8C3212}a:hover{color:#5E200A}
+.btn3d{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:14px;line-height:1;padding:11px 16px;min-height:46px;border:1px solid #9C8F7B;border-radius:12px;cursor:pointer;color:#2B2320;background:linear-gradient(#FFFFFF 0%,#F2ECE1 55%,#E3DACB 100%);box-shadow:inset 0 1px 0 #FFFFFF,inset 0 -1px 0 rgba(0,0,0,.06),0 4px 0 #B3A693,0 8px 14px rgba(60,40,10,.22);transition:transform .08s ease,box-shadow .08s ease,filter .15s ease;text-decoration:none;white-space:nowrap}
+.btn3d:hover{filter:brightness(1.04)}
+.btn3d:active{transform:translateY(4px);box-shadow:inset 0 1px 0 #FFFFFF,0 0 0 #B3A693,0 2px 4px rgba(60,40,10,.25)}
+.btn3d:focus-visible{outline:3px solid #2B6CB0;outline-offset:2px}
+.btn3d.green{color:#FFFFFF;border-color:#136435;background:linear-gradient(#4CCB7B 0%,#23A151 55%,#1B7F41 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(0,0,0,.1),0 4px 0 #0F5A2C,0 8px 14px rgba(20,60,30,.3)}
+.btn3d.green:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 0 0 #0F5A2C,0 2px 4px rgba(20,60,30,.3)}
+.btn3d.orange{border-color:#B9711C;background:linear-gradient(#FFD08E 0%,#FFB759 55%,#F39B2E 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 0 #B86F12,0 8px 14px rgba(120,70,10,.3)}
+.btn3d.orange:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 0 0 #B86F12,0 2px 4px rgba(120,70,10,.3)}
+.btn3d.red{color:#FFFFFF;border-color:#8E1A1F;background:linear-gradient(#F05A5F 0%,#E43238 55%,#C0262C 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 0 #7D1418,0 8px 14px rgba(80,10,10,.3)}
+.btn3d.red:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 0 0 #7D1418,0 2px 4px rgba(80,10,10,.3)}
+.field3d{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:15px;color:#2B2320;background:#FFFDF8;border:1px solid #B2A48F;border-radius:10px;padding:11px 12px;min-height:46px;box-shadow:inset 0 3px 6px rgba(60,40,10,.16),inset 0 1px 2px rgba(60,40,10,.2),0 1px 0 #FFFFFF}
+.field3d:focus{outline:none;border-color:#E58A1F;box-shadow:inset 0 3px 6px rgba(60,40,10,.16),0 0 0 3px rgba(255,183,89,.6)}
+.label{font-weight:700;font-size:11px;color:#4C4138;letter-spacing:.06em;text-transform:uppercase}
+.card3d{background:#FBF8F2;border:1px solid #D9CFBE;border-radius:18px;box-shadow:inset 0 1px 0 #FFFFFF,0 6px 0 #D3C8B5,0 14px 24px rgba(60,40,10,.16)}
+.chip{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#4C4138;background:#FFF7EA;border:1px solid #E3B06A;border-radius:999px;padding:6px 12px;box-shadow:inset 0 1px 0 #FFFFFF,0 2px 0 #D89A4A}
+.dot{width:9px;height:9px;border-radius:50%;background:#B3A693;border:1px solid #8A7E6E}
+.header{background:linear-gradient(#FFC775 0%,#FFB759 55%,#F8A23F 100%);box-shadow:inset 0 -3px 0 rgba(0,0,0,.08),0 4px 10px rgba(60,40,10,.2)}
+.oval3d{display:block;width:118px;height:auto;filter:drop-shadow(0 2px 0 #C9B600) drop-shadow(0 3px 0 #A89700) drop-shadow(0 8px 6px rgba(60,20,0,.4));transform:perspective(500px) rotateX(10deg) rotateY(-8deg);transition:transform .45s ease}
+.oval-wrap{position:relative;margin-top:8px}
+.oval-wrap:hover .oval3d{transform:perspective(500px) rotateX(0deg) rotateY(0deg) scale(1.05)}
+.anim .oval-wrap{animation:glow 3.6s ease-in-out infinite}
+@keyframes glow{0%,58%,100%{filter:none}72%{filter:drop-shadow(0 0 12px #FFF27A) brightness(1.08)}}
+.mascote-wrap{position:relative;width:44px;height:74px}
+.lean{transform-origin:50% 100%}
+.mascote{display:block;height:74px;width:auto;filter:drop-shadow(0 4px 4px rgba(60,20,0,.35));transform-origin:50% 100%}
+.anim .mascote{animation:sway 4s ease-in-out infinite}
+.anim .lean{animation:point 3.6s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-1.5deg) translateY(0)}50%{transform:rotate(2deg) translateY(-2px)}}
+@keyframes point{0%,55%,100%{transform:translateX(0) rotate(0deg)}68%{transform:translateX(-5px) rotate(-5deg)}80%{transform:translateX(-2px) rotate(-3deg)}}
+.heart{position:absolute;left:-2px;top:25px;width:12px;height:12px;opacity:0;pointer-events:none}
+.anim .heart{animation:kiss 3.6s ease-out infinite}
+.anim .heart.h2{animation-delay:1.2s;left:1px;top:28px;width:9px;height:9px}
+@keyframes kiss{0%{opacity:0;transform:translate(0,0) scale(.3)}12%{opacity:1;transform:translate(-4px,-4px) scale(1)}100%{opacity:0;transform:translate(-40px,-28px) scale(1.2) rotate(-12deg)}}
+.tab{font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:14px;padding:11px 20px;border:1px solid #CFC4B2;border-bottom:0;border-radius:12px 12px 0 0;background:linear-gradient(#F4EEE3,#E3DACB);color:#5C5147;cursor:pointer;box-shadow:inset 0 1px 0 #FFFFFF}
+.tab.active{background:linear-gradient(#FFFFFF,#FBF8F2);color:#2B2320;box-shadow:inset 0 3px 0 #FFB759;position:relative;top:1px}
+.dre{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.dre th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5C5147;padding:8px 14px;background:#F3EDE2;border-bottom:1px solid #D9CFBE}
+.dre td{padding:6px 14px;border-bottom:1px solid #EAE2D4}
+.dre tr.sub td{padding-left:34px;color:#5C5147}
+.dre tr.tot td{font-weight:800;font-family:Nunito,Inter,sans-serif;background:#FFF6B0;border-top:1px solid #E0CF00;border-bottom:1px solid #E0CF00}
+.dre tr.res td{font-weight:900;font-family:Nunito,Inter,sans-serif;font-size:15px;background:linear-gradient(#FFE08A,#FFB759);border-bottom:0}
+.btn3d.mini{font-size:13px;padding:8px 14px;min-height:38px;border-radius:10px;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #B3A693,0 6px 10px rgba(60,40,10,.2)}
+.btn3d.mini:active{transform:translateY(3px);box-shadow:inset 0 1px 0 #FFFFFF,0 0 0 #B3A693,0 2px 4px rgba(60,40,10,.25)}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 0;border-bottom:1px dashed #D9CFBE;font-size:13px}
+.kv .v{font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:15px}
+
+.proto-nav{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:99;display:flex;flex-direction:column;gap:4px;align-items:center;padding:6px 3px;border-radius:12px 0 0 12px;background:rgba(43,35,32,.9);box-shadow:0 6px 18px rgba(0,0,0,.35);font:800 11px/1 Inter,system-ui,sans-serif}
+.proto-nav a{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#4A3E38;color:#FFF27A;text-decoration:none}
+.proto-nav a:hover{background:#FFB759;color:#2B2320}
+.proto-nav a.atual{background:#FFB759;color:#2B2320}
+</style>
+</head>
+<body>
+<div class="anim" style="min-height:100vh;display:flex;flex-direction:column;background:#EDE7DC">
+  <header class="header" style="display:flex;flex-wrap:wrap;align-items:center;gap:20px;padding:6px 24px 8px;min-height:86px;box-sizing:border-box">
+    <div style="display:flex;align-items:flex-end;gap:10px">
+      <div class="oval-wrap"><img class="oval3d" src="../../assets/brand/logo_oval.png" alt="Moleka Sorvetes"></div>
+      <div class="mascote-wrap">
+        <div class="lean"><img class="mascote" src="../../assets/brand/mascote.png" alt="Mascote da Moleka"></div>
+        <svg class="heart h1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.5-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.5 5.6C19 16.4 12 21 12 21z" fill="#E43238" stroke="#51222B" stroke-width="1.2"></path></svg>
+        <svg class="heart h2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.5-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.5 5.6C19 16.4 12 21 12 21z" fill="#FF6B70" stroke="#51222B" stroke-width="1.2"></path></svg>
+      </div>
+    </div>
+    <div style="flex:1 1 260px;min-width:0;display:flex;flex-direction:column;gap:4px">
+      <div style="font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:24px;line-height:1.1;color:#5A1A1F;text-shadow:0 1px 0 #FFD9A6,0 3px 0 rgba(90,26,31,.18)">Financeiro</div>
+      <div style="font-size:13px;font-weight:600;color:#6B2A2F">Lançamentos · Fluxo de caixa · DRE · Rentabilidade</div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end">
+      <span class="chip"><span class="dot" aria-hidden="true"></span>Última venda importada: —</span>
+      <span class="chip"><span class="dot" aria-hidden="true"></span>Impressora A4: —</span>
+    </div>
+  </header>
+  <main style="flex:1 1 auto;display:flex;flex-direction:column;gap:0;padding:18px 24px 14px">
+    <div style="display:flex;flex-wrap:wrap;gap:4px;padding-left:12px">
+      <button class="tab" type="button">Lançamentos</button>
+      <button class="tab" type="button">Fluxo de Caixa</button>
+      <button class="tab active" type="button">DRE</button>
+      <button class="tab" type="button">Rentabilidade</button>
+    </div>
+    <div class="card3d" style="border-top-left-radius:0;padding:16px 18px;display:flex;flex-direction:column;gap:16px">
+      <form style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end" action="#" method="get">
+        <div style="flex:0 1 160px;min-width:0;display:flex;flex-direction:column;gap:6px">
+          <label class="label" for="de">Período — de</label>
+          <input class="field3d" id="de" name="de" type="date" value="2026-11-01">
+        </div>
+        <div style="flex:0 1 160px;min-width:0;display:flex;flex-direction:column;gap:6px">
+          <label class="label" for="ate">até</label>
+          <input class="field3d" id="ate" name="ate" type="date" value="2026-11-07">
+        </div>
+        <div style="flex:0 1 200px;min-width:0;display:flex;flex-direction:column;gap:6px">
+          <label class="label" for="comparar">Comparar com</label>
+          <select class="field3d" id="comparar" name="comparar"><option>Mês anterior</option><option>Mesmo período do ano anterior</option><option>Sem comparação</option></select>
+        </div>
+        <button class="btn3d orange" type="submit">Atualizar (F5)</button>
+        <div style="flex:1 1 auto"></div>
+        <button class="btn3d green" type="button">+ Receita (F8)</button>
+        <button class="btn3d red" type="button">+ Despesa (F7)</button>
+      </form>
+      <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+        <section style="flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+            <h1 style="margin:0;font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:18px">DRE — Demonstração do Resultado</h1>
+            <span style="font-size:12px;color:#7D7262">01/11/2026 a 07/11/2026 · regime de competência</span>
+            <div style="margin-left:auto;display:flex;gap:8px">
+              <button class="btn3d mini" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"></path><rect x="3" y="9" width="18" height="8" rx="2"></rect><path d="M6 15h12v6H6z"></path></svg>Imprimir A4</button>
+              <button class="btn3d mini" type="button">Exportar Excel</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto;border:1px solid #D9CFBE;border-radius:12px;background:#FFFFFF">
+            <table class="dre">
+              <thead><tr><th>Conta</th><th class="num" style="width:150px">Valor (R$)</th><th class="num" style="width:120px">% s/ receita</th><th class="num" style="width:150px">Mês anterior</th></tr></thead>
+              <tbody>
+                <tr><td>Receita bruta de vendas (NFC-e)</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+                <tr><td>(−) Deduções: impostos sobre vendas</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+                <tr><td>(−) Cancelamentos e devoluções</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+                <tr class="tot"><td>= Receita líquida</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+                <tr><td>(−) CMV — custo das mercadorias vendidas</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+                <tr class="tot"><td>= Lucro bruto</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+                <tr><td>(−) Despesas operacionais</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+                <tr class="sub"><td>Pessoal e encargos</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+                <tr class="sub"><td>Aluguel, energia, água</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+                <tr class="sub"><td>Marketing</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+                <tr class="sub"><td>Outras despesas</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+                <tr class="tot"><td>= Resultado operacional</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+                <tr><td>(+) Outras receitas / (−) outras despesas</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+                <tr class="res"><td>= Resultado líquido do período</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="font-size:12px;color:#7D7262;line-height:1.4">Sem dados: os valores aparecem após vendas registradas (NFC-e), lançamentos de despesas e receitas e entradas de XML de compra — nunca estimativas.</div>
+        </section>
+        <aside style="flex:1 1 280px;min-width:0;max-width:360px;display:flex;flex-direction:column;gap:14px">
+          <div class="card3d" style="padding:16px 18px;display:flex;flex-direction:column">
+            <div style="font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:16px;margin-bottom:4px">Rentabilidade por produto</div>
+            <div style="font-size:12px;color:#7D7262;margin-bottom:6px">Margem = preço − custo (último XML)</div>
+            <div class="kv"><span>Maior margem</span><span class="v">—</span></div>
+            <div class="kv"><span>Menor margem</span><span class="v">—</span></div>
+            <div class="kv"><span>Margem média</span><span class="v">—</span></div>
+            <div class="kv" style="border-bottom:0"><span>Produtos sem custo cadastrado</span><span class="v">—</span></div>
+          </div>
+          <div class="card3d" style="padding:16px 18px;display:flex;flex-direction:column">
+            <div style="font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:16px;margin-bottom:4px">Fluxo de caixa — próximos 7 dias</div>
+            <div class="kv"><span>Saldo atual</span><span class="v">—</span></div>
+            <div class="kv"><span>A receber (cartão / Pix)</span><span class="v">—</span></div>
+            <div class="kv"><span>A pagar</span><span class="v">—</span></div>
+            <div class="kv" style="border-bottom:0"><span>Saldo projetado</span><span class="v">—</span></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+  <footer style="display:flex;flex-wrap:wrap;gap:18px;align-items:center;padding:8px 16px;background:#F3EDE2;border-top:1px solid #D9CFBE;font-size:12px;color:#5C5147">
+    <span>Banco local: —</span><span>Fechamento de caixa mais recente: —</span><span style="margin-left:auto">F1 Ajuda · Esc Voltar</span>
+  </footer>
+</div>
+
+<nav class="proto-nav" aria-label="Telas do protótipo" title="Protótipo — clique para trocar de tela"><a href="index.html" class="" title="1 · Abertura / Login">1</a><a href="inicio.html" class="" title="2 · Início">2</a><a href="caixa.html" class="" title="3 · Caixa (PDV)">3</a><a href="financeiro.html" class="atual" title="4 · Financeiro / DRE">4</a></nav>
+
+<script>
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') location.href = 'inicio.html'; });
+document.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); });
+</script>
+</body>
+</html>
