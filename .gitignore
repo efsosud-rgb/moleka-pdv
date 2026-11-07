@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+*.spec.bak
+
+# Node (se a interface ganhar build)
+node_modules/
+
+# Dados locais, banco e backups (nunca versionar)
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+backups/
+dados/
+
+# Segredos: certificado A1, senhas, tokens de API
+*.pfx
+*.p12
+*.pem
+*.key
+.env
+.env.*
+config.local.*
+segredos/
+
+# XMLs fiscais reais (homologação ou produção) e cupons
+xml/
+notas/
+*.xml
+!tests/**/*.xml
+!docs/**/*.xml
+
+# Instalador gerado
+installer/output/
+*.exe
+!installer/tools/*.exe
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
