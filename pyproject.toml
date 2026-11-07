@@ -1,0 +1,44 @@
+[project]
+name = "moleka-pdv"
+version = "0.1.0"
+description = "Frente de loja da sorveteria Moleka: caixa, NFC-e, estoque e financeiro"
+requires-python = ">=3.12"
+readme = "README.md"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0",
+    "pydantic>=2.7",
+    "pywebview>=5.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.27", "ruff>=0.6", "mypy>=1.10"]
+build = ["pyinstaller>=6.10"]
+
+[project.scripts]
+moleka-pdv = "main:main"
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["app", "app.api", "app.fiscal"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["B008"]  # Depends(...) como default é o padrão do FastAPI
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["app/dinheiro.py", "app/precos.py", "app/fiscal"]

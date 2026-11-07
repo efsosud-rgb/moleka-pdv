@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moleka PDV — Caixa</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="/css/moleka.css">
+<script src="/js/moleka.js" defer></script>
+</head>
+<body class="anim">
+<div class="tela">
+  <header class="header">
+    <div class="logo sm">
+      <div class="oval-wrap"><img class="oval3d" src="/assets/brand/logo_oval.png" alt="Moleka Sorvetes"></div>
+      <div class="mascote-wrap">
+        <div class="lean"><img class="mascote" src="/assets/brand/mascote.png" alt="Mascote da Moleka"></div>
+        <svg class="heart h1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.5-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.5 5.6C19 16.4 12 21 12 21z" fill="#E43238" stroke="#51222B" stroke-width="1.2"/></svg>
+        <svg class="heart h2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.5-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.5 5.6C19 16.4 12 21 12 21z" fill="#FF6B70" stroke="#51222B" stroke-width="1.2"/></svg>
+      </div>
+    </div>
+    <div class="titulo">
+      <h1>Caixa — Venda</h1>
+      <div class="sub"><span data-hoje>—</span> · Operador: — · Venda nº —</div>
+    </div>
+    <div class="chips">
+      <span class="chip">Tabela: —</span>
+      <span class="chip" data-status="fiscal" data-rotulo="SEFAZ"><span class="dot" aria-hidden="true"></span><span class="texto">SEFAZ: —</span></span>
+      <span class="chip" data-status="impressora_cupom" data-rotulo="Impressora cupom"><span class="dot" aria-hidden="true"></span><span class="texto">Impressora cupom: —</span></span>
+    </div>
+  </header>
+  <main class="corpo" style="gap:20px;padding:18px 24px">
+    <section class="conteudo col" style="gap:14px">
+      <form id="form-item" class="linha" style="gap:12px;align-items:flex-end" action="#" method="get">
+        <div class="col" style="flex:999 1 320px;min-width:0;gap:6px">
+          <label class="label" for="busca">Produto (F2) — código de barras ou nome</label>
+          <div style="position:relative">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7D7262" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="position:absolute;left:14px;top:50%;transform:translateY(-50%)"><path d="M4 6v12M8 6v12M11 6v12M15 6v12M18 6v12M21 6v12"/></svg>
+            <input class="field3d lg" id="busca" name="busca" type="text" placeholder="Passe o leitor ou digite o nome do produto" style="padding-left:46px" autofocus>
+          </div>
+        </div>
+        <div class="col" style="flex:0 1 130px;min-width:0;gap:6px">
+          <label class="label" for="qtd">Qtd (F3)</label>
+          <input class="field3d lg num" id="qtd" name="qtd" type="number" value="1" min="0.001" step="any">
+        </div>
+        <button class="btn3d orange lg" type="submit">Adicionar (Enter)</button>
+      </form>
+      <div class="card3d col" style="flex:1 1 auto;overflow:hidden">
+        <div class="linha" style="align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--borda)">
+          <div style="font-family:var(--fonte-titulo);font-weight:900;font-size:16px">Itens da venda</div>
+          <span class="espaco"></span><span id="qtd-itens" style="font-size:13px;color:var(--tinta-3)">0 itens</span>
+        </div>
+        <div class="rolagem-x">
+          <table class="grid">
+            <thead>
+              <tr><th style="width:36px">#</th><th style="width:130px">Código</th><th>Descrição</th><th class="num" style="width:70px">Qtd</th><th class="num" style="width:100px">Unit. (R$)</th><th class="num" style="width:110px">Total (R$)</th><th style="width:48px"></th></tr>
+            </thead>
+            <tbody id="itens">
+              <tr><td colspan="7" class="nota" style="padding:28px 16px;text-align:center">Nenhum item. A venda começa quando o módulo Caixa estiver ligado ao banco (próxima frente).</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="nota" style="flex:1 1 auto;min-height:60px;display:flex;align-items:flex-end;padding:12px 16px">Preço por quantidade: ao atingir a faixa de atacado cadastrada, o unitário muda sozinho e a linha fica marcada.</div>
+      </div>
+    </section>
+    <aside class="col" style="flex:1 1 340px;min-width:0;max-width:420px;gap:14px">
+      <div class="total">
+        <div class="rotulo">Total a pagar</div>
+        <div class="valor" id="total">—</div>
+        <div class="linha"><span>Subtotal: —</span><span>Desconto (F5): —</span><span>Itens: 0</span></div>
+      </div>
+      <div class="card3d col" style="padding:14px 16px;gap:8px">
+        <label class="label" for="cliente">Cliente (F4)</label>
+        <input class="field3d" id="cliente" name="cliente" type="text" value="Consumidor final">
+        <label class="check" style="margin-top:4px"><input type="checkbox" name="cpf"> CPF na nota</label>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px">
+        <button class="btn3d" type="button" disabled>Dinheiro (F6)</button>
+        <button class="btn3d" type="button" disabled>Pix (F7)</button>
+        <button class="btn3d" type="button" disabled>Débito (F8)</button>
+        <button class="btn3d" type="button" disabled>Crédito (F9)</button>
+      </div>
+      <button class="btn3d green xl" type="button" disabled title="exige provedor fiscal configurado e venda com itens">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21z"/><path d="M9 9h6M9 13h4"/></svg>
+        Finalizar e emitir NFC-e (F10)
+      </button>
+      <button class="btn3d red" type="button" disabled>Cancelar venda (F12)</button>
+    </aside>
+  </main>
+  <footer class="rodape">
+    <span class="key"><b>F2</b>Produto</span><span class="key"><b>F3</b>Quantidade</span><span class="key"><b>F4</b>Cliente</span><span class="key"><b>F5</b>Desconto</span>
+    <span class="key"><b>F6–F9</b>Pagamento</span><span class="key"><b>F10</b>Finalizar</span><span class="key"><b>F11</b>Sangria / Suprimento</span><span class="key"><b>F12</b>Cancelar</span>
+    <span class="key direita"><b>Esc</b>Voltar ao início</span>
+  </footer>
+</div>
+<script>
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") location.href = "/inicio.html";
+    if (e.key === "F2") { e.preventDefault(); document.getElementById("busca").focus(); }
+    if (e.key === "F3") { e.preventDefault(); document.getElementById("qtd").focus(); }
+    if (e.key === "F4") { e.preventDefault(); document.getElementById("cliente").focus(); }
+  });
+  document.getElementById("form-item").addEventListener("submit", function (e) { e.preventDefault(); });
+</script>
+</body>
+</html>
