@@ -89,3 +89,31 @@ NF-e modelo 55 (venda para empresa), SAT-CF-e (só SP), delivery/iFood, fidelida
 4. Impressora térmica: marca/modelo e conexão; impressora A4 existente.
 5. Logo em vetor ou alta resolução, de preferência com a menina separada do oval.
 6. Sistema atual (produtos/clientes para importar) e certificado digital A1 (tem?).
+
+## 10. PC do caixa — diagnóstico de 10/11/2026 (dados medidos com `tools/diagnostico-pc.ps1`)
+
+| Item | Medido |
+|---|---|
+| Equipamento | Notebook ASUS VivoBook 15 X540UAR |
+| Sistema | Windows 10 Home 22H2 (build 19045); última atualização instalada em 09/09/2026 |
+| Processador | Intel Core i3-6100U, 2 núcleos / 4 threads, 2,3 GHz |
+| Memória | 3,9 GB em 1 módulo — 0,5 GB livres no momento da medição, com compressão de memória ativa |
+| Disco | HD mecânico WDC WD10SPZX 1 TB (SATA), saúde "Healthy", 874 GB livres |
+| Tela | 1366×768 |
+| Rede | Wi-Fi 150 Mbps, ping 13 ms |
+| Impressora de cupom | ELGIN i9 (USB), fila "ELGIN i9(USB)", porta USB001, padrão do Windows, pronta, fila vazia |
+| Impressora A4 | nenhuma física instalada (só PDF, XPS, OneNote e Fax virtuais) |
+| Leitor de código de barras | não identificado no diagnóstico (1 teclado presente) — testar com o leitor conectado |
+| Já instalado | WebView2 157.0.4341.42; SQL Server 2014 (instância SQL2014) rodando — provável banco do sistema atual da loja; AnyDesk como serviço |
+| Não instalado | Python (só o atalho da Microsoft Store), Git |
+| Eventos | 7 erros Kernel-Power + 7 EventLog em 7 dias (indício de desligamentos sem fechar o Windows — a confirmar) |
+
+Consequências para o projeto (recomendações, não decisões fechadas):
+
+1. **Interface leve.** Animações só em CSS, como estão; nada de WebGL/3D pesado no PDV — este hardware não aguenta sem travar o caixa.
+2. **Meta de memória** do Moleka PDV aberto (Python + WebView2): até ~400 MB. Medir quando houver build.
+3. **Instalador autocontido**: o PyInstaller precisa levar o Python junto; o PC não tem Python.
+4. **Impressão** pela fila do Windows "ELGIN i9(USB)" em modo RAW (ESC/POS) — confirmar no teste de impressão.
+5. **Banco resistente a queda de energia**: SQLite em WAL + backup diário; recomendar nobreak ao cliente.
+6. **Migração**: o SQL Server 2014 pode ser a fonte de produtos e clientes do sistema atual.
+7. **Hardware**: a lentidão vem principalmente de 4 GB de RAM + HD mecânico; a troca por SSD e a ampliação para 8 GB são as melhorias de maior efeito.
