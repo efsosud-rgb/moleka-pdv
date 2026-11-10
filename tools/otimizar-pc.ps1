@@ -9,14 +9,14 @@ $inicio = Get-Date
 $pasta = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Moleka-Diagnostico'
 New-Item -ItemType Directory -Force -Path $pasta | Out-Null
 $carimbo = Get-Date -Format 'yyyy-MM-dd_HHmm'
-$S = New-Object System.Collections.Generic.List[string]
+$linhasRes = New-Object System.Collections.Generic.List[string]
 $ctx = @{ n = 0; etapas = 17 }
 $atv = 'Moleka PDV - otimização do PC'
 function Passo($t){ $ctx.n++; Write-Progress -Activity $atv -Status "$($ctx.n)/$($ctx.etapas) - $t" -PercentComplete ([int](100 * $ctx.n / $ctx.etapas)) }
 function Fim(){ Write-Progress -Activity $atv -Completed }
-function Ok($t){ $S.Add("OK      $t") }
-function Falhou($t){ $S.Add("FALHOU  $t") }
-function Info($t){ $S.Add("INFO    $t") }
+function Ok($t){ $linhasRes.Add("OK      $t") }
+function Falhou($t){ $linhasRes.Add("FALHOU  $t") }
+function Info($t){ $linhasRes.Add("INFO    $t") }
 function Corta($t, $n){ $t = [string]$t; if($t.Length -gt $n){ $t.Substring(0, $n) + '...' } else { $t } }
 function LerValor($k, $n){ try { (Get-ItemProperty -Path $k -Name $n -ErrorAction Stop).$n } catch { $null } }
 function GarantirChave($k){ $partes = $k -split '\\'; $atual = $partes[0]; for($i = 1; $i -lt $partes.Count; $i++){ $atual = $atual + '\' + $partes[$i]; if(-not (Test-Path $atual)){ New-Item -Path $atual -ErrorAction Stop | Out-Null } } }
@@ -77,7 +77,7 @@ if($jsonAntigo){
     Ok "estado atual salvo (estado_antes_$carimbo.json)"
   } catch {
     Falhou "não consegui registrar o estado atual: $($_.Exception.Message). NADA FOI ALTERADO."
-    Fim; $S; return
+    Fim; $linhasRes; return
   }
 }
 
@@ -152,7 +152,7 @@ Write-Progress -Activity `$at -Completed
   Ok "script de desfazer gravado: $arqDesfazer"
 } catch {
   Falhou "script de desfazer: $($_.Exception.Message). NADA FOI ALTERADO."
-  Fim; $S; return
+  Fim; $linhasRes; return
 }
 
 # ---------------------------------------------------------------- 4. plano de energia do caixa
@@ -435,7 +435,7 @@ try {
 Fim
 $dur = [int]((Get-Date) - $inicio).TotalSeconds
 $cab = "MOLEKA PDV - OTIMIZAÇÃO + COLETA - $(Get-Date -Format 'dd/MM/yyyy HH:mm') - $dur s"
-$saida = @($cab) + @($S)
+$saida = @($cab) + @($linhasRes)
 $saida | Out-File -FilePath (Join-Path $pasta "otimizacao_$carimbo.txt") -Encoding UTF8
 ''
 '===== RESULTADO - COPIE DAQUI ATÉ "FIM" E COLE NO CHAT ====='
