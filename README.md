@@ -4,7 +4,7 @@ Sistema de frente de loja da sorveteria **Moleka Sorvetes**: caixa (PDV) com emi
 
 Backend em **Python**; interface em HTML/CSS/JS dentro de uma janela desktop (**pywebview** / WebView2), com visual limpo e relevo 3D nos componentes e na logo animada. Instalação por um único arquivo, `MolekaPDV-Instalador-<versão>.exe`.
 
-> Estado atual (11/11/2026, versão 0.2.0): o sistema abre no Windows com o visual aprovado e já tem **entrada com usuário e senha** (primeiro acesso, login, perfis operador e gerente, cadastro de operadores). Cadastro de produtos, venda, caixa, estoque, financeiro e NFC-e ainda não operam: as telas levam o selo "Tela em construção". Ver [`docs/PLANO.md`](docs/PLANO.md).
+> Estado atual (11/11/2026, versão 0.3.0): já funcionam a **entrada com usuário e senha**, os **cadastros** (produtos com preço por tabela e por quantidade, clientes com CPF ou CNPJ, tabelas de preço, percentual por forma de pagamento, operadores), o **controle de caixa** (abertura, sangria, suprimento, fechamento) e a **venda** (várias formas de pagamento, troco, desconto do gerente, saldo do dia). **Ainda não**: NFC-e (nenhum documento fiscal é emitido), impressão do cupom, tela de estoque, entrada de NF por XML e financeiro. Ver [`docs/PLANO.md`](docs/PLANO.md).
 
 ## Como instalar (Windows 10 ou 11)
 
@@ -16,6 +16,14 @@ Backend em **Python**; interface em HTML/CSS/JS dentro de uma janela desktop (**
 Não pede senha de administrador. Para atualizar, instale a versão nova por cima: os dados ficam em `%APPDATA%\MolekaPDV` e o programa cuida de adaptá-los (com cópia de segurança antes).
 
 O instalador é gerado e testado no GitHub (`.github/workflows/instalador-windows.yml`). Para sair uma versão nova, basta aumentar `VERSAO` em `app/config.py` e enviar para o `main`: o GitHub roda os testes, empacota com PyInstaller, abre o programa num Windows de verdade, tira um print da janela e só então publica em Releases.
+
+## Por onde começar (gerente)
+
+1. **Cadastros → Tabelas de preço e pagamento**: confira as tabelas (VAREJO e ATACADO já vêm criadas) e digite o percentual de cada forma de pagamento (negativo é desconto, positivo é acréscimo).
+2. **Cadastros → Produtos** (F5): descrição, código de barras e os preços de cada tabela; "Adicionar faixa" cria o preço por quantidade.
+3. **Cadastros → Clientes**: nome, CPF ou CNPJ e a tabela de preço do cliente.
+4. **Caixa → Controle de caixa** (F11): digite o fundo de troco e abra o caixa.
+5. **Caixa → Venda** (F2): passe o leitor ou digite o produto; F6 a F9 recebem; F10 finaliza.
 
 ## Operadores e senhas
 
@@ -84,20 +92,25 @@ moleka-pdv/
 │   ├── models.py        # schema completo (cadastros, caixa, vendas, fiscal, estoque, compras, financeiro)
 │   ├── dinheiro.py      # centavos: parse, formatação, multiplicação, percentual, rateio
 │   ├── precos.py        # tabelas varejo/atacado e faixas por quantidade
+│   ├── vendas.py        # a venda: itens, cliente, desconto, formas de pagamento, finalizar, cancelar
+│   ├── caixa.py         # controle de caixa: abertura, sangria, suprimento, fechamento
+│   ├── documentos.py    # CPF e CNPJ (dígitos verificadores)
+│   ├── pesquisa.py      # busca sem acento
+│   ├── tempo.py         # horário da loja (Brasília) e o "dia" das vendas
 │   ├── seguranca.py     # senha dos operadores (hash scrypt)
 │   ├── acesso.py        # sessões de login e permissões por perfil
 │   ├── operadores.py    # regras do cadastro de operadores e recuperação de acesso
 │   ├── web.py           # páginas (Jinja2), lista de módulos e menus; exige login
-│   ├── api/             # FastAPI: status, login e operadores, produtos, clientes, tabelas de preço
+│   ├── api/             # FastAPI: status, login e operadores, cadastros, caixa e vendas
 │   └── fiscal/          # adaptador fiscal (ProvedorFiscal) + ProvedorNulo
 ├── ui/
 │   ├── templates/       # base.html (moldura) e uma página por tela
-│   └── static/          # css/moleka.css, js/ (moleka, entrada, operadores), fonts/ (Inter e Nunito)
+│   └── static/          # css/moleka.css, js/ (um arquivo comum e um por tela), fonts/ (Inter e Nunito)
 ├── assets/brand/        # logo, mascote, artes da capa e ícone do programa
 ├── packaging/           # PyInstaller, Inno Setup e teste do instalador no Windows
 ├── tools/               # abrir_pelo_codigo.py (roda sem instalador), design/ e scripts do PC do caixa
 ├── docs/                # ESPECIFICACAO.md, DECISOES.md, PLANO.md, prototipo/
-└── tests/               # pytest (dinheiro, preços, senhas, login e perfis, API, páginas, banco)
+└── tests/               # pytest (dinheiro, preços, vendas, caixa, cadastros, login e perfis, páginas, banco)
 ```
 
 ## Marca

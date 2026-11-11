@@ -1,6 +1,6 @@
-# Especificação — Moleka PDV (rascunho v0.2, 07/11/2026; atualizado em 11/11/2026)
+# Especificação — Moleka PDV (rascunho v0.3, 07/11/2026; atualizado em 11/11/2026)
 
-Documento vivo. Itens marcados **[A DEFINIR]** dependem de resposta do cliente ou do Eric; ver seção 9. Os pedidos de 11/11/2026 estão na seção 11; operadores e permissões, na seção 12.
+Documento vivo. Itens marcados **[A DEFINIR]** dependem de resposta do cliente ou do Eric; ver seção 9. Os pedidos de 11/11/2026 estão na seção 11; operadores e permissões, na seção 12; as regras de cadastros, caixa e venda (versão 0.3.0), na seção 13.
 
 ## 1. Objetivo
 
@@ -102,9 +102,12 @@ NF-e modelo 55 (venda para empresa), SAT-CF-e (só SP), delivery/iFood, fidelida
 4. Impressora térmica: marca/modelo e conexão; impressora A4 existente.
 5. Logo em vetor ou alta resolução, de preferência com a menina separada do oval.
 6. Sistema atual (produtos/clientes para importar) e certificado digital A1 (tem?).
-7. **Preço por forma de pagamento** (pedido 2 da seção 11): a regra é um ajuste em % por forma (ex.: desconto no Pix e no dinheiro, acréscimo no crédito) ou um preço próprio por forma em cada produto? E quando a venda é paga em duas formas (pedido 3), o ajuste vale só sobre a parte paga em cada forma?
+7. ~~Preço por forma de pagamento~~ **Respondida pelo Eric em 11/11/2026**: percentual por forma (desconto ou acréscimo); com duas formas na venda, o percentual vale só sobre a parte paga em cada uma. Ver seção 13.
 8. **Emitir ou não a NFC-e** (pedido 8): a loja é MEI ou ME/EPP do Simples? Em qual estado? O contador confirma em quais vendas a emissão pode ser dispensada?
 9. Tempo sem uso: o sistema deve pedir a senha de novo depois de algum tempo parado? (Hoje a sessão vale até trocar de operador ou fechar o programa.)
+10. **Controle de caixa**: o operador comum pode abrir, fechar, sangrar e suprir sozinho (como está) ou alguma dessas ações deve pedir o gerente? No fechamento, quem fecha deve ver o valor esperado (como está) ou contar "às cegas"?
+11. **Desconto e cancelamento no caixa**: hoje o gerente precisa entrar com o usuário dele (a venda continua aberta). Vale construir a autorização por senha do gerente na hora, sem trocar de operador?
+12. Quais percentuais a loja usa em cada forma de pagamento (dinheiro, Pix, débito, crédito)? O sistema começa com 0% em todas.
 
 ## 10. PC do caixa — diagnóstico de 10/11/2026 (dados medidos com `tools/diagnostico-pc.ps1`)
 
@@ -140,15 +143,15 @@ Ordem de construção aprovada: (1) login e operadores, (2) cadastro de produtos
 
 | # | Pedido | Onde entra | Situação e o que falta decidir |
 |---|---|---|---|
-| 1 | Tabela de preço por quantidade | Frente 2 (cadastro das faixas) e Frente 4 (o caixa aplica a faixa sozinho) | O modelo e o cálculo já existem (`preco_produto.qtd_min`, `app/precos.py`, com testes). Faltam as telas. |
-| 2 | Tabela de preço por forma de pagamento | Frente 2 (cadastro da regra) e Frente 4 (aplicação na venda) | **Falta decidir a regra** (seção 9, pergunta 7). Não há nada no modelo ainda. |
-| 3 | Mais de uma forma de pagamento na mesma venda (ex.: parte no débito, parte no crédito) | Frente 4 | O modelo já aceita vários pagamentos por venda (`pagamento`). Falta a tela e a conferência "soma dos pagamentos = total". |
-| 4 | Saldo de vendas do dia na tela | Frente 4 | Total do dia vindo do banco, na tela do Caixa e no "Resumo de hoje" do Início. Sem venda, mostra "—" e o motivo. |
-| 5 | Cliente com CPF ou CNPJ e tabela atacadista ou varejista no cadastro | Frente 2 | O cadastro já tem `cpf_cnpj` e `tabela_id`. Faltam a validação dos dígitos do CPF/CNPJ e a tela. |
-| 6 | Alterar (editar) a quantidade dos itens na tela do PDV | Frente 4 | Ao mudar a quantidade, a faixa de preço do item é recalculada. |
-| 7 | Trocar a forma de pagamento mesmo depois de escolhida | Frente 4 | Os pagamentos ficam editáveis até a venda ser finalizada. |
-| 8 | Ao finalizar a venda, escolher se emite ou não a NFC-e | Frente 4 (a escolha fica gravada na venda) e Frente 5 (emissão) | Depende do regime tributário e da UF (seção 5 e seção 9, pergunta 8). |
-| 9 | No PDV, escolher o cliente pelo cadastro e trocar o cliente da venda | Frente 4 | Ao trocar o cliente, passa a valer a tabela de preço dele e os preços dos itens são recalculados, com aviso na tela. |
+| 1 | Tabela de preço por quantidade | Frente 2 (cadastro das faixas) e Frente 4 (o caixa aplica a faixa sozinho) | **Feito na 0.3.0.** Na ficha do produto, cada tabela tem faixas "a partir de"; no caixa, a linha do item mostra a faixa aplicada. |
+| 2 | Tabela de preço por forma de pagamento | Frente 2 (cadastro da regra) e Frente 4 (aplicação na venda) | **Feito na 0.3.0**, pela regra escolhida pelo Eric: percentual por forma (Cadastros → Tabelas de preço e pagamento). Os botões de pagamento mostram quanto fica em cada forma. |
+| 3 | Mais de uma forma de pagamento na mesma venda (ex.: parte no débito, parte no crédito) | Frente 4 | **Feito na 0.3.0.** Ao receber, digita-se só a parte paga naquela forma; o resto fica para outra. A venda só finaliza quando tudo está quitado. |
+| 4 | Saldo de vendas do dia na tela | Frente 4 | **Feito na 0.3.0.** No topo do Caixa (total e número de vendas; clicando, o detalhe por forma) e no "Resumo de hoje" do Início. Sem venda, mostra "—" e o motivo. |
+| 5 | Cliente com CPF ou CNPJ e tabela atacadista ou varejista no cadastro | Frente 2 | **Feito na 0.3.0.** Tela Clientes, com CPF e CNPJ conferidos pelos dígitos; a tabela de preço do cliente, só o gerente define. |
+| 6 | Alterar (editar) a quantidade dos itens na tela do PDV | Frente 4 | **Feito na 0.3.0.** A quantidade é um campo em cada linha; ao mudar, a faixa de preço é recalculada. O botão × tira o item. |
+| 7 | Trocar a forma de pagamento mesmo depois de escolhida | Frente 4 | **Feito na 0.3.0.** Cada pagamento lançado tem uma lista para trocar a forma (o percentual é refeito) e um × para tirar, até a venda ser finalizada. |
+| 8 | Ao finalizar a venda, escolher se emite ou não a NFC-e | Frente 4 (a escolha fica gravada na venda) e Frente 5 (emissão) | **A escolha está na tela (0.3.0)**; "com NFC-e" fica desligado até o módulo fiscal existir. **Nenhuma NFC-e é emitida ainda.** A emissão depende do regime tributário e da UF (seção 5 e seção 9, pergunta 8). |
+| 9 | No PDV, escolher o cliente pelo cadastro e trocar o cliente da venda | Frente 4 | **Feito na 0.3.0.** Busca por nome, CPF ou CNPJ (F4); trocar ou tirar o cliente recalcula os preços pela tabela dele, com aviso na tela. |
 
 ## 12. Operadores, login e permissões (Frente 1, feita em 11/11/2026)
 
@@ -166,9 +169,48 @@ Perfis (padrão proposto; o Eric pode mudar):
 | Vender no caixa e consultar produtos | sim | sim |
 | Cadastrar cliente | sim | sim |
 | Trocar a própria senha | sim | sim |
-| Cadastrar ou alterar produtos, preços e tabelas de preço | não | sim |
+| Abrir e fechar o caixa, sangria e suprimento | sim | sim |
+| Cancelar a venda que está aberta | sim | sim |
+| Dar desconto no total da venda | não | sim |
+| Cancelar venda já finalizada (com motivo) | não | sim |
+| Definir a tabela de preço do cliente e inativar cliente | não | sim |
+| Ver os fechamentos de caixa anteriores | não | sim |
+| Cadastrar ou alterar produtos, preços, tabelas de preço e percentuais das formas de pagamento | não | sim |
 | Ver o financeiro (DRE, fluxo de caixa, rentabilidade) | não | sim |
 | Estoque, entrada de NF, fiscal e configurações | não | sim |
 | Cadastrar, alterar e inativar operadores | não | sim |
 
-A definir na Frente 3: se abertura, sangria, suprimento e fechamento do caixa ficam com o operador ou pedem a senha do gerente.
+"Desconto só do gerente" foi decisão do Eric (11/11/2026). As linhas do caixa são o padrão adotado na versão 0.3.0, a confirmar com ele (seção 9, perguntas 10 e 11).
+
+## 13. Cadastros, controle de caixa e venda (Frentes 2 a 4, feitas em 11/11/2026, versão 0.3.0)
+
+### Preço
+
+- **Tabelas de preço**: VAREJO (padrão da loja) e ATACADO nascem com o banco; o gerente cria outras. A venda usa a tabela do cliente; sem cliente, ou com cliente sem tabela própria, a padrão.
+- **Por quantidade**: em cada tabela o produto tem faixas "a partir de" (ex.: 1 → R$ 5,00; 10 → R$ 4,50). Vale a maior faixa que a quantidade alcança. Toda tabela usada precisa da faixa a partir de 1.
+- Produto sem preço na tabela do cliente usa o preço da tabela padrão. Sem preço nenhum, não entra na venda.
+- **Por forma de pagamento**: percentual por forma, de -50% a +50% (negativo é desconto). Vale só sobre a parte paga naquela forma.
+
+### Venda (tela do Caixa)
+
+- O caixa precisa estar aberto. Há uma venda aberta por vez, guardada no banco.
+- **Produto**: leitor de código de barras, código ou nome (lista de sugestões; sem acento também acha). `3*codigo` lança três de uma vez. O mesmo produto repetido soma na mesma linha.
+- **Quantidade**: editável na linha. Casas decimais só para KG, G, L, ML e M.
+- **Cliente**: busca no cadastro; pode ser trocado ou retirado, e os preços são recalculados.
+- **Desconto** no total: só o gerente, em reais ou em %.
+- **Pagamento**: uma ou mais formas. Cada pagamento guarda o valor que entrou e o desconto ou acréscimo da forma. Só o dinheiro dá troco (até R$ 1.000,00; acima disso o sistema pede para conferir o valor). A forma de um pagamento lançado pode ser trocada.
+- Contas: base = subtotal - desconto; total = base + ajustes das formas. Mexer em itens, cliente ou desconto desfaz os pagamentos.
+- **Finalizar**: só com tudo pago; pergunta "com NFC-e" ou "sem NFC-e" (a escolha fica gravada; a emissão é da Frente 5). Dá baixa no estoque.
+- **Cancelar**: a venda aberta, qualquer operador; a finalizada, só o gerente, com motivo, enquanto o caixa dela estiver aberto (o estoque volta).
+- **Saldo do dia**: vendas finalizadas hoje, no horário de Brasília; canceladas ficam de fora.
+
+### Controle de caixa
+
+- Um caixa (Caixa 01) e uma sessão aberta por vez. Abertura com fundo de troco.
+- **Sangria** (sai dinheiro) e **suprimento** (entra dinheiro): com valor e motivo, gravados com o nome de quem fez; a sangria não passa do dinheiro esperado.
+- Dinheiro esperado = fundo + vendas em dinheiro + suprimentos - sangrias. Nas outras formas, o esperado é o recebido nas vendas.
+- **Fechamento**: digita-se o contado em cada forma; o sistema guarda esperado, contado e diferença. Não fecha com venda aberta. Depois de fechado, só uma nova abertura volta a vender.
+
+### O que ainda não existe nestas telas
+
+Impressão do cupom; NFC-e; CPF na nota; importação de produtos por planilha; lançamento da venda no financeiro; tela de estoque (a baixa já é gravada); autorização do gerente por senha na hora.

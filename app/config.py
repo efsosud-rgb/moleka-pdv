@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 APP_NOME = "Moleka PDV"
-VERSAO = "0.2.0"
+VERSAO = "0.3.0"
 PORTA_PADRAO = 8765
 
 

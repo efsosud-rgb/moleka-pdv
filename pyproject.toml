@@ -1,6 +1,6 @@
 [project]
 name = "moleka-pdv"
-version = "0.2.0"
+version = "0.3.0"
 description = "Frente de loja da sorveteria Moleka: caixa, NFC-e, estoque e financeiro"
 requires-python = ">=3.12"
 readme = "README.md"

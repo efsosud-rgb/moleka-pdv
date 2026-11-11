@@ -26,20 +26,27 @@ Cada frente é um bloco que uma sessão do Claude Code (Opus 5.5) constrói de p
 
 Ordem aprovada pelo Eric em 11/11: Frente 1 → Frente 2 → Frente 3 → Frente 4. A cada função pronta sai um instalador novo.
 
+## Feito (11/11/2026, versão 0.3.0)
+
+- [x] **Abertura no PC do Eric, pelo código** (`tools/abrir_pelo_codigo.py`): o Eric entrou no sistema com a versão 0.2.0 na janela própria (prints dele, Início e Caixa). O instalador continua bloqueado naquele PC.
+- [x] **Frente 2 — Produtos, tabelas de preço e clientes.** Telas de Produtos (preços por tabela e por quantidade), Clientes (CPF ou CNPJ conferido e tabela de preço) e Tabelas de preço e formas de pagamento.
+- [x] **Frente 3 — Controle de caixa.** Abertura com fundo de troco, sangria, suprimento, vendas da sessão, fechamento com conferência por forma e fechamentos anteriores.
+- [x] **Frente 4 — Venda (PDV), sem fiscal.** Os 9 pedidos de 11/11 estão na tela (ver ESPECIFICACAO §11 e §13).
+- Verificado: 232 testes automáticos (preço por quantidade e por tabela, percentual por forma com uma e duas formas, troco, desconto, cancelamento com estorno, caixa, permissões, formato do banco); roteiro no navegador (Chromium, 1366×697) com 128 conferências e valores calculados à mão (`tools/roteiros/vendas_no_navegador.js`); banco criado pela 0.2.0 abrindo na 0.3.0. No Windows, o teste automático do GitHub faz uma venda completa pela API dentro do programa empacotado.
+- [ ] **Não verificado**: as telas novas dentro da janela do Windows (só no navegador daqui); leitor de código de barras de verdade (o roteiro simulou a digitação seguida de Enter); impressão; uso por duas pessoas ao mesmo tempo.
+- [ ] **Não feito** (estava no plano destas frentes): importação por planilha (CSV/XLSX); lançamento da receita da venda no financeiro (entra com a Frente 8); rateio do desconto por item (entra com a Frente 5).
+
 ## Frente 1 — Operadores e login — FEITA em 11/11/2026
 Ver "Feito (11/11/2026)" acima e ESPECIFICACAO §12. Fica para depois, se o Eric quiser: pedir a senha de novo após um tempo sem uso; obrigar a troca da senha provisória no primeiro login.
 
-## Frente 2 — Produtos, tabelas de preço e clientes (telas)
-A API básica existe. Faltam: telas de listagem/cadastro/edição, inativar, faixas de preço por tabela na tela, importação por planilha (CSV/XLSX) para migrar do sistema atual, leitura de EAN. Teste: faixa aplicada corretamente via `app/precos.py`.
-Pedidos de 11/11 que entram aqui: **1** (tabela de preço por quantidade: tela das faixas), **2** (preço por forma de pagamento: cadastro da regra, depois de decidida), **5** (cliente com CPF ou CNPJ validado e tabela atacado/varejo). O campo "Categoria" que aparece na tela de Produtos ainda não existe no banco: entra com um passo em `app/migracoes.py`.
+## Frente 2 — Produtos, tabelas de preço e clientes — FEITA em 11/11/2026 (versão 0.3.0)
+Pedidos de 11/11 atendidos aqui: **1** (faixas de preço por quantidade na ficha do produto), **2** (percentual por forma de pagamento) e **5** (cliente com CPF ou CNPJ e tabela atacado/varejo). Fica para depois: importação por planilha (CSV/XLSX) para migrar do sistema atual; foto do produto.
 
-## Frente 3 — Controle de caixa
-Abertura com fundo de troco, sangria, suprimento, fechamento com conferência por forma de pagamento, histórico. `/api/caixa/...` + tela. Status "Caixa: aberto desde" passa a vir do banco. Teste: não abre dois caixas no mesmo terminal; fechamento calcula diferença.
-A decidir antes: o operador comum faz sangria, suprimento e fechamento sozinho ou precisa da senha do gerente?
+## Frente 3 — Controle de caixa — FEITA em 11/11/2026 (versão 0.3.0)
+Abertura com fundo de troco, sangria, suprimento, fechamento com conferência por forma, fechamentos anteriores. A confirmar com o Eric (padrão adotado): qualquer operador abre, fecha, sangra e supre, com tudo registrado no nome dele; quem fecha vê o valor esperado.
 
-## Frente 4 — Venda (PDV) sem fiscal
-Venda aberta → itens (leitor/nome, quantidade, faixa automática, desconto com rateio) → pagamentos (multi-forma, troco) → finalizar → baixa de estoque (`movimento_estoque`) → lançamento de receita. Atalhos F2–F12. Teste: totais em centavos batem; estoque baixa; cancelamento estorna.
-Pedidos de 11/11 que entram aqui: **1** (o caixa aplica a faixa por quantidade sozinho), **2** (preço conforme a forma de pagamento), **3** (mais de uma forma de pagamento na mesma venda), **4** (saldo de vendas do dia na tela, vindo do banco), **6** (editar a quantidade dos itens), **7** (trocar a forma de pagamento depois de escolhida), **8** (escolher se emite ou não a NFC-e ao finalizar; a escolha fica gravada na venda) e **9** (escolher e trocar o cliente da venda pelo cadastro, recalculando os preços pela tabela dele).
+## Frente 4 — Venda (PDV) sem fiscal — FEITA em 11/11/2026 (versão 0.3.0)
+Pedidos de 11/11 atendidos aqui: **1**, **2**, **3**, **4**, **6**, **7**, **8** (a escolha fica gravada; a emissão é da Frente 5) e **9**. Baixa de estoque na venda e estorno no cancelamento já são gravados (`movimento_estoque`); a tela de Estoque é da Frente 7. Ficam para depois: lançamento da receita no financeiro (Frente 8), rateio do desconto por item (Frente 5), impressão do cupom (Frente 6), autorização do gerente por senha na hora (desconto e cancelamento sem trocar de operador).
 
 ## Frente 5 — Fiscal (NFC-e)
 Depende da decisão API × PyNFe (ver ESPECIFICACAO §9). Implementar o provedor escolhido em `app/fiscal/`, homologação primeiro: emissão, contingência offline com fila de reenvio, cancelamento, inutilização, DANFE NFC-e 80 mm com QR Code, grupos IBS/CBS. Configuração de certificado A1 (caminho + senha fora do repositório) e dados da loja. **Nunca** produção sem ordem explícita do Eric.
