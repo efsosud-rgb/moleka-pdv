@@ -23,9 +23,9 @@ Tudo com visual limpo, relevo 3D nos componentes e a logo animada, e instalaçã
 | Backend | Python 3.12 + FastAPI (servidor local, só `127.0.0.1`) | API interna consumida pela interface; fácil de testar |
 | Banco | SQLite (arquivo local, WAL) — PostgreSQL se houver 2+ caixas **[A DEFINIR]** | funciona sem internet; backup é copiar um arquivo |
 | Fiscal | adaptador `app/fiscal/` com dois provedores: API intermediária (Focus NFe ou similar) **ou** PyNFe direto na SEFAZ **[A DEFINIR]** | troca de provedor sem mexer no resto |
-| Impressão de cupom | térmica 80 mm via ESC/POS (`python-escpos`) ou spooler do Windows | não existe mais ECF para NFC-e; o cupom é o DANFE NFC-e |
-| Impressão A4 | PDF (relatórios, DRE) enviado à impressora padrão | |
-| Instalador | PyInstaller (one-dir) + Inno Setup → `Moleka-PDV-Setup.exe` | instala WebView2 se faltar, cria atalho e tarefa de backup |
+| Impressão de cupom | térmica 80 mm, ESC/POS pela fila de impressão do Windows em modo RAW (funções do próprio Windows, sem biblioteca extra) | não existe mais ECF para NFC-e; o cupom fiscal será o DANFE NFC-e. Feito na 0.5.0 o comprovante não fiscal (seção 15) |
+| Impressão A4 | impressão do Windows a partir de uma folha montada só para o papel | para guardar em PDF, a impressora "Microsoft Print to PDF" do Windows. Feito na 0.5.0 (seção 15) |
+| Instalador | PyInstaller (one-dir) + Inno Setup → `Moleka-PDV-Setup.exe` | instala WebView2 se faltar e cria o atalho. A cópia de segurança diária é feita pelo próprio programa (seção 15), sem tarefa agendada do Windows |
 | Logs e backup | `%APPDATA%\MolekaPDV\` | fora da pasta do programa |
 
 Dinheiro: inteiros em centavos. Datas: ISO 8601, fuso America/Sao_Paulo.
@@ -82,10 +82,11 @@ Consequência para o sistema: a opção "emitir ou não" será construída, mas 
 - Térmica 80 mm (Epson, Elgin, Bematech, Daruma…): ESC/POS por USB ou rede. Detectar impressoras instaladas no Windows e permitir escolher.
 - Impressora comum (A4): relatórios e DRE em PDF.
 - Teste de impressão na tela de Configurações, com status visível no rodapé.
+- **Como ficou (versão 0.5.0): ver a seção 15.** O que está acima era o plano de 07/11/2026.
 
 ## 7. Instalação e atualização
 
-- `Moleka-PDV-Setup.exe` (Inno Setup) com o app empacotado pelo PyInstaller; instala o WebView2 Runtime se faltar; cria atalho na Área de Trabalho e tarefa de backup diário.
+- `Moleka-PDV-Setup.exe` (Inno Setup) com o app empacotado pelo PyInstaller; instala o WebView2 Runtime se faltar; cria atalho na Área de Trabalho. A cópia de segurança diária ficou a cargo do próprio programa, sem tarefa agendada (seção 15).
 - Sem certificado de assinatura de código, o Windows mostra o aviso do SmartScreen na primeira execução ("Mais informações → Executar assim mesmo").
 - No Windows 11 com o Controle Inteligente de Aplicativos (Smart App Control) ligado, o instalador sem assinatura é bloqueado de vez (erro 4551), sem botão para liberar. Visto em 11/11/2026 no PC do Eric. Para esses computadores, a assinatura digital é obrigatória; a compra do certificado é decisão pendente (ver DECISOES de 11/11).
 - Atualização: o app verifica uma versão nova em um endereço configurável e baixa o novo instalador (v2).
@@ -99,7 +100,7 @@ NF-e modelo 55 (venda para empresa), SAT-CF-e (só SP), delivery/iFood, fidelida
 1. UF da sorveteria e regime tributário (Simples Nacional?). NCM/CST/ST do sorvete: confirmar com o contador.
 2. Rota fiscal: API intermediária (qual) ou PyNFe direto.
 3. PC do caixa: versão do Windows; quantos caixas; internet estável.
-4. Impressora térmica: marca/modelo e conexão; impressora A4 existente.
+4. ~~Impressora térmica: marca/modelo e conexão; impressora A4 existente.~~ **Respondida pelo diagnóstico de 10/11/2026** (seção 10): ELGIN i9 por USB, padrão do Windows; nenhuma impressora A4 física.
 5. Logo em vetor ou alta resolução, de preferência com a menina separada do oval.
 6. Sistema atual (produtos/clientes para importar) e certificado digital A1 (tem?).
 7. ~~Preço por forma de pagamento~~ **Respondida pelo Eric em 11/11/2026**: percentual por forma (desconto ou acréscimo); com duas formas na venda, o percentual vale só sobre a parte paga em cada uma. Ver seção 13.
@@ -113,6 +114,10 @@ NF-e modelo 55 (venda para empresa), SAT-CF-e (só SP), delivery/iFood, fidelida
 15. **Vender sem saldo no estoque**: hoje a venda passa e o saldo fica negativo, em destaque na tela Estoque. Deve continuar assim, avisar no caixa ou bloquear?
 16. **Cartão no fluxo de caixa**: hoje a venda no cartão entra no dia da venda, pelo valor cheio. A loja quer ver o dinheiro no dia em que cai na conta, já sem a taxa da maquininha? Quais são os prazos e as taxas?
 17. **Plano de contas**: as 17 categorias iniciais do Financeiro (seção 14) servem para a loja? Quais faltam e quais sobram?
+18. **Comprovante de venda**: oferecer o botão de imprimir depois de cada venda (como está), imprimir sozinho em toda venda ou não imprimir? Uma via ou duas?
+19. **Gaveta de dinheiro**: a loja tem gaveta ligada na impressora de cupom? Ela deve abrir sozinha na venda em dinheiro?
+20. **Cópia de segurança**: qual vai ser a pasta extra (pendrive que fica na loja, HD externo ou pasta sincronizada com a nuvem)? Quantos dias guardar (hoje, 30)?
+21. **Dados da loja** para o cabeçalho do cupom e dos relatórios: nome, razão social, CNPJ, inscrição estadual, endereço, telefone e a mensagem do fim do cupom.
 
 ## 10. PC do caixa — diagnóstico de 10/11/2026 (dados medidos com `tools/diagnostico-pc.ps1`)
 
@@ -218,7 +223,7 @@ Perfis (padrão proposto; o Eric pode mudar):
 
 ### O que ainda não existe nestas telas
 
-Impressão do cupom; NFC-e; CPF na nota; importação de produtos por planilha; autorização do gerente por senha na hora. A tela de estoque e o financeiro chegaram na versão 0.4.0 (seção 14); a venda não vira um lançamento no financeiro: o fluxo de caixa, o DRE e a rentabilidade leem as vendas direto.
+NFC-e; CPF na nota; importação de produtos por planilha; autorização do gerente por senha na hora. A impressão do comprovante chegou na versão 0.5.0 (seção 15). A tela de estoque e o financeiro chegaram na versão 0.4.0 (seção 14); a venda não vira um lançamento no financeiro: o fluxo de caixa, o DRE e a rentabilidade leem as vendas direto.
 
 ## 14. Estoque, entrada de nota por XML e financeiro (Frentes 7 e 8, feitas em 11/11/2026, versão 0.4.0)
 
@@ -298,4 +303,61 @@ As três telas são só do gerente. Nenhuma das regras abaixo foi combinada ante
 
 ### O que ainda não existe nestas telas
 
-Ficha técnica e produção (para quem fabrica); contagem de vários produtos de uma vez (inventário); prazo e taxa das maquininhas no fluxo de caixa; saldo inicial e conta bancária; contas que se repetem todo mês; centro de custo e anexos; comparação de períodos; margem por categoria de produto; exportar para Excel e imprimir em A4; lançamento automático de impostos e taxas (hoje são digitados como lançamento).
+Ficha técnica e produção (para quem fabrica); contagem de vários produtos de uma vez (inventário); prazo e taxa das maquininhas no fluxo de caixa; saldo inicial e conta bancária; contas que se repetem todo mês; centro de custo e anexos; comparação de períodos; margem por categoria de produto; exportar para Excel (imprimir em folha comum chegou na versão 0.5.0, seção 15); lançamento automático de impostos e taxas (hoje são digitados como lançamento).
+
+## 15. Configurações, impressão e cópia de segurança (Frente 6 e parte da 9, feitas em 11/11/2026, versão 0.5.0)
+
+A tela **Configurações** (menu Arquivo → Configurações, ou o menu lateral) é só do gerente e tem três abas. Nenhuma das regras abaixo foi combinada antes com o Eric: são o padrão adotado para as telas funcionarem (ver DECISOES de 11/11/2026 e as perguntas 18 a 21 da seção 9).
+
+### Dados da loja
+
+- Nome da loja, razão social, CNPJ, inscrição estadual, endereço, telefone e uma mensagem para o fim do cupom. Nenhum campo é obrigatório; o cupom e os relatórios mostram só o que estiver preenchido. O programa não traz nenhum dado de exemplo.
+- O CNPJ é conferido pelos dígitos; o CEP tem de ter 8 números; a inscrição estadual aceita números ou "ISENTO".
+- Quando a NFC-e for ligada, serão estes mesmos dados. Senha de certificado e outros segredos não ficam aqui.
+
+### Impressora de cupom
+
+- A lista mostra as impressoras instaladas no Windows, com a padrão marcada. O gerente escolhe a impressora, a **largura do papel** (48, 42 ou 32 colunas), a página de **letras com acento** (CP850, CP860, Windows-1252 ou sem acento), se a impressora **corta o papel** e se há **gaveta de dinheiro** ligada nela.
+- **Imprimir teste** manda uma página com o nome da impressora, uma régua de números do tamanho da largura escolhida, uma linha de letras acentuadas e exemplos de negrito e de letra grande. A tela mostra o que foi mandado e pergunta se saiu certo.
+- A impressora só aparece como testada (indicador verde) depois que o gerente responde **"Sim, saiu certo"**. Mudar a impressora, a largura ou os acentos desfaz a confirmação. Se o teste sair errado: acentos trocados → mudar "Letras com acento"; régua quebrada em duas linhas → diminuir a largura.
+- O programa manda o cupom para a fila de impressão do Windows. Quando o Windows aceita, o programa diz "enviado"; se saiu papel, só quem olha a impressora sabe.
+
+### Comprovante de venda (tela do Caixa)
+
+- É um **comprovante não fiscal**, e isso sai escrito nele. Traz os dados da loja, número, data e hora da venda, operador, cliente (se houver), itens, subtotal, descontos e acréscimos, total, formas de pagamento, troco e a mensagem do fim.
+- Em Configurações o gerente escolhe o que acontece depois de cada venda: **oferecer o botão** (padrão), **imprimir sozinho** ou **não imprimir**; e uma ou duas vias.
+- **Ctrl+P** ou o botão **Comprovante** imprime o comprovante da última venda encerrada naquela tela, quantas vezes for preciso. Se a impressora não puder imprimir (ou não houver impressora escolhida), o comprovante aparece na tela, com o motivo.
+- A impressora **nunca** desfaz nem trava a venda: se falhar, a venda fica finalizada e a tela do caixa avisa.
+- Com a gaveta ligada em Configurações, a venda que tem dinheiro manda o pulso de abertura. Reimprimir não abre a gaveta.
+
+### Controle de caixa: comprovante, resumo e fechamento
+
+- Na aba **Vendas**, cada venda tem um botão de impressora que mostra o comprovante na tela, com o botão Imprimir. Vale também para venda cancelada (o papel sai marcado como cancelada).
+- **Imprimir o resumo** mostra o caixa aberto até aquele momento: vendas, recebido por forma, dinheiro esperado na gaveta, sangrias e suprimentos.
+- Depois de **fechar o caixa**, o papel do fechamento (com esperado, contado e diferença de cada forma e uma linha para assinatura) aparece na tela pronto para imprimir, se houver impressora de cupom escolhida. O gerente imprime qualquer fechamento anterior na aba **Fechamentos**; o operador comum, só o caixa aberto e o que ele mesmo fechou.
+
+### Relatórios em folha comum
+
+- Botão **Imprimir** (ou Ctrl+P) em **Financeiro** (contas a pagar e a receber, fluxo de caixa, DRE e rentabilidade) e em **Estoque**. Abre a impressão do Windows, em qualquer impressora instalada; para guardar em PDF, escolha "Microsoft Print to PDF".
+- A folha traz o nome e o CNPJ da loja, o título, o período, os filtros usados, os números e as tabelas que estão na tela e, no pé, a data, quem imprimiu e a versão do programa. Os valores são os da tela; onde a tela mostra "—" e o motivo, a folha mostra o mesmo.
+
+### Cópia de segurança
+
+- O programa copia o banco de dados **uma vez por dia**, para `%APPDATA%\MolekaPDV\backups\moleka-AAAA-MM-DD.db`: ao abrir (se a cópia do dia ainda não existir), a cada fechamento de caixa (a cópia do dia é refeita) e quando o gerente clica em **Fazer a cópia agora**. De hora em hora ele confere de novo.
+- Cada cópia é aberta e conferida antes de valer. Ficam guardadas as últimas **30** (o gerente escolhe de 7 a 365); as mais antigas são apagadas.
+- **Pasta extra**: um pendrive que fica na loja, outro disco ou uma pasta sincronizada com a nuvem. Recebe a mesma cópia. Sem ela, a cópia fica no mesmo disco do sistema e não protege se o disco estragar ou o computador for roubado; a tela diz isso.
+- O indicador **Backup** do rodapé fica verde com a cópia de hoje feita e, havendo pasta extra, com ela já tendo recebido a de hoje. Se o pendrive estiver fora, o indicador avisa, e o programa tenta de novo sozinho.
+- **Voltar uma cópia** ainda é feito à mão. Os passos abaixo foram conferidos em 11/11/2026 com um banco de teste, fora do Windows (são só trocas de nome e cópia de arquivos); no Windows ainda não foram feitos:
+  1. Feche o Moleka PDV.
+  2. Abra a pasta de dados: aperte `Win + R`, cole `%APPDATA%\MolekaPDV` e dê Enter.
+  3. **Não apague nada.** Mude o nome de `moleka.db` para `moleka-com-problema.db`. Se existirem os arquivos `moleka.db-wal` e `moleka.db-shm`, mude o nome deles também.
+  4. Abra a pasta `backups` (ou a pasta extra), copie o arquivo do dia desejado (`moleka-AAAA-MM-DD.db`), cole na pasta de dados e mude o nome da cópia para `moleka.db`.
+  5. Abra o programa. Tudo o que foi lançado depois daquela cópia não estará lá.
+
+### O que ainda não existe nestas telas
+
+Logo e QR Code no cupom; via do estabelecimento; voltar uma cópia pela tela; relatório de vendas por período; exportar para Excel; DANFE NFC-e (Frente 5).
+
+### O que não foi verificado
+
+Ver "Verificado" e "Não verificado" da versão 0.5.0 em PLANO.md. Em resumo: **nenhum cupom saiu ainda numa impressora de verdade**, e as telas novas não foram vistas dentro da janela do programa no Windows.

@@ -1,4 +1,4 @@
-Quarta versão de teste: agora tem **estoque, entrada de nota de compra por XML e financeiro** (contas a pagar e a receber, fluxo de caixa, DRE e rentabilidade). Ainda **não emite NFC-e** nem imprime o cupom.
+Quinta versão de teste: agora tem **Configurações**, **impressão do comprovante de venda e do fechamento de caixa** na impressora de cupom, **impressão dos relatórios** em impressora comum e **cópia de segurança diária**. Ainda **não emite NFC-e**: o comprovante impresso **não é documento fiscal**.
 
 ## Como instalar
 
@@ -8,51 +8,44 @@ Quarta versão de teste: agora tem **estoque, entrada de nota de compra por XML 
 
 Se aparecer **"Erro 4551: uma política de Controle de Aplicativo bloqueou este arquivo"**, o Windows 11 está com o Controle Inteligente de Aplicativos ligado e recusa programa sem assinatura. Nesse caso, use o caminho "Rodar pelo código no Windows, sem instalador", explicado no README.
 
-Não pede senha de administrador. Pode instalar por cima da versão 0.3.0: os dados ficam em `%APPDATA%\MolekaPDV`, e o programa atualiza o banco sozinho, com cópia de segurança antes (`backups\moleka-antes-do-formato-3-….db`). Senhas, produtos, clientes, caixa e vendas continuam como estavam.
+Não pede senha de administrador. Pode instalar por cima da versão 0.4.0: os dados ficam em `%APPDATA%\MolekaPDV` e continuam como estavam (o formato do banco não mudou nesta versão).
 
-## O que há de novo (as três telas são só do gerente)
+## O que há de novo
 
-- **Estoque** (menu Estoque → Saldos, ajustes e contagem):
-  - saldo de cada produto, com filtro por nome e por situação (com saldo, abaixo do mínimo, negativo);
-  - **entrada** e **saída** à mão, sempre com motivo, e **contagem** da prateleira (o sistema acerta o saldo pela diferença); a tela mostra o saldo de agora e o de depois antes de gravar;
-  - **histórico** de cada produto: o que entrou, o que saiu, quando, por quê e quem fez;
-  - **valor do estoque a custo** e **custo médio** de cada produto.
-- **Entrada de NF por XML** (menu Estoque → Entrada de NF):
-  - escolha o arquivo XML da nota do fornecedor; a tela mostra fornecedor, itens, total e parcelas **antes de gravar**;
-  - em cada item: dar entrada num produto da loja, criar um produto novo ou não dar entrada; o **fator** converte a caixa da nota em unidades da loja (caixa com 24 → 24);
-  - o sistema **lembra** a ligação entre o código do fornecedor e o produto da loja para as próximas notas;
-  - ao importar: o estoque sobe, o **custo médio é refeito** e as **parcelas viram contas a pagar**;
-  - a mesma nota não entra duas vezes; uma nota importada por engano pode ser **estornada** (com motivo).
-- **Financeiro** (menu Financeiro), no lugar da tela em construção:
-  - **Contas a pagar e a receber**: lançar, alterar, dar baixa, desfazer a baixa e cancelar; a lista mostra o que está em aberto, vencido e pago, e avisa quando há conta em aberto vencendo fora do período escolhido (botão **Ver todas em aberto**);
-  - **Fluxo de caixa** por dia: vendas, outros recebimentos, pagamentos, saldo do dia e acumulado;
-  - **DRE**: receita bruta, descontos, deduções, receita líquida, custo das vendas, lucro bruto, despesas e resultado, com o percentual sobre a receita líquida;
-  - **Rentabilidade por produto** (menu Relatórios): quantidade, receita, custo e margem de cada produto vendido;
-  - **Categorias**: o programa já traz 17 categorias (só os nomes, nenhum valor); o gerente muda como quiser.
-- A venda passa a **guardar o custo de cada produto** no momento em que é finalizada. É com esse custo que o DRE e a rentabilidade calculam o lucro.
-- Datas são digitadas como dia/mês/ano (as barras entram sozinhas).
+- **Configurações** (menu Arquivo → Configurações; só o gerente), com três abas:
+  - **Dados da loja**: nome, CNPJ, endereço, telefone e a mensagem do fim do cupom. Saem no cabeçalho do cupom e dos relatórios. Nenhum campo é obrigatório.
+  - **Impressão**: escolha a impressora de cupom na lista do Windows, a largura do papel e as letras com acento; **Imprimir teste** manda uma página de teste, e a impressora só aparece como testada depois que você confirma que saiu certo.
+  - **Cópia de segurança**: veja as cópias guardadas, escolha uma **pasta extra** (pendrive que fica na loja ou pasta da nuvem) e faça uma cópia na hora.
+- **Comprovante de venda** na impressora de cupom (térmica, de 80 mm ou de 58 mm):
+  - depois de cada venda, conforme a opção escolhida em Configurações: o sistema oferece o botão, imprime sozinho ou não imprime;
+  - **Ctrl+P** ou o botão **Comprovante**, na tela do Caixa, imprime o comprovante da última venda;
+  - no **Controle de caixa**, o botão com o desenho da impressora mostra o comprovante de qualquer venda na tela, com o botão Imprimir;
+  - se a impressora falhar, **a venda fica gravada do mesmo jeito** e a tela avisa;
+  - opção de abrir a **gaveta de dinheiro** ligada na impressora, na venda em dinheiro.
+- **Resumo e fechamento de caixa** impressos: vendas, recebido por forma, dinheiro na gaveta, esperado, contado e diferença, com linha para assinatura. Depois de fechar o caixa, o papel aparece na tela pronto para imprimir.
+- **Relatórios em impressora comum**: botão **Imprimir** (ou Ctrl+P) em Financeiro (contas a pagar e a receber, fluxo de caixa, DRE e rentabilidade) e em Estoque. Abre a impressão do Windows; para guardar em PDF, escolha a impressora "Microsoft Print to PDF". A folha sai com o nome da loja, o período e os filtros escritos no alto.
+- **Cópia de segurança diária**, feita sozinha: quando o programa abre, quando o caixa fecha e quando você pede. Ficam guardadas as últimas 30. O indicador **Backup**, no rodapé, mostra a situação.
 
 ## Por onde começar
 
-1. **Estoque → Entrada de NF (XML)**, com o XML de uma nota de compra; ou **Estoque → Saldos**, dando uma **Entrada** com a quantidade e o custo de cada produto.
-2. Venda normalmente no **Caixa**.
-3. **Financeiro → Contas a pagar e a receber**: lance as despesas (aluguel, energia, salários) e dê baixa quando pagar.
-4. Veja **Fluxo de caixa**, **DRE** e **Rentabilidade**.
+1. **Arquivo → Configurações → Dados da loja**: preencha e salve.
+2. Aba **Impressão**: escolha a impressora de cupom, clique em **Imprimir teste**, olhe o papel e responda se saiu certo. Se os acentos saírem trocados, mude "Letras com acento" e teste de novo.
+3. Aba **Cópia de segurança**: escolha a pasta extra e clique em **Fazer a cópia agora**.
+4. Faça uma venda no **Caixa** e aperte **Ctrl+P**.
 
-## Importante sobre os números
+## Importante
 
-- **Nenhum número é inventado.** Sem dado, a tela mostra "—" e diz o motivo.
-- **Vendas feitas antes desta versão não têm custo gravado.** Elas entram na receita, mas não no custo: o DRE avisa quantos itens estão assim e marca o lucro como parcial; se nenhuma venda do período tem custo, o lucro aparece como "—". O programa não preenche esse custo depois, porque seria uma estimativa.
-- O custo de um produto vem da entrada da nota, de uma entrada no Estoque ou do cadastro do produto, e vale para as vendas feitas **depois**.
-- **Compra de mercadoria para revenda não é despesa do DRE**: ela entra no fluxo de caixa quando é paga, e o custo aparece no DRE quando o produto é vendido. Se a loja **fabrica** o sorvete, lance a matéria-prima na categoria "Matéria-prima e insumos", que entra como custo.
-- No fluxo de caixa, a venda no cartão entra no dia da venda, pelo valor cheio: prazo e taxa da maquininha ainda não são considerados.
-- Vender sem saldo não é bloqueado: o saldo fica negativo e aparece em destaque no Estoque.
+- **O comprovante não é documento fiscal** (isso sai escrito nele). A NFC-e ainda não é emitida.
+- **Nenhum cupom saiu ainda numa impressora de verdade.** A impressão foi testada com uma impressora de teste, que grava num arquivo o que receberia; a impressora da loja (ELGIN i9) só pode ser testada aí. O primeiro teste é o da tela Configurações.
+- "Enviado para a impressora" quer dizer que o Windows aceitou o trabalho. Se a impressora estiver desligada, sem papel ou com o cabo solto, o trabalho fica parado na fila do Windows.
+- **Sem pasta extra, a cópia de segurança fica no mesmo disco do sistema**: protege de um erro de uso, mas não se o disco estragar ou o computador for roubado.
+- Voltar uma cópia de segurança ainda é feito à mão, com o programa fechado (o passo a passo está em `docs/ESPECIFICACAO.md`, seção 15). Se precisar, peça ajuda antes de mexer.
+- **Nenhum número é inventado.** Sem dado, a tela e a folha impressa mostram "—" e dizem o motivo.
 
 ## O que ainda não funciona
 
 - **NFC-e: nenhum documento fiscal é emitido.** Ao finalizar a venda, a opção "com NFC-e" aparece desligada.
-- Impressão do cupom; ficha técnica e produção (para quem fabrica); exportar para Excel e imprimir relatório; contas que se repetem todo mês.
-- A entrada de nota foi testada com **notas fictícias**, feitas no formato oficial da NF-e. Ainda não foi testada com o XML de um fornecedor de verdade da loja: se alguma nota for recusada ou vier com valor estranho, guarde o arquivo e avise.
+- Logo e QR Code no cupom; voltar uma cópia de segurança pela tela; exportar para Excel; ficha técnica e produção (para quem fabrica).
 - É uma versão de teste: use produtos, notas e vendas de teste. O que for lançado fica gravado no banco deste computador.
 
 ## Esqueci a senha do gerente
@@ -63,4 +56,4 @@ Feche o sistema, aperte `Win + R`, cole o comando abaixo e dê Enter. Aparece um
 "%LOCALAPPDATA%\Programs\MolekaPDV\MolekaPDV.exe" --redefinir-senha
 ```
 
-Os prints abaixo (`janela-pasta.png` e `janela-instalado.png`) foram tirados pelo teste automático num Windows de verdade: o primeiro mostra o primeiro acesso; o segundo, a tela de login. O mesmo teste faz, dentro do programa instalado e sem abrir as telas, um roteiro completo pela API: cadastro, entrada no estoque, caixa, venda com duas formas de pagamento e troco, fechamento, importação de uma nota fictícia, uma despesa paga, fluxo de caixa, DRE e rentabilidade, conferindo cada valor. As telas novas foram conferidas no navegador (202 conferências), não dentro da janela do Windows.
+Os prints abaixo (`janela-pasta.png` e `janela-instalado.png`) foram tirados pelo teste automático num Windows de verdade: o primeiro mostra o primeiro acesso; o segundo, a tela de login. As telas novas foram conferidas no navegador (152 conferências), não dentro da janela do Windows.

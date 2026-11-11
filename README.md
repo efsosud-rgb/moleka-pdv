@@ -4,7 +4,7 @@ Sistema de frente de loja da sorveteria **Moleka Sorvetes**: caixa (PDV) com emi
 
 Backend em **Python**; interface em HTML/CSS/JS dentro de uma janela desktop (**pywebview** / WebView2), com visual limpo e relevo 3D nos componentes e na logo animada. Instalação por um único arquivo, `MolekaPDV-Instalador-<versão>.exe`.
 
-> Estado atual (11/11/2026, versão 0.4.0): já funcionam a **entrada com usuário e senha**, os **cadastros** (produtos com preço por tabela e por quantidade, clientes com CPF ou CNPJ, tabelas de preço, percentual por forma de pagamento, operadores), o **controle de caixa** (abertura, sangria, suprimento, fechamento), a **venda** (várias formas de pagamento, troco, desconto do gerente, saldo do dia), o **estoque** (saldos, entrada, saída, contagem, custo médio), a **entrada de nota de compra por XML** e o **financeiro** (contas a pagar e a receber, fluxo de caixa, DRE e rentabilidade por produto). **Ainda não**: NFC-e (nenhum documento fiscal é emitido) e impressão do cupom. As telas foram testadas no navegador e por testes automáticos; o que falta conferir na janela do Windows está em [`docs/PLANO.md`](docs/PLANO.md).
+> Estado atual (11/11/2026, versão 0.5.0): já funcionam a **entrada com usuário e senha**, os **cadastros** (produtos com preço por tabela e por quantidade, clientes com CPF ou CNPJ, tabelas de preço, percentual por forma de pagamento, operadores), o **controle de caixa** (abertura, sangria, suprimento, fechamento), a **venda** (várias formas de pagamento, troco, desconto do gerente, saldo do dia), o **estoque** (saldos, entrada, saída, contagem, custo médio), a **entrada de nota de compra por XML**, o **financeiro** (contas a pagar e a receber, fluxo de caixa, DRE e rentabilidade por produto), as **Configurações** (dados da loja, impressora de cupom e cópia de segurança), a **impressão do comprovante de venda e do fechamento de caixa** na impressora de cupom e a **impressão dos relatórios** em impressora comum. **Ainda não**: NFC-e (nenhum documento fiscal é emitido; o comprovante impresso não é fiscal). As telas foram testadas no navegador e por testes automáticos; **nenhum cupom saiu ainda numa impressora de verdade**. O que falta conferir está em [`docs/PLANO.md`](docs/PLANO.md).
 
 ## Como instalar (Windows 10 ou 11)
 
@@ -27,6 +27,7 @@ O instalador é gerado e testado no GitHub (`.github/workflows/instalador-window
 6. **Estoque → Entrada de NF (XML)**: escolha o arquivo XML da nota do fornecedor, diga em cada item qual é o produto da loja (ou crie um novo) e importe. O estoque sobe, o custo é refeito e as parcelas viram contas a pagar.
 7. **Estoque → Saldos, ajustes e contagem**: entrada e saída à mão (com motivo) e contagem da prateleira.
 8. **Financeiro**: lance as despesas (aluguel, energia, salários) e dê baixa quando pagar; o fluxo de caixa, o DRE e a rentabilidade saem das vendas e desses lançamentos.
+9. **Arquivo → Configurações**: preencha os **dados da loja** (saem no cupom e nos relatórios); em **Impressão**, escolha a impressora de cupom, clique em **Imprimir teste** e confirme que saiu certo; em **Cópia de segurança**, escolha uma **pasta extra** (pendrive que fica na loja ou pasta da nuvem).
 
 O lucro só aparece para o que tem custo: o custo vem da entrada da nota, de uma entrada no Estoque ou do cadastro do produto, e vale para as vendas feitas **depois**. Sem custo, o DRE e a rentabilidade mostram "—" e dizem o motivo.
 
@@ -77,9 +78,9 @@ ruff format .
 mypy
 ```
 
-Além dos testes do `pytest`, há dois roteiros que usam o sistema pelo navegador, como uma pessoa faria, com os valores esperados calculados à mão: `tools/roteiros/vendas_no_navegador.js` (cadastros, caixa e venda) e `tools/roteiros/estoque_compras_financeiro_no_navegador.js` (estoque, entrada de nota e financeiro). Precisam do Node.js com o pacote `playwright`; o começo de cada arquivo explica como rodar. As notas usadas neles são fictícias, geradas por `tools/roteiros/notas_ficticias.py`.
+Além dos testes do `pytest`, há três roteiros que usam o sistema pelo navegador, como uma pessoa faria, com os valores esperados calculados à mão: `tools/roteiros/vendas_no_navegador.js` (cadastros, caixa e venda), `tools/roteiros/estoque_compras_financeiro_no_navegador.js` (estoque, entrada de nota e financeiro) e `tools/roteiros/configuracoes_impressao_no_navegador.js` (Configurações, impressão do cupom, cópia de segurança e relatórios em folha comum). Precisam do Node.js com o pacote `playwright`; o começo de cada arquivo explica como rodar. As notas usadas neles são fictícias, geradas por `tools/roteiros/notas_ficticias.py`.
 
-Os dados ficam em `%APPDATA%\MolekaPDV\` (banco `moleka.db`, `backups/`, `logs/moleka.log`, `xml/entrada/` com as notas de compra importadas). A variável `MOLEKA_PDV_DADOS` muda a pasta; `MOLEKA_PDV_PORTA` muda a porta (padrão 8765). A API tem documentação automática em `http://127.0.0.1:8765/api/docs`.
+Os dados ficam em `%APPDATA%\MolekaPDV\` (banco `moleka.db`, `backups/` com a cópia de segurança de cada dia, `logs/moleka.log`, `xml/entrada/` com as notas de compra importadas). A variável `MOLEKA_PDV_DADOS` muda a pasta; `MOLEKA_PDV_PORTA` muda a porta (padrão 8765). Só para testes, `MOLEKA_PDV_IMPRESSORA_EM_ARQUIVO=<pasta>` troca as impressoras do Windows por uma impressora de mentira, que grava cada impressão num arquivo dessa pasta. A API tem documentação automática em `http://127.0.0.1:8765/api/docs`.
 
 ## Regras do projeto
 
@@ -108,6 +109,12 @@ moleka-pdv/
 │   ├── nfe_xml.py       # leitura do XML da NF-e de compra (modelo 55) e conferência da chave
 │   ├── compras.py       # entrada da nota: de-para do fornecedor, custo, contas a pagar e estorno
 │   ├── financeiro.py    # categorias, lançamentos, fluxo de caixa, DRE e rentabilidade
+│   ├── configuracoes.py # dados da loja, opções da impressora de cupom e da cópia de segurança
+│   ├── cupom.py         # o papel: comprovante de venda, fechamento de caixa e página de teste (linhas de largura fixa)
+│   ├── escpos.py        # as linhas do cupom nos bytes da impressora térmica (ESC/POS)
+│   ├── impressoras.py   # impressoras do Windows: listar e mandar para a fila em modo RAW
+│   ├── impressao.py     # manda o cupom para a impressora escolhida; o que acontece depois da venda
+│   ├── backup.py        # cópia de segurança do banco: a do dia, a pasta extra e a limpeza das antigas
 │   ├── catalogo.py      # próximo código de produto
 │   ├── documentos.py    # CPF e CNPJ (dígitos verificadores)
 │   ├── pesquisa.py      # busca sem acento
@@ -116,7 +123,7 @@ moleka-pdv/
 │   ├── acesso.py        # sessões de login e permissões por perfil
 │   ├── operadores.py    # regras do cadastro de operadores e recuperação de acesso
 │   ├── web.py           # páginas (Jinja2), lista de módulos e menus; exige login
-│   ├── api/             # FastAPI: status, login e operadores, cadastros, caixa, vendas, estoque, compras e financeiro
+│   ├── api/             # FastAPI: status, login e operadores, cadastros, caixa, vendas, estoque, compras, financeiro, configurações e impressão
 │   └── fiscal/          # adaptador fiscal (ProvedorFiscal) + ProvedorNulo
 ├── ui/
 │   ├── templates/       # base.html (moldura) e uma página por tela
@@ -125,7 +132,7 @@ moleka-pdv/
 ├── packaging/           # PyInstaller, Inno Setup e teste do instalador no Windows
 ├── tools/               # abrir_pelo_codigo.py (roda sem instalador), roteiros/ (testes pelo navegador), design/ e scripts do PC do caixa
 ├── docs/                # ESPECIFICACAO.md, DECISOES.md, PLANO.md, prototipo/
-└── tests/               # pytest (dinheiro, preços, vendas, caixa, cadastros, estoque, compras, financeiro, login e perfis, páginas, banco)
+└── tests/               # pytest (dinheiro, preços, vendas, caixa, cadastros, estoque, compras, financeiro, configurações, impressão, cópia de segurança, login e perfis, páginas, banco)
 ```
 
 ## Marca

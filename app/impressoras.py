@@ -176,9 +176,17 @@ def _listar_no_windows() -> list[Impressora]:
     tipos = _ENUM_LOCAL | _ENUM_CONEXOES
     preciso = wintypes.DWORD(0)
     quantas = wintypes.DWORD(0)
-    dll.EnumPrintersW(tipos, None, 4, None, 0, ctypes.byref(preciso), ctypes.byref(quantas))
-    if preciso.value == 0:
+    # Primeiro pedido sem memória nenhuma, só para o Windows dizer de quanto precisa. Se ele
+    # responde "deu certo", é porque não há impressora instalada. Qualquer outra recusa (serviço
+    # de impressão parado, por exemplo) é falha, e não "nenhuma impressora".
+    if dll.EnumPrintersW(tipos, None, 4, None, 0, ctypes.byref(preciso), ctypes.byref(quantas)):
         return []
+    codigo = ctypes.get_last_error()
+    if codigo != _ERRO_BUFFER_PEQUENO or preciso.value == 0:
+        log.warning("o Windows não listou as impressoras: erro %d", codigo)
+        raise RegraError(
+            f"O Windows não entregou a lista de impressoras: {_motivo(codigo)}.", status=500
+        )
     memoria = ctypes.create_string_buffer(preciso.value)
     feito = dll.EnumPrintersW(
         tipos, None, 4, memoria, preciso.value, ctypes.byref(preciso), ctypes.byref(quantas)

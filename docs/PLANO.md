@@ -44,6 +44,16 @@ Ordem aprovada pelo Eric em 11/11: Frente 1 → Frente 2 → Frente 3 → Frente
 - [ ] **Não verificado**: as telas novas dentro da janela do Windows (só no navegador daqui); a janela de escolher arquivo dentro da janela do programa (no navegador abre com o botão e com F3); XML de uma nota de verdade de um fornecedor da loja (os testes usam notas fictícias no formato da NF-e 4.00); uso no PC do Eric e no do caixa.
 - [ ] **Não feito** (estava no plano destas frentes): exportar para Excel e imprimir em A4; fluxo de caixa previsto com prazo e taxa de cartão; comparação de períodos no DRE.
 
+## Feito (11/11/2026, versão 0.5.0)
+
+- [x] **Configurações** (só o gerente): dados da loja, impressora de cupom e cópia de segurança.
+- [x] **Frente 6 — Impressão do cupom não fiscal**: comprovante de venda (sozinho, pelo botão ou por Ctrl+P), resumo do caixa aberto e fechamento de caixa, com o papel mostrado na tela antes de imprimir; página de teste; gaveta de dinheiro; indicador que só fica verde depois do teste confirmado.
+- [x] **Relatórios em folha comum**: contas a pagar e a receber, fluxo de caixa, DRE, rentabilidade e estoque, pela impressão do Windows.
+- [x] **Cópia de segurança diária** (era da Frente 9): ao abrir, a cada fechamento de caixa e a pedido; conferida; pasta extra; limpeza das antigas.
+- Verificado: 328 testes automáticos (o cupom conferido linha por linha e byte por byte, com valores calculados à mão; 11 regras conferidas também "ao contrário", estragando uma linha do código para ver se algum teste percebia); roteiro novo no navegador (Chromium, 1366×697) com 152 conferências (`tools/roteiros/configuracoes_impressao_no_navegador.js`), que abre os arquivos gravados pela impressora de teste e confere os bytes de 11 impressões; os dois roteiros anteriores repetidos (128 e 202 conferências); as folhas dos relatórios conferidas em PDF; o passo a passo de voltar uma cópia feito com um banco de teste. O que o teste do Windows faz no GitHub está nas notas da versão.
+- [ ] **Não verificado**: cupom saindo numa impressora de verdade (a ELGIN i9 da loja ou qualquer outra); página de código certa para os acentos na i9; corte do papel e gaveta; as telas novas e a impressão dos relatórios dentro da janela do programa no Windows; o botão "Escolher a pasta…" da cópia de segurança (só existe na janela); a cópia numa pasta de pendrive ou de nuvem de verdade.
+- [ ] **Não feito**: DANFE NFC-e (é da Frente 5); logo e QR Code no cupom; voltar uma cópia pela tela; exportar para Excel.
+
 ## Frente 1 — Operadores e login — FEITA em 11/11/2026
 Ver "Feito (11/11/2026)" acima e ESPECIFICACAO §12. Fica para depois, se o Eric quiser: pedir a senha de novo após um tempo sem uso; obrigar a troca da senha provisória no primeiro login.
 
@@ -60,8 +70,8 @@ Pedidos de 11/11 atendidos aqui: **1**, **2**, **3**, **4**, **6**, **7**, **8**
 Depende da decisão API × PyNFe (ver ESPECIFICACAO §9). Implementar o provedor escolhido em `app/fiscal/`, homologação primeiro: emissão, contingência offline com fila de reenvio, cancelamento, inutilização, DANFE NFC-e 80 mm com QR Code, grupos IBS/CBS. Configuração de certificado A1 (caminho + senha fora do repositório) e dados da loja. **Nunca** produção sem ordem explícita do Eric.
 Pedido **8** de 11/11: emissão conforme a escolha feita na venda; vendas "sem documento fiscal" aparecem nos relatórios. Depende do regime e da UF da loja (ESPECIFICACAO §5 e §9).
 
-## Frente 6 — Impressão
-Cupom ESC/POS (`python-escpos`) ou spooler do Windows; A4 em PDF (`reportlab` ou HTML → PDF pelo WebView2). Detecção de impressoras, teste de impressão em Configurações, status real nos chips.
+## Frente 6 — Impressão — FEITA em 11/11/2026 (versão 0.5.0), menos o DANFE NFC-e
+Cupom não fiscal em ESC/POS pela fila de impressão do Windows (sem `python-escpos`); relatórios em folha comum pela impressão do Windows (sem `reportlab`). Detecção de impressoras, teste de impressão em Configurações e status real nos indicadores. Ver ESPECIFICACAO §15. **Falta o teste no papel**, na impressora da loja. O DANFE NFC-e (com QR Code) entra com a Frente 5.
 
 ## Frente 7 — Estoque e entrada por XML — FEITA em 11/11/2026 (versão 0.4.0)
 Saldos (soma de movimentos), entrada e saída com motivo, contagem; importação de XML de NF-e, de-para fornecedor→produto memorizado, custo (último e médio), contas a pagar das parcelas, estorno. Ver ESPECIFICACAO §14. Ficam para depois: contagem de vários produtos de uma vez; ficha técnica e produção, se a loja fabrica.
@@ -70,7 +80,7 @@ Saldos (soma de movimentos), entrada e saída com motivo, contagem; importação
 Lançamentos (receitas e despesas, categorias com grupo do DRE), fluxo de caixa realizado e contas em aberto, DRE por período, rentabilidade por produto. Ver ESPECIFICACAO §14. Ficam para depois: prazo e taxa das maquininhas no fluxo; comparação de períodos; contas que se repetem; exportar Excel (`openpyxl`) e imprimir A4.
 
 ## Frente 9 — Instalador e atualização
-Feito em 10/11/2026: PyInstaller em pasta + Inno Setup (`MolekaPDV-Instalador-<versão>.exe`), instalador do WebView2 embutido, atalhos, fontes embutidas, build e teste no GitHub Actions. Falta: backup diário (cópia agendada de `moleka.db`), assinatura digital do instalador e verificação de versão nova.
+Feito em 10/11/2026: PyInstaller em pasta + Inno Setup (`MolekaPDV-Instalador-<versão>.exe`), instalador do WebView2 embutido, atalhos, fontes embutidas, build e teste no GitHub Actions. Cópia de segurança diária feita em 11/11/2026 (versão 0.5.0, pelo próprio programa; ver ESPECIFICACAO §15). Falta: assinatura digital do instalador e verificação de versão nova.
 **Assinatura digital subiu de prioridade em 11/11/2026**: sem ela, o instalador é bloqueado no Windows 11 que estiver com o Controle Inteligente de Aplicativos ligado, sem botão de "executar assim mesmo". Depende de o Eric decidir a compra de um certificado de assinatura de código (ver DECISOES de 11/11).
 
 ## Fora da v1

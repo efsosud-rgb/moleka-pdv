@@ -183,7 +183,6 @@ def test_windows_sem_impressora_instalada(cliente, monkeypatch):
 
 def test_quando_o_windows_nao_entrega_a_lista_a_tela_mostra_o_motivo(cliente, monkeypatch):
     """Lista vazia por falha não pode aparecer como "nenhuma impressora instalada"."""
-    from app.operadores import RegraError
 
     def falha():
         raise RegraError("O Windows não entregou a lista de impressoras: erro 1722.", status=500)
@@ -220,7 +219,13 @@ def test_impressora_de_teste_grava_um_arquivo_por_impressao(impressora_de_teste)
 def test_no_windows_lista_as_impressoras_e_recusa_a_que_nao_existe(monkeypatch):
     monkeypatch.delenv("MOLEKA_PDV_IMPRESSORA_EM_ARQUIVO", raising=False)
     assert impressoras.disponivel() == (True, "")
-    lista = impressoras.listar()  # o que houver neste Windows; pode ser nenhuma
+    try:
+        lista = impressoras.listar()  # o que houver neste Windows; pode ser nenhuma
+    except RegraError as erro:
+        # Serviço de impressão parado não é defeito do programa; qualquer outra falha é.
+        if "o serviço de impressão do Windows não respondeu" in str(erro):
+            pytest.skip(f"este Windows está com o serviço de impressão parado: {erro}")
+        raise
     assert all(i.nome for i in lista)
     assert [i.nome for i in lista] == sorted((i.nome for i in lista), key=str.casefold)
     assert sum(1 for i in lista if i.padrao) <= 1

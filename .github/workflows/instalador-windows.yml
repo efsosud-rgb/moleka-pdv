@@ -67,9 +67,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev,build]"
 
+      # Os testes de impressão usam a fila de impressão do Windows desta máquina de teste.
+      - name: Liga o serviço de impressão do Windows
+        if: steps.plano.outputs.construir == 'sim'
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          Set-Service Spooler -StartupType Manual
+          Start-Service Spooler
+          Get-Service Spooler | Format-List Name, Status, StartType
+
       - name: Roda os testes
         if: steps.plano.outputs.construir == 'sim'
-        run: python -m pytest -q
+        run: python -m pytest -q -rs
 
       - name: Empacota o programa (PyInstaller)
         if: steps.plano.outputs.construir == 'sim'
