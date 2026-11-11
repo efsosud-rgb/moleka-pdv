@@ -1,25 +1,16 @@
 /* Moleka PDV — capa: primeiro acesso (cria o gerente) e login do operador.
-   A senha vai só para o servidor local (127.0.0.1); nada fica guardado no navegador além do
-   último operador escolhido, para a lista já abrir nele. */
+   A senha vai só para o servidor local (127.0.0.1); nada fica guardado na janela. A lista já
+   vem do servidor aberta em quem entrou por último. */
 
 (function () {
   "use strict";
 
   const Moleka = window.Moleka;
-  const CHAVE_ULTIMO = "moleka.ultimoOperador";
-
-  function lembrarOperador(login) {
-    try { window.localStorage.setItem(CHAVE_ULTIMO, login); } catch (falha) { /* sem armazenamento: só não lembra */ }
-  }
-
-  function ultimoOperador() {
-    try { return window.localStorage.getItem(CHAVE_ULTIMO); } catch (falha) { return null; }
-  }
 
   /* "Maria Aparecida" → "maria": sugestão de usuário a partir do nome. */
   function sugerirUsuario(nome) {
     const primeiro = nome.trim().split(/\s+/)[0] || "";
-    return primeiro.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 30);
+    return primeiro.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 30);
   }
 
   function ocupar(form, ocupado) {
@@ -51,7 +42,6 @@
         if (r.status === 409) window.setTimeout(function () { window.location.reload(); }, 2500); // já existe gerente: mostra o login
         return;
       }
-      lembrarOperador(r.dados.login);
       window.location.href = "/inicio";
     });
   }
@@ -59,8 +49,6 @@
   // ------------------------------------------------------------------ login
   function iniciarLogin(form) {
     Moleka.cuidarDasSenhas(form);
-    const ultimo = ultimoOperador();
-    if (ultimo && Array.from(form.login.options).some(function (o) { return o.value === ultimo; })) form.login.value = ultimo;
     form.login.addEventListener("change", function () { form.senha.value = ""; form.senha.focus(); });
     form.senha.focus();
     form.addEventListener("submit", async function (evento) {
@@ -77,7 +65,6 @@
         form.senha.focus();
         return;
       }
-      lembrarOperador(login);
       window.location.href = "/inicio";
     });
   }

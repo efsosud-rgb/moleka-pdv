@@ -83,12 +83,15 @@ class Tentativas:
 
     def errou(self, login: str) -> None:
         with self._trava:
+            agora = self._relogio()
             if len(self._erros) >= self._MAXIMO_DE_USUARIOS and login not in self._erros:
                 self._erros.clear()
+            if len(self._liberado_em) >= self._MAXIMO_DE_USUARIOS:
+                self._liberado_em = {u: t for u, t in self._liberado_em.items() if t > agora}
             erros = self._erros.get(login, 0) + 1
             if erros >= self.LIMITE:
                 self._erros.pop(login, None)
-                self._liberado_em[login] = self._relogio() + self.ESPERA
+                self._liberado_em[login] = agora + self.ESPERA
             else:
                 self._erros[login] = erros
 

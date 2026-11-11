@@ -19,11 +19,12 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app import seguranca
-from app.models import Operador, Perfil
+from app.models import Configuracao, Operador, Perfil
 
 log = logging.getLogger("moleka.acesso")
 
 _LOGIN_VALIDO = re.compile(r"[a-z0-9][a-z0-9._-]{1,29}")
+_CHAVE_DO_ULTIMO = "acesso.ultimo_login"
 
 
 class RegraError(ValueError):
@@ -84,6 +85,21 @@ def listar(sessao: Session, *, so_ativos: bool = False) -> list[Operador]:
     if so_ativos:
         consulta = consulta.where(Operador.ativo.is_(True))
     return list(sessao.scalars(consulta))
+
+
+def ultimo_login(sessao: Session) -> str | None:
+    """Usuário de quem entrou por último: a lista da tela de login já abre nele."""
+    item = sessao.get(Configuracao, _CHAVE_DO_ULTIMO)
+    return item.valor if item else None
+
+
+def lembrar_ultimo_login(sessao: Session, login: str) -> None:
+    item = sessao.get(Configuracao, _CHAVE_DO_ULTIMO)
+    if item is None:
+        sessao.add(Configuracao(chave=_CHAVE_DO_ULTIMO, valor=login))
+    elif item.valor != login:
+        item.valor = login
+    sessao.commit()
 
 
 # ---------------------------------------------------------------- alterações

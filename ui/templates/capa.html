@@ -64,7 +64,7 @@
 <h2 id="t-entrada">Frente de Loja</h2>
 <p class="data" data-hoje>—</p>
 <form id="form-login" class="form-entrada" autocomplete="off" novalidate>
-<div><label class="rotulo" for="lg-operador">Operador</label><div class="sel"><select id="lg-operador" name="login" class="campo">{% for o in operadores %}<option value="{{ o.login }}">{{ o.nome }}</option>{% endfor %}</select>{{ icone("seta", "seta") }}</div></div>
+<div><label class="rotulo" for="lg-operador">Operador</label><div class="sel"><select id="lg-operador" name="login" class="campo">{% for o in operadores %}<option value="{{ o.login }}"{% if o.login == ultimo %} selected{% endif %}>{{ o.nome }}</option>{% endfor %}</select>{{ icone("seta", "seta") }}</div></div>
 <div><label class="rotulo" for="lg-senha">Senha</label><input id="lg-senha" name="senha" class="campo" type="password" maxlength="128" autocomplete="off" autofocus></div>
 <p class="msg-form" role="alert" hidden></p>
 <button class="btn3d amarelo lg bloco" type="submit">Entrar (Enter)</button>

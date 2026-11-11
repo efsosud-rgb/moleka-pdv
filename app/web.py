@@ -270,6 +270,7 @@ def capa(
         operador,
         configurado=operadores.existe_algum(sessao),
         operadores=operadores.listar(sessao, so_ativos=True),
+        ultimo=operadores.ultimo_login(sessao),
     )
 
 

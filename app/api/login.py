@@ -118,6 +118,7 @@ def configuracao_inicial(
             sessao, nome=dados.nome, login=dados.login, senha=dados.senha, perfil=Perfil.GERENTE
         )
     _abrir_sessao(request, resposta, gerente)
+    operadores.lembrar_ultimo_login(sessao, gerente.login)
     log.info("configuração inicial: gerente %s criado", gerente.login)
     return _saida(gerente)
 
@@ -139,11 +140,12 @@ def entrar(
             headers={"Retry-After": str(espera)},
         )
     operador = operadores.por_login(sessao, login)
+    senha = dados.senha[: seguranca.SENHA_MAXIMA + 1]  # senha gigante não vira trabalho à toa
     if operador is None:
-        seguranca.gastar_tempo_de_uma_conferencia(dados.senha)
+        seguranca.gastar_tempo_de_uma_conferencia(senha)
         senha_certa = False
     else:
-        senha_certa = seguranca.conferir(dados.senha, operador.senha_hash)
+        senha_certa = seguranca.conferir(senha, operador.senha_hash)
     if operador is None or not senha_certa:
         freio.errou(login)
         log.warning("login recusado: usuário %s", login)
@@ -153,6 +155,7 @@ def entrar(
         raise HTTPException(403, "Este operador está inativo. Fale com o gerente.")
     freio.acertou(login)
     _abrir_sessao(request, resposta, operador)
+    operadores.lembrar_ultimo_login(sessao, operador.login)
     log.info("login: %s (%s)", operador.login, operador.perfil.value)
     return _saida(operador)
 

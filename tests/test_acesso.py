@@ -109,7 +109,7 @@ def test_senha_fica_no_banco_so_como_hash_e_nunca_volta_na_api(cliente):
 def test_login_certo_errado_e_saida(app_teste, cliente, anonimo):
     capa = anonimo.get("/")
     assert 'id="form-login"' in capa.text and "Primeiro acesso" not in capa.text
-    assert f'<option value="{GERENTE["login"]}">{GERENTE["nome"]}</option>' in capa.text
+    assert f'<option value="{GERENTE["login"]}" selected>{GERENTE["nome"]}</option>' in capa.text
 
     errada = anonimo.post("/api/login", json={"login": "gerente", "senha": "errada"})
     assert errada.status_code == 401
@@ -130,6 +130,19 @@ def test_login_certo_errado_e_saida(app_teste, cliente, anonimo):
     assert anonimo.get("/inicio", follow_redirects=False).status_code == 303
     # A outra janela (fixture `cliente`) continua logada: cada janela tem a sua sessão.
     assert cliente.get("/api/sessao").json()["operador"]["login"] == "gerente"
+
+
+def test_lista_do_login_ja_abre_em_quem_entrou_por_ultimo(caixa, anonimo):
+    """Guardado no banco: vale também depois de fechar e abrir o programa."""
+    capa = anonimo.get("/").text
+    assert '<option value="caixa" selected>Caixa de Teste</option>' in capa
+    assert '<option value="gerente">Gerente de Teste</option>' in capa
+    # Login recusado não muda quem foi o último.
+    anonimo.post("/api/login", json={"login": "gerente", "senha": "errada"})
+    assert '<option value="caixa" selected>' in anonimo.get("/").text
+    anonimo.post("/api/login", json={"login": "gerente", "senha": GERENTE["senha"]})
+    anonimo.post("/api/sair")
+    assert '<option value="gerente" selected>' in anonimo.get("/").text
 
 
 def test_capa_de_quem_ja_entrou_oferece_continuar_ou_trocar(cliente):
@@ -282,6 +295,23 @@ def test_gerente_cadastra_altera_e_inativa_operador(app_teste, cliente):
     assert 'value="gerente"' in capa and 'value="ana"' not in capa
 
     assert cliente.put("/api/operadores/999", json=inativo.json()).status_code == 404
+
+
+def test_nome_de_operador_entra_nas_telas_como_texto_nunca_como_html(cliente, anonimo):
+    malandro = {"nome": "<script>alert(1)</script>", "login": "malandro", "senha": "1234"}
+    assert cliente.post("/api/operadores", json=malandro).status_code == 201
+    capa = anonimo.get("/").text  # o nome aparece na lista do login
+    assert "<script>alert(1)</script>" not in capa
+    assert "&lt;script&gt;alert(1)&lt;/script&gt;" in capa
+    anonimo.post("/api/login", json={"login": "malandro", "senha": "1234"})
+    inicio = anonimo.get("/inicio").text  # e no topo das telas, depois de entrar
+    assert "<script>alert(1)</script>" not in inicio
+    assert "Operador: &lt;script&gt;alert(1)&lt;/script&gt;" in inicio
+
+
+def test_senha_gigante_e_recusada_sem_derrubar_o_sistema(cliente, anonimo):
+    resposta = anonimo.post("/api/login", json={"login": "gerente", "senha": "x" * 200_000})
+    assert resposta.status_code == 401
 
 
 def test_gerente_nao_inativa_nem_rebaixa_a_si_mesmo(cliente):
