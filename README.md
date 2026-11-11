@@ -47,6 +47,8 @@ py tools\abrir_pelo_codigo.py
 
 O roteiro cria um ambiente do Python só do Moleka, instala as bibliotecas, confere se o Windows deixa carregá-las e abre o sistema na janela própria; se a janela não puder abrir, abre no navegador (`--navegador` força esse modo). Não altera nenhuma configuração do Windows, e os dados ficam em `%APPDATA%\MolekaPDV`, como no programa instalado.
 
+Para abrir uma versão recebida em `.zip` (`MolekaPDV-codigo-<versão>.zip`) sem digitar caminhos: cole no PowerShell o texto de [`tools/abrir_versao_baixada.ps1`](tools/abrir_versao_baixada.ps1). Ele acha o zip mais novo em Downloads, na Área de Trabalho ou em Documentos, confere o Python, extrai em `%USERPROFILE%\MolekaPDV-dev` e chama o roteiro acima, mostrando o andamento. Esse texto é testado no Windows PowerShell 5.1 do GitHub (`.github/workflows/teste-comando-windows.yml`).
+
 ## Como rodar (desenvolvimento)
 
 ```powershell
