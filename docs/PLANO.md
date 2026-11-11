@@ -16,20 +16,33 @@ Cada frente é um bloco que uma sessão do Claude Code (Opus 5.5) constrói de p
 - [x] Controle do formato do banco entre versões (`app/migracoes.py`).
 - [ ] **Não verificado**: abertura no PC do Eric e no PC do caixa (i3, 4 GB, HD), impressão e leitor.
 
-## Frente 1 — Operadores e login
-Tabela `operador` já existe. Criar o primeiro gerente na primeira execução (tela "Configuração inicial"), hash de senha com `argon2-cffi` ou `hashlib.scrypt`, `POST /api/login`, cookie de sessão local, perfil operador/gerente, tela de login ligada de verdade. Teste: login certo/errado, bloqueio de operador inativo.
+## Feito (11/11/2026)
+
+- [x] **Frente 1 — Operadores e login** (versão 0.2.0). Primeiro acesso cria o gerente; login na capa; perfis operador e gerente; tela Operadores; Minha senha; Trocar de operador; recuperação de acesso (`--redefinir-senha`). Verificado: testes automáticos (login certo e errado, bloqueio por senhas erradas, operador inativo, permissões, telas protegidas) e roteiro no navegador em 1366×697. Ver ESPECIFICACAO §12.
+- [x] Telas reajustadas para a área útil real da janela maximizada (1366×697). Na versão 0.1.0, Início, Produtos e Financeiro rolavam um pouco: a conferência de 10/11 tinha usado 1366×768.
+- [x] Os 9 pedidos do Eric de 11/11 registrados (ESPECIFICACAO §11) e distribuídos nas frentes abaixo.
+- [ ] **Não verificado**: login e telas internas dentro da janela do Windows (o teste automático no Windows confere a API, as páginas e o print da capa; as telas internas foram vistas só no navegador daqui).
+
+Ordem aprovada pelo Eric em 11/11: Frente 1 → Frente 2 → Frente 3 → Frente 4. A cada função pronta sai um instalador novo.
+
+## Frente 1 — Operadores e login — FEITA em 11/11/2026
+Ver "Feito (11/11/2026)" acima e ESPECIFICACAO §12. Fica para depois, se o Eric quiser: pedir a senha de novo após um tempo sem uso; obrigar a troca da senha provisória no primeiro login.
 
 ## Frente 2 — Produtos, tabelas de preço e clientes (telas)
 A API básica existe. Faltam: telas de listagem/cadastro/edição, inativar, faixas de preço por tabela na tela, importação por planilha (CSV/XLSX) para migrar do sistema atual, leitura de EAN. Teste: faixa aplicada corretamente via `app/precos.py`.
+Pedidos de 11/11 que entram aqui: **1** (tabela de preço por quantidade: tela das faixas), **2** (preço por forma de pagamento: cadastro da regra, depois de decidida), **5** (cliente com CPF ou CNPJ validado e tabela atacado/varejo). O campo "Categoria" que aparece na tela de Produtos ainda não existe no banco: entra com um passo em `app/migracoes.py`.
 
 ## Frente 3 — Controle de caixa
 Abertura com fundo de troco, sangria, suprimento, fechamento com conferência por forma de pagamento, histórico. `/api/caixa/...` + tela. Status "Caixa: aberto desde" passa a vir do banco. Teste: não abre dois caixas no mesmo terminal; fechamento calcula diferença.
+A decidir antes: o operador comum faz sangria, suprimento e fechamento sozinho ou precisa da senha do gerente?
 
 ## Frente 4 — Venda (PDV) sem fiscal
 Venda aberta → itens (leitor/nome, quantidade, faixa automática, desconto com rateio) → pagamentos (multi-forma, troco) → finalizar → baixa de estoque (`movimento_estoque`) → lançamento de receita. Atalhos F2–F12. Teste: totais em centavos batem; estoque baixa; cancelamento estorna.
+Pedidos de 11/11 que entram aqui: **1** (o caixa aplica a faixa por quantidade sozinho), **2** (preço conforme a forma de pagamento), **3** (mais de uma forma de pagamento na mesma venda), **4** (saldo de vendas do dia na tela, vindo do banco), **6** (editar a quantidade dos itens), **7** (trocar a forma de pagamento depois de escolhida), **8** (escolher se emite ou não a NFC-e ao finalizar; a escolha fica gravada na venda) e **9** (escolher e trocar o cliente da venda pelo cadastro, recalculando os preços pela tabela dele).
 
 ## Frente 5 — Fiscal (NFC-e)
 Depende da decisão API × PyNFe (ver ESPECIFICACAO §9). Implementar o provedor escolhido em `app/fiscal/`, homologação primeiro: emissão, contingência offline com fila de reenvio, cancelamento, inutilização, DANFE NFC-e 80 mm com QR Code, grupos IBS/CBS. Configuração de certificado A1 (caminho + senha fora do repositório) e dados da loja. **Nunca** produção sem ordem explícita do Eric.
+Pedido **8** de 11/11: emissão conforme a escolha feita na venda; vendas "sem documento fiscal" aparecem nos relatórios. Depende do regime e da UF da loja (ESPECIFICACAO §5 e §9).
 
 ## Frente 6 — Impressão
 Cupom ESC/POS (`python-escpos`) ou spooler do Windows; A4 em PDF (`reportlab` ou HTML → PDF pelo WebView2). Detecção de impressoras, teste de impressão em Configurações, status real nos chips.

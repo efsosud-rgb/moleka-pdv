@@ -36,3 +36,20 @@ Registro curto, em ordem cronológica. Uma linha por decisão; o motivo quando n
 - Janela maximizada por padrão; `--tela-cheia` fica para o modo caixa. Motivo: nos testes o Eric precisa conseguir fechar e alternar janelas.
 - Programa empacotado não tem terminal: erros de partida aparecem numa caixa de aviso e vão para `<dados>/logs/moleka.log`.
 - Ícone do programa: rosto da mascote da arte 3D (`tools/design/gera_icone.py`).
+
+## 2026-11-11
+
+- Ordem de construção aprovada pelo Eric: login e operadores → produtos e preços → abrir e fechar o caixa → venda. A cada função pronta sai um instalador novo para ele testar.
+- Nove pedidos novos do Eric registrados em ESPECIFICACAO §11 e distribuídos nas Frentes 2, 4 e 5. Dois dependem de resposta dele: a regra do preço por forma de pagamento e o regime tributário/UF da loja (para a opção de emitir ou não a NFC-e).
+- A Frente 1 foi construída nesta sessão (Fable 5.2), por escolha do Eric, que trocou o modelo em 10/11. O `AGENTS.md` ainda descreve a divisão antiga (construção com o Opus); o texto só muda se ele pedir.
+- Senha dos operadores: hash `scrypt` do próprio Python (`hashlib`), com sal por senha e os parâmetros gravados junto (`app/seguranca.py`). Motivo de não usar `argon2-cffi`: seria mais uma dependência compilada no instalador, e o `scrypt` atende a este uso. Mínimo de 4 caracteres, para permitir senha numérica no caixa; recomendar senha maior para o gerente.
+- Sessão de login só na memória do programa, com cookie `HttpOnly` e `SameSite=Strict` (`app/acesso.py`). Fechar o programa encerra todas as sessões. Não há prazo por tempo sem uso (pergunta aberta em ESPECIFICACAO §9).
+- Freio contra adivinhação: 5 senhas erradas seguidas travam o usuário por 30 segundos. Usuário inexistente e senha errada recebem a mesma resposta.
+- Primeiro acesso: enquanto não há operador, a capa cria o gerente. Depois disso, só um gerente cria operadores.
+- Perfis operador e gerente conforme a tabela de ESPECIFICACAO §12 (padrão proposto, a confirmar com o Eric). A permissão é conferida no servidor em cada pedido; a tela só esconde ou tranca o que o perfil não pode.
+- Operador nunca é apagado (fica inativo). Ninguém inativa nem rebaixa o próprio usuário: como só gerente ativo altera operadores, sempre sobra um gerente ativo.
+- Recuperação de acesso por linha de comando (`MolekaPDV.exe --redefinir-senha [usuario]`), sem atalho no menu Iniciar, de propósito: um atalho visível deixaria qualquer pessoa no caixa virar gerente. Cada uso vai para o log. Limite conhecido: quem usa a conta do Windows do caixa alcança o arquivo do banco; essa proteção é da conta do Windows, não do sistema.
+- O servidor local recusa pedidos com endereço (`Host`) que não seja `127.0.0.1`/`localhost` e pedidos que alteram dados vindos de outra origem (`Origin`). Motivo: um site aberto no navegador do mesmo PC consegue mandar pedidos para `127.0.0.1`.
+- Telas HTML saem com `Cache-Control: no-store`: depois de trocar de operador, "voltar" não mostra a tela do anterior.
+- Moldura fixa: a página não rola mais; menus, faixa do topo e barra de status ficam sempre visíveis e, se faltar altura, só o miolo rola. As telas foram reajustadas para 1366×697, que é a área útil da janela maximizada numa tela de 1366×768. Motivo: as medidas de 10/11 usaram 1366×768 por engano, e na versão 0.1.0 as telas Início, Produtos e Financeiro rolavam.
+- O teste do instalador no Windows passou a fazer o primeiro acesso, sair, recusar senha errada e entrar de novo dentro do programa empacotado; o print da pasta mostra o primeiro acesso e o do instalado mostra o login.

@@ -1,6 +1,6 @@
-# Especificação — Moleka PDV (rascunho v0.1, 07/11/2026)
+# Especificação — Moleka PDV (rascunho v0.2, 07/11/2026; atualizado em 11/11/2026)
 
-Documento vivo. Itens marcados **[A DEFINIR]** dependem de resposta do cliente ou do Eric; ver seção 9.
+Documento vivo. Itens marcados **[A DEFINIR]** dependem de resposta do cliente ou do Eric; ver seção 9. Os pedidos de 11/11/2026 estão na seção 11; operadores e permissões, na seção 12.
 
 ## 1. Objetivo
 
@@ -50,11 +50,12 @@ Dinheiro: inteiros em centavos. Datas: ISO 8601, fuso America/Sao_Paulo.
 
 ## 4. Visual
 
-- Cores da marca (extraídas da logo): laranja `#FFB759`, amarelo `#FCF211`, verde `#23A151`, vermelho `#E43238`, vinho `#51222B`, pele `#FBD1A1`.
+- Cores da logomarca (identidade aprovada em 10/11/2026): vermelho `#E43030`, amarelo `#FCF00C`, vinho `#542424`, verde `#249C48`, sobre fundo creme `#FFF9E3`. O laranja da primeira versão saiu (era o fundo do arquivo da logo).
 - Componentes com relevo 3D (bisel, extrusão, afundam ao clicar); campos com profundidade interna.
 - Logo: oval com extrusão e inclinação 3D que "endireita" ao passar o mouse; mascote animada (balança, inclina na direção do nome, manda beijos). Para braço/mão/olhos se moverem de verdade é preciso a arte em camadas ou vetor **[A DEFINIR — pedir ao cliente]**.
-- Resolução alvo: 1366×768 em tela cheia; precisa funcionar em 1920×1080.
-- Protótipo das 4 telas (Abertura/Login, Início, Caixa, Financeiro/DRE) em canvas de design; cópia estática será exportada para `docs/prototipo/`.
+- Resolução alvo: tela de 1366×768. Com a janela maximizada, a área útil é de cerca de **1366×697** (descontados a barra de título e a barra de tarefas): é nesse tamanho que as telas precisam caber sem rolagem. Precisa funcionar em 1920×1080.
+- A moldura (menus, faixa do topo, barra de status) fica sempre visível; se a janela for menor, só o miolo da tela rola.
+- Protótipo das 5 telas (Capa, Início, Caixa, Financeiro/DRE, Produtos) em canvas de design, com cópia estática em `docs/prototipo/`.
 
 ## 5. Fiscal — pontos verificados em 07/11/2026
 
@@ -64,6 +65,17 @@ Dinheiro: inteiros em centavos. Datas: ISO 8601, fuso America/Sao_Paulo.
 - Focus NFe, plano Retail: R$ 62,90/mês, 1 CNPJ, 500 NFC-e + 100 NF-e incluídas, R$ 0,055 por NFC-e extra, 30 dias de teste; a página de preços não fala de contingência offline nem de IBS/CBS. Fonte: https://focusnfe.com.br/precos/
 
 Conclusão: o sistema nasce com os grupos IBS/CBS no XML. Recomendação para a v1: API intermediária (absorve notas técnicas e diferenças por UF); PyNFe fica como segundo provedor do adaptador.
+
+### Emitir ou não a NFC-e em cada venda (pedido 8 da seção 11) — lido em 11/11/2026
+
+O que as fontes lidas dizem (são sites de contabilidade, não o texto oficial das normas):
+
+- **MEI**: dispensado de emitir nota fiscal na venda para consumidor pessoa física; obrigado quando o destinatário tem CNPJ, salvo se o destinatário emitir nota de entrada. Base citada: art. 106 da Resolução CGSN 140/2018 e art. 26 da LC 123/2006. Fontes: https://www.portaltributario.com.br/tributario/O_MEI_e_obrigado_a_emitir_nota_fiscal.htm (texto de 08/07/2025) e https://fiscalia.app/blog/mei-2026-limite-nfe-obrigatoria-cpf-cnpj (17/03/2026).
+- **ME ou EPP do Simples Nacional**: a emissão de documento fiscal se aplica, conforme a legislação do estado; a fonte lida não cita dispensa para venda a consumidor. Fonte: https://www.jettax.com.br/blog/quais-sao-as-obrigacoes-do-simples-nacional/ (atualizado em 02/09/2026).
+- **Divergência entre fontes**: https://razonet.com.br/contabilidade-digital/nota-fiscal-mei-em-2026-quando-e-obrigatoria-e-como-emitir (24/08/2026) diz que, se o consumidor pedir, o MEI é obrigado a emitir, e que a partir de 2027 a emissão passaria a ser obrigatória em todas as operações. As outras fontes lidas não confirmam esse prazo.
+- **Não lido**: o texto oficial das normas; a Resolução CGSN 195, de 21/10/2026, que alterou a 140/2018 (as páginas não abriram); as regras do estado da loja (UF ainda não informada).
+
+Consequência para o sistema: a opção "emitir ou não" será construída, mas **quem diz se a loja pode vender sem emitir é o contador**, conforme o regime tributário e a UF. A venda sem NFC-e fica gravada como "sem documento fiscal", aparece nos relatórios e a emissão posterior respeita os prazos da SEFAZ (a detalhar na Frente 5).
 
 ## 6. Impressão
 
@@ -89,6 +101,9 @@ NF-e modelo 55 (venda para empresa), SAT-CF-e (só SP), delivery/iFood, fidelida
 4. Impressora térmica: marca/modelo e conexão; impressora A4 existente.
 5. Logo em vetor ou alta resolução, de preferência com a menina separada do oval.
 6. Sistema atual (produtos/clientes para importar) e certificado digital A1 (tem?).
+7. **Preço por forma de pagamento** (pedido 2 da seção 11): a regra é um ajuste em % por forma (ex.: desconto no Pix e no dinheiro, acréscimo no crédito) ou um preço próprio por forma em cada produto? E quando a venda é paga em duas formas (pedido 3), o ajuste vale só sobre a parte paga em cada forma?
+8. **Emitir ou não a NFC-e** (pedido 8): a loja é MEI ou ME/EPP do Simples? Em qual estado? O contador confirma em quais vendas a emissão pode ser dispensada?
+9. Tempo sem uso: o sistema deve pedir a senha de novo depois de algum tempo parado? (Hoje a sessão vale até trocar de operador ou fechar o programa.)
 
 ## 10. PC do caixa — diagnóstico de 10/11/2026 (dados medidos com `tools/diagnostico-pc.ps1`)
 
@@ -117,3 +132,42 @@ Consequências para o projeto (recomendações, não decisões fechadas):
 5. **Banco resistente a queda de energia**: SQLite em WAL + backup diário; recomendar nobreak ao cliente.
 6. **Migração**: o SQL Server 2014 pode ser a fonte de produtos e clientes do sistema atual.
 7. **Hardware**: a lentidão vem principalmente de 4 GB de RAM + HD mecânico; a troca por SSD e a ampliação para 8 GB são as melhorias de maior efeito.
+
+## 11. Pedidos de 11/11/2026 (Eric) — onde cada um entra
+
+Ordem de construção aprovada: (1) login e operadores, (2) cadastro de produtos e preços, (3) abrir e fechar o caixa, (4) venda. A cada função pronta sai um instalador novo para teste.
+
+| # | Pedido | Onde entra | Situação e o que falta decidir |
+|---|---|---|---|
+| 1 | Tabela de preço por quantidade | Frente 2 (cadastro das faixas) e Frente 4 (o caixa aplica a faixa sozinho) | O modelo e o cálculo já existem (`preco_produto.qtd_min`, `app/precos.py`, com testes). Faltam as telas. |
+| 2 | Tabela de preço por forma de pagamento | Frente 2 (cadastro da regra) e Frente 4 (aplicação na venda) | **Falta decidir a regra** (seção 9, pergunta 7). Não há nada no modelo ainda. |
+| 3 | Mais de uma forma de pagamento na mesma venda (ex.: parte no débito, parte no crédito) | Frente 4 | O modelo já aceita vários pagamentos por venda (`pagamento`). Falta a tela e a conferência "soma dos pagamentos = total". |
+| 4 | Saldo de vendas do dia na tela | Frente 4 | Total do dia vindo do banco, na tela do Caixa e no "Resumo de hoje" do Início. Sem venda, mostra "—" e o motivo. |
+| 5 | Cliente com CPF ou CNPJ e tabela atacadista ou varejista no cadastro | Frente 2 | O cadastro já tem `cpf_cnpj` e `tabela_id`. Faltam a validação dos dígitos do CPF/CNPJ e a tela. |
+| 6 | Alterar (editar) a quantidade dos itens na tela do PDV | Frente 4 | Ao mudar a quantidade, a faixa de preço do item é recalculada. |
+| 7 | Trocar a forma de pagamento mesmo depois de escolhida | Frente 4 | Os pagamentos ficam editáveis até a venda ser finalizada. |
+| 8 | Ao finalizar a venda, escolher se emite ou não a NFC-e | Frente 4 (a escolha fica gravada na venda) e Frente 5 (emissão) | Depende do regime tributário e da UF (seção 5 e seção 9, pergunta 8). |
+| 9 | No PDV, escolher o cliente pelo cadastro e trocar o cliente da venda | Frente 4 | Ao trocar o cliente, passa a valer a tabela de preço dele e os preços dos itens são recalculados, com aviso na tela. |
+
+## 12. Operadores, login e permissões (Frente 1, feita em 11/11/2026)
+
+- **Primeiro acesso**: sem nenhum operador cadastrado, a capa pede a criação do gerente (nome, usuário e senha) e já entra com ele.
+- **Login**: na capa, o operador escolhe o nome na lista e digita a senha. A lista já abre no último operador usado. Cinco senhas erradas seguidas travam aquele usuário por 30 segundos.
+- **Senha**: mínimo de 4 caracteres. O banco guarda só o hash (scrypt); a senha não aparece em resposta da API nem no log.
+- **Sessão**: vale até "Trocar de operador" (menu Arquivo) ou até fechar o programa. Cada operador troca a própria senha em Arquivo → Minha senha.
+- **Operadores** (menu Cadastros, só o gerente): cadastrar, alterar nome, usuário, perfil e senha, e inativar. Operador não é apagado: fica inativo, e o histórico dele continua guardado. Ninguém inativa nem rebaixa o próprio usuário; assim sempre existe um gerente ativo.
+- **Recuperação de acesso** (senha esquecida): com o sistema fechado, rodar `MolekaPDV.exe --redefinir-senha` (ou `--redefinir-senha usuario`). O programa sorteia uma senha provisória, mostra na tela uma única vez e registra o uso no log.
+
+Perfis (padrão proposto; o Eric pode mudar):
+
+| O que faz | Operador | Gerente |
+|---|---|---|
+| Vender no caixa e consultar produtos | sim | sim |
+| Cadastrar cliente | sim | sim |
+| Trocar a própria senha | sim | sim |
+| Cadastrar ou alterar produtos, preços e tabelas de preço | não | sim |
+| Ver o financeiro (DRE, fluxo de caixa, rentabilidade) | não | sim |
+| Estoque, entrada de NF, fiscal e configurações | não | sim |
+| Cadastrar, alterar e inativar operadores | não | sim |
+
+A definir na Frente 3: se abertura, sangria, suprimento e fechamento do caixa ficam com o operador ou pedem a senha do gerente.
