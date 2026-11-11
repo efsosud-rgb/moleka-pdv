@@ -2,22 +2,88 @@
 
 Sobe o servidor local (só em 127.0.0.1) numa thread e abre a janela do sistema com pywebview.
 Uso:
-    python main.py              # abre a janela (precisa de WebView2 no Windows)
-    python main.py --sem-janela # só o servidor, para desenvolvimento/testes (abra no navegador)
+    python main.py               # abre a janela maximizada (precisa do WebView2 no Windows)
+    python main.py --tela-cheia  # tela cheia, sem barra de título (modo caixa)
+    python main.py --janela      # janela de 1366x768, para desenvolvimento
+    python main.py --sem-janela  # só o servidor, para desenvolvimento/testes (abra no navegador)
 """
 
 from __future__ import annotations
 
 import argparse
+import logging
+import os
 import socket
 import sys
 import threading
 import time
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 import uvicorn
 
 from app import config, db
 from app.api import criar_app
+
+log = logging.getLogger("moleka")
+
+# Identificador do WebView2 Runtime no registro do Windows (documentação da Microsoft).
+_WEBVIEW2_CHAVE = r"Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+
+
+def configurar_logs() -> Path:
+    """Grava o log em <dados>/logs/moleka.log e devolve o caminho do arquivo."""
+    arquivo = config.pasta_dados() / "logs" / "moleka.log"
+    handler = RotatingFileHandler(arquivo, maxBytes=1_000_000, backupCount=5, encoding="utf-8")
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+    raiz = logging.getLogger()
+    raiz.setLevel(logging.INFO)
+    raiz.addHandler(handler)
+    # Empacotado sem console, stdout e stderr não existem; quem escreve neles quebraria.
+    if sys.stdout is None:
+        sys.stdout = open(os.devnull, "w", encoding="utf-8")
+    if sys.stderr is None:
+        sys.stderr = open(os.devnull, "w", encoding="utf-8")
+    return arquivo
+
+
+def avisar(titulo: str, texto: str, *, com_janela: bool) -> None:
+    """Mostra um erro ao usuário: caixa de mensagem no Windows com janela, stderr nos demais."""
+    log.error("%s: %s", titulo, texto)
+    if com_janela and os.name == "nt":
+        import ctypes
+
+        ctypes.windll.user32.MessageBoxW(None, texto, titulo, 0x10)  # 0x10 = ícone de erro
+    else:
+        print(f"{titulo}: {texto}", file=sys.stderr)
+
+
+def webview2_instalado() -> bool:
+    """Diz se o WebView2 Runtime está instalado (só faz sentido no Windows)."""
+    import winreg
+
+    locais = (
+        (winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\WOW6432Node\\" + _WEBVIEW2_CHAVE),
+        (winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\" + _WEBVIEW2_CHAVE),
+        (winreg.HKEY_CURRENT_USER, "Software\\" + _WEBVIEW2_CHAVE),
+    )
+    for raiz, caminho in locais:
+        try:
+            with winreg.OpenKey(raiz, caminho) as chave:
+                versao, _ = winreg.QueryValueEx(chave, "pv")
+        except OSError:
+            continue
+        if versao and versao != "0.0.0.0":
+            return True
+    return False
+
+
+def marcar_aberto() -> None:
+    """Cria um mutex de nome fixo; o instalador usa para saber se o sistema está aberto."""
+    if os.name == "nt":
+        import ctypes
+
+        ctypes.windll.kernel32.CreateMutexW(None, False, "MolekaPDV_Aberto")
 
 
 def _porta_livre(porta: int) -> bool:
@@ -25,7 +91,7 @@ def _porta_livre(porta: int) -> bool:
         return s.connect_ex(("127.0.0.1", porta)) != 0
 
 
-def _esperar_servidor(porta: int, segundos: float = 10) -> bool:
+def _esperar_servidor(porta: int, segundos: float = 15) -> bool:
     limite = time.monotonic() + segundos
     while time.monotonic() < limite:
         if not _porta_livre(porta):
@@ -37,7 +103,9 @@ def _esperar_servidor(porta: int, segundos: float = 10) -> bool:
 def iniciar_servidor(porta: int) -> uvicorn.Server:
     db.criar_schema()
     servidor = uvicorn.Server(
-        uvicorn.Config(criar_app(), host="127.0.0.1", port=porta, log_level="warning")
+        uvicorn.Config(
+            criar_app(), host="127.0.0.1", port=porta, log_level="warning", log_config=None
+        )
     )
     threading.Thread(target=servidor.run, name="servidor-local", daemon=True).start()
     if not _esperar_servidor(porta):
@@ -45,22 +113,95 @@ def iniciar_servidor(porta: int) -> uvicorn.Server:
     return servidor
 
 
+class Ponte:
+    """Funções da janela que a interface pode chamar por `window.pywebview.api`.
+
+    A janela fica num atributo com sublinhado: o pywebview expõe os atributos públicos
+    para o JavaScript, e a janela não deve ir junto.
+    """
+
+    def __init__(self) -> None:
+        self._janela = None
+
+    def sair(self) -> None:
+        if self._janela is not None:
+            self._janela.destroy()
+
+    def tela_cheia(self) -> None:
+        if self._janela is not None:
+            self._janela.toggle_fullscreen()
+
+
+def abrir_janela(url: str, *, tela_cheia: bool, janela_pequena: bool) -> None:
+    import webview  # importado aqui: só é necessário com janela
+
+    ponte = Ponte()
+    janela = webview.create_window(
+        config.APP_NOME,
+        url,
+        js_api=ponte,
+        fullscreen=tela_cheia,
+        maximized=not tela_cheia and not janela_pequena,
+        width=1366,
+        height=768,
+        min_size=(1024, 700),
+        text_select=False,
+    )
+    ponte._janela = janela
+    webview.start(
+        gui="edgechromium" if os.name == "nt" else None,
+        storage_path=str(config.pasta_dados() / "webview"),
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=config.APP_NOME)
     parser.add_argument("--sem-janela", action="store_true", help="só o servidor local")
     parser.add_argument("--porta", type=int, default=config.porta())
-    parser.add_argument("--janela", action="store_true", help="janela normal em vez de tela cheia")
+    parser.add_argument("--tela-cheia", action="store_true", help="tela cheia (modo caixa)")
+    parser.add_argument("--janela", action="store_true", help="janela de 1366x768")
     args = parser.parse_args(argv)
+    com_janela = not args.sem_janela
+
+    arquivo_log = configurar_logs()
+    log.info("%s %s iniciando; dados em %s", config.APP_NOME, config.VERSAO, config.pasta_dados())
 
     porta = args.porta
     if not _porta_livre(porta):
-        print(f"A porta {porta} já está em uso (o sistema já está aberto?).", file=sys.stderr)
+        avisar(
+            config.APP_NOME,
+            f"O {config.APP_NOME} já está aberto neste computador (porta {porta} em uso).",
+            com_janela=com_janela,
+        )
         return 2
 
-    servidor = iniciar_servidor(porta)
+    if com_janela and os.name == "nt" and not webview2_instalado():
+        avisar(
+            config.APP_NOME,
+            "Falta o componente WebView2 da Microsoft, que desenha as telas do sistema.\n\n"
+            "Instale o 'WebView2 Runtime' (gratuito, no site da Microsoft) ou rode de novo "
+            "o instalador do Moleka PDV com internet, e abra o sistema outra vez.",
+            com_janela=True,
+        )
+        return 3
+
+    try:
+        servidor = iniciar_servidor(porta)
+    except Exception as erro:  # qualquer falha na partida precisa chegar ao usuário
+        log.exception("falha ao iniciar o servidor local")
+        avisar(
+            config.APP_NOME,
+            f"O sistema não conseguiu iniciar.\n\n{erro}\n\nDetalhes em:\n{arquivo_log}",
+            com_janela=com_janela,
+        )
+        return 1
+
+    marcar_aberto()
     url = f"http://127.0.0.1:{porta}/"
     print(f"{config.APP_NOME} {config.VERSAO} — {url} — dados em {config.pasta_dados()}")
+    log.info("servidor local em %s", url)
 
+    codigo = 0
     if args.sem_janela:
         try:
             while True:
@@ -68,21 +209,20 @@ def main(argv: list[str] | None = None) -> int:
         except KeyboardInterrupt:
             pass
     else:
-        import webview  # importado aqui: só é necessário com janela
-
-        webview.create_window(
-            config.APP_NOME,
-            url,
-            fullscreen=not args.janela,
-            width=1366,
-            height=768,
-            min_size=(1024, 700),
-            text_select=False,
-        )
-        webview.start()
+        try:
+            abrir_janela(url, tela_cheia=args.tela_cheia, janela_pequena=args.janela)
+        except Exception as erro:  # idem: o usuário precisa ver o motivo
+            log.exception("falha ao abrir a janela")
+            avisar(
+                config.APP_NOME,
+                f"A janela do sistema não abriu.\n\n{erro}\n\nDetalhes em:\n{arquivo_log}",
+                com_janela=True,
+            )
+            codigo = 1
 
     servidor.should_exit = True
-    return 0
+    log.info("encerrado (código %s)", codigo)
+    return codigo
 
 
 if __name__ == "__main__":
