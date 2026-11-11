@@ -4,7 +4,7 @@ Sistema de frente de loja da sorveteria **Moleka Sorvetes**: caixa (PDV) com emi
 
 Backend em **Python**; interface em HTML/CSS/JS dentro de uma janela desktop (**pywebview** / WebView2), com visual limpo e relevo 3D nos componentes e na logo animada. Instalação por um único arquivo, `MolekaPDV-Instalador-<versão>.exe`.
 
-> Estado atual (11/11/2026, versão 0.3.0): já funcionam a **entrada com usuário e senha**, os **cadastros** (produtos com preço por tabela e por quantidade, clientes com CPF ou CNPJ, tabelas de preço, percentual por forma de pagamento, operadores), o **controle de caixa** (abertura, sangria, suprimento, fechamento) e a **venda** (várias formas de pagamento, troco, desconto do gerente, saldo do dia). **Ainda não**: NFC-e (nenhum documento fiscal é emitido), impressão do cupom, tela de estoque, entrada de NF por XML e financeiro. Ver [`docs/PLANO.md`](docs/PLANO.md).
+> Estado atual (11/11/2026, versão 0.4.0): já funcionam a **entrada com usuário e senha**, os **cadastros** (produtos com preço por tabela e por quantidade, clientes com CPF ou CNPJ, tabelas de preço, percentual por forma de pagamento, operadores), o **controle de caixa** (abertura, sangria, suprimento, fechamento), a **venda** (várias formas de pagamento, troco, desconto do gerente, saldo do dia), o **estoque** (saldos, entrada, saída, contagem, custo médio), a **entrada de nota de compra por XML** e o **financeiro** (contas a pagar e a receber, fluxo de caixa, DRE e rentabilidade por produto). **Ainda não**: NFC-e (nenhum documento fiscal é emitido) e impressão do cupom. As telas foram testadas no navegador e por testes automáticos; o que falta conferir na janela do Windows está em [`docs/PLANO.md`](docs/PLANO.md).
 
 ## Como instalar (Windows 10 ou 11)
 
@@ -24,6 +24,11 @@ O instalador é gerado e testado no GitHub (`.github/workflows/instalador-window
 3. **Cadastros → Clientes**: nome, CPF ou CNPJ e a tabela de preço do cliente.
 4. **Caixa → Controle de caixa** (F11): digite o fundo de troco e abra o caixa.
 5. **Caixa → Venda** (F2): passe o leitor ou digite o produto; F6 a F9 recebem; F10 finaliza.
+6. **Estoque → Entrada de NF (XML)**: escolha o arquivo XML da nota do fornecedor, diga em cada item qual é o produto da loja (ou crie um novo) e importe. O estoque sobe, o custo é refeito e as parcelas viram contas a pagar.
+7. **Estoque → Saldos, ajustes e contagem**: entrada e saída à mão (com motivo) e contagem da prateleira.
+8. **Financeiro**: lance as despesas (aluguel, energia, salários) e dê baixa quando pagar; o fluxo de caixa, o DRE e a rentabilidade saem das vendas e desses lançamentos.
+
+O lucro só aparece para o que tem custo: o custo vem da entrada da nota, de uma entrada no Estoque ou do cadastro do produto, e vale para as vendas feitas **depois**. Sem custo, o DRE e a rentabilidade mostram "—" e dizem o motivo.
 
 ## Operadores e senhas
 
@@ -69,9 +74,12 @@ Testes e lint:
 pytest
 ruff check .
 ruff format .
+mypy
 ```
 
-Os dados ficam em `%APPDATA%\MolekaPDV\` (banco `moleka.db`, `backups/`, `logs/moleka.log`, `xml/`). A variável `MOLEKA_PDV_DADOS` muda a pasta; `MOLEKA_PDV_PORTA` muda a porta (padrão 8765). A API tem documentação automática em `http://127.0.0.1:8765/api/docs`.
+Além dos testes do `pytest`, há dois roteiros que usam o sistema pelo navegador, como uma pessoa faria, com os valores esperados calculados à mão: `tools/roteiros/vendas_no_navegador.js` (cadastros, caixa e venda) e `tools/roteiros/estoque_compras_financeiro_no_navegador.js` (estoque, entrada de nota e financeiro). Precisam do Node.js com o pacote `playwright`; o começo de cada arquivo explica como rodar. As notas usadas neles são fictícias, geradas por `tools/roteiros/notas_ficticias.py`.
+
+Os dados ficam em `%APPDATA%\MolekaPDV\` (banco `moleka.db`, `backups/`, `logs/moleka.log`, `xml/entrada/` com as notas de compra importadas). A variável `MOLEKA_PDV_DADOS` muda a pasta; `MOLEKA_PDV_PORTA` muda a porta (padrão 8765). A API tem documentação automática em `http://127.0.0.1:8765/api/docs`.
 
 ## Regras do projeto
 
@@ -96,6 +104,11 @@ moleka-pdv/
 │   ├── precos.py        # tabelas varejo/atacado e faixas por quantidade
 │   ├── vendas.py        # a venda: itens, cliente, desconto, formas de pagamento, finalizar, cancelar
 │   ├── caixa.py         # controle de caixa: abertura, sangria, suprimento, fechamento
+│   ├── estoque.py       # saldos (soma dos movimentos), custo médio, entrada, saída e contagem
+│   ├── nfe_xml.py       # leitura do XML da NF-e de compra (modelo 55) e conferência da chave
+│   ├── compras.py       # entrada da nota: de-para do fornecedor, custo, contas a pagar e estorno
+│   ├── financeiro.py    # categorias, lançamentos, fluxo de caixa, DRE e rentabilidade
+│   ├── catalogo.py      # próximo código de produto
 │   ├── documentos.py    # CPF e CNPJ (dígitos verificadores)
 │   ├── pesquisa.py      # busca sem acento
 │   ├── tempo.py         # horário da loja (Brasília) e o "dia" das vendas
@@ -103,16 +116,16 @@ moleka-pdv/
 │   ├── acesso.py        # sessões de login e permissões por perfil
 │   ├── operadores.py    # regras do cadastro de operadores e recuperação de acesso
 │   ├── web.py           # páginas (Jinja2), lista de módulos e menus; exige login
-│   ├── api/             # FastAPI: status, login e operadores, cadastros, caixa e vendas
+│   ├── api/             # FastAPI: status, login e operadores, cadastros, caixa, vendas, estoque, compras e financeiro
 │   └── fiscal/          # adaptador fiscal (ProvedorFiscal) + ProvedorNulo
 ├── ui/
 │   ├── templates/       # base.html (moldura) e uma página por tela
 │   └── static/          # css/moleka.css, js/ (um arquivo comum e um por tela), fonts/ (Inter e Nunito)
 ├── assets/brand/        # logo, mascote, artes da capa e ícone do programa
 ├── packaging/           # PyInstaller, Inno Setup e teste do instalador no Windows
-├── tools/               # abrir_pelo_codigo.py (roda sem instalador), design/ e scripts do PC do caixa
+├── tools/               # abrir_pelo_codigo.py (roda sem instalador), roteiros/ (testes pelo navegador), design/ e scripts do PC do caixa
 ├── docs/                # ESPECIFICACAO.md, DECISOES.md, PLANO.md, prototipo/
-└── tests/               # pytest (dinheiro, preços, vendas, caixa, cadastros, login e perfis, páginas, banco)
+└── tests/               # pytest (dinheiro, preços, vendas, caixa, cadastros, estoque, compras, financeiro, login e perfis, páginas, banco)
 ```
 
 ## Marca

@@ -1,6 +1,6 @@
 # Especificação — Moleka PDV (rascunho v0.3, 07/11/2026; atualizado em 11/11/2026)
 
-Documento vivo. Itens marcados **[A DEFINIR]** dependem de resposta do cliente ou do Eric; ver seção 9. Os pedidos de 11/11/2026 estão na seção 11; operadores e permissões, na seção 12; as regras de cadastros, caixa e venda (versão 0.3.0), na seção 13.
+Documento vivo. Itens marcados **[A DEFINIR]** dependem de resposta do cliente ou do Eric; ver seção 9. Os pedidos de 11/11/2026 estão na seção 11; operadores e permissões, na seção 12; as regras de cadastros, caixa e venda (versão 0.3.0), na seção 13; as de estoque, entrada de nota por XML e financeiro (versão 0.4.0), na seção 14.
 
 ## 1. Objetivo
 
@@ -108,6 +108,11 @@ NF-e modelo 55 (venda para empresa), SAT-CF-e (só SP), delivery/iFood, fidelida
 10. **Controle de caixa**: o operador comum pode abrir, fechar, sangrar e suprir sozinho (como está) ou alguma dessas ações deve pedir o gerente? No fechamento, quem fecha deve ver o valor esperado (como está) ou contar "às cegas"?
 11. **Desconto e cancelamento no caixa**: hoje o gerente precisa entrar com o usuário dele (a venda continua aberta). Vale construir a autorização por senha do gerente na hora, sem trocar de operador?
 12. Quais percentuais a loja usa em cada forma de pagamento (dinheiro, Pix, débito, crédito)? O sistema começa com 0% em todas.
+13. **A loja fabrica o sorvete, revende, ou os dois?** Quem revende dá entrada pela nota e o custo do produto sai dela. Quem fabrica compra leite, açúcar e embalagem: o custo de cada sorvete depende de uma ficha técnica (receita), que ainda não existe. Enquanto isso, quem fabrica pode lançar a matéria-prima como custo (grupo "Custo das vendas"). Ver seção 14.
+14. **Custo na entrada da nota**: hoje o custo do item soma frete, seguro, outras despesas, IPI e ICMS-ST, e não desconta imposto nenhum (conta de quem não recupera imposto na compra). O contador confirma que é assim para a loja?
+15. **Vender sem saldo no estoque**: hoje a venda passa e o saldo fica negativo, em destaque na tela Estoque. Deve continuar assim, avisar no caixa ou bloquear?
+16. **Cartão no fluxo de caixa**: hoje a venda no cartão entra no dia da venda, pelo valor cheio. A loja quer ver o dinheiro no dia em que cai na conta, já sem a taxa da maquininha? Quais são os prazos e as taxas?
+17. **Plano de contas**: as 17 categorias iniciais do Financeiro (seção 14) servem para a loja? Quais faltam e quais sobram?
 
 ## 10. PC do caixa — diagnóstico de 10/11/2026 (dados medidos com `tools/diagnostico-pc.ps1`)
 
@@ -213,4 +218,82 @@ Perfis (padrão proposto; o Eric pode mudar):
 
 ### O que ainda não existe nestas telas
 
-Impressão do cupom; NFC-e; CPF na nota; importação de produtos por planilha; lançamento da venda no financeiro; tela de estoque (a baixa já é gravada); autorização do gerente por senha na hora.
+Impressão do cupom; NFC-e; CPF na nota; importação de produtos por planilha; autorização do gerente por senha na hora. A tela de estoque e o financeiro chegaram na versão 0.4.0 (seção 14); a venda não vira um lançamento no financeiro: o fluxo de caixa, o DRE e a rentabilidade leem as vendas direto.
+
+## 14. Estoque, entrada de nota por XML e financeiro (Frentes 7 e 8, feitas em 11/11/2026, versão 0.4.0)
+
+As três telas são só do gerente. Nenhuma das regras abaixo foi combinada antes com o Eric: são o padrão adotado para as telas funcionarem (ver DECISOES de 11/11/2026 e as perguntas 13 a 17 da seção 9).
+
+### Estoque (menu Estoque → Saldos, ajustes e contagem)
+
+- O saldo de cada produto é a soma dos movimentos: venda (sai), cancelamento de venda (volta), entrada de nota, estorno de nota, entrada e saída feitas à mão e contagem. Ninguém digita o saldo direto.
+- No alto: quantos produtos têm saldo, quantos estão abaixo do mínimo do cadastro, quantos estão com saldo negativo e o **valor do estoque a custo** (saldo × custo médio; produto sem custo fica fora da soma, e a tela diz quantos são).
+- A lista filtra por nome ou código (sem acento também acha) e por situação: todos, com saldo, abaixo do mínimo, saldo negativo.
+- **Entrada** e **saída** à mão: quantidade e motivo obrigatório (por exemplo: quebra, produção do dia). Na entrada, o custo de cada unidade é opcional; informado, entra na média.
+- **Contagem**: digita-se quanto há na prateleira; o sistema grava a diferença como movimento e o saldo passa a ser o contado. A contagem não mexe no custo.
+- Antes de gravar, a tela mostra o saldo de agora e o saldo depois. O **histórico** do produto mostra cada movimento com data, quantidade, saldo depois, custo, motivo e quem fez.
+- Casas decimais só para KG, G, L, ML e M. "1.000" com ponto é recusado (mil ou um?): digita-se 1000 ou 1,000.
+- Vender sem saldo é permitido: o saldo fica negativo e aparece em destaque (pergunta 15).
+
+### Custo
+
+- O custo do produto é o **custo médio ponderado**, em centavos: `(saldo × custo de agora + quantidade que entrou × custo da entrada) ÷ (saldo + quantidade)`, arredondado para o centavo. Com saldo zero ou negativo, ou sem custo anterior, o custo da entrada passa a ser o custo. Guardam-se o custo médio e o da última entrada.
+- Saída, contagem, venda e cancelamento de venda não mudam o custo.
+- A venda **guarda o custo de cada item no momento em que é finalizada**; é esse o custo usado no DRE e na rentabilidade. Venda feita antes da 0.4.0 não tem custo gravado.
+
+### Entrada de NF por XML (menu Estoque → Entrada de NF)
+
+- Aceita o arquivo XML da **NF-e modelo 55** (a nota de compra), autorizada ou não. Recusa, dizendo o motivo: arquivo que não é XML, cortado, maior que 2 MB, NFC-e (modelo 65), evento (cancelamento, carta de correção) e chave de acesso com dígito errado. Chave com CNPJ de letras (alfanumérico) é aceita.
+- **Passo 1 — conferir** (não grava nada): a tela mostra fornecedor, número, data, total, itens e parcelas, e os **avisos**: nota sem protocolo de autorização, nota não autorizada pela SEFAZ, nota de entrada emitida pelo próprio fornecedor, total diferente da soma dos itens, item de brinde ou bonificação (entra com custo zero), parcelas que não somam o total, nota já importada. O sistema ainda não confere se a nota foi emitida para a loja (o CNPJ da loja ainda não está cadastrado).
+- Em cada item o gerente escolhe: **dar entrada num produto nosso** (busca por nome ou código), **criar um produto novo** (com a descrição, o código de barras e o NCM da nota; nasce **sem preço de venda**) ou **não dar entrada**. O sistema sugere o produto pela memória daquele fornecedor e, se não houver, pelo código de barras.
+- **Fator**: quantas unidades nossas há em cada unidade da nota (caixa com 24 → 24). Entra no estoque `quantidade da nota × fator`. A tela mostra, antes de gravar, quanto entra e o custo de cada unidade.
+- **Custo do item** = valor dos produtos − desconto + frete + seguro + outras despesas + IPI + ICMS-ST (com FCP-ST). O ICMS próprio não é somado (já está no valor dos produtos). Custo de cada unidade = custo do item ÷ quantidade que entra, arredondado para o centavo.
+- **Passo 2 — importar**: grava a nota, os movimentos de estoque, o custo novo, a memória "código do fornecedor → nosso produto" e as contas a pagar. O arquivo fica guardado em `%APPDATA%\MolekaPDV\xml\entrada\<chave>.xml`. A mesma nota não entra duas vezes.
+- **Contas a pagar**: uma por parcela (duplicata) da nota, na categoria "Compra de mercadorias para revenda" ou na que o gerente escolher. Nota sem parcelas só gera conta se o gerente digitar um vencimento (uma conta com o total). Dá para importar sem gerar conta.
+- **Notas importadas**: lista com fornecedor, número, total, itens e contas; "Ver" mostra os itens como entraram. **Estornar** (com motivo) tira do estoque o que entrou, volta o custo e cancela as contas a pagar em aberto daquela nota. Não estorna se alguma parcela já foi paga: primeiro se desfaz a baixa. Se o custo não puder ser refeito com exatidão, a tela lista os produtos para o gerente conferir. A nota estornada pode ser importada de novo.
+
+### Financeiro: categorias e lançamentos (menu Financeiro)
+
+- **Categorias**: cada uma pertence a um grupo do DRE: receita de vendas, deduções da receita, custo das vendas (CMV), despesas operacionais, outras receitas, outras despesas, fora do resultado (saídas) e fora do resultado (entradas). O banco nasce com 17 categorias, só nomes, sem valor. O gerente cria, renomeia e inativa; o grupo de uma categoria com lançamento não muda.
+- **Lançamento**: despesa (conta a pagar) ou receita (conta a receber), com descrição, categoria, valor, vencimento e competência (o dia a que o gasto ou a receita pertence; em branco, vale o vencimento). Pode nascer já pago, com o dia e a forma do pagamento. Não há campo de fornecedor, cliente, documento nem observação: o que precisar vai na descrição.
+- **Baixa**: dia e forma do pagamento ou do recebimento. Dá para desfazer.
+- **Situação**: em aberto, vencido (venceu antes de hoje e não foi pago), pago ou recebido, cancelado.
+- Lançamento **não é apagado**: é cancelado (fica na lista de cancelados, com data e autor). Pago não se altera nem cancela sem antes desfazer a baixa. Conta que veio de nota de compra só sai estornando a nota.
+- A lista filtra por período (do vencimento), tipo e situação; "Vencidas" mostra as de qualquer data. No alto: a pagar, a receber, pago e recebido do que está na lista.
+- Datas são digitadas em dia/mês/ano. Os períodos vão até 366 dias.
+
+### Fluxo de caixa
+
+- Por dia: **vendas** (no dia da venda, todas as formas, pelo valor que o cliente pagou), **outros recebimentos** (receitas baixadas no dia), **pagamentos** (despesas baixadas no dia), saldo do dia e acumulado do período.
+- No alto: quanto entrou, quanto saiu, o saldo do período e o que está em aberto com vencimento no período (a receber e a pagar); à parte, o que está vencido, de qualquer data.
+- Sangria e suprimento não entram (são da gaveta: ver Controle de caixa). Prazo e taxa de cartão não são considerados (pergunta 16). O saldo é o do período, não o da conta bancária: o sistema não conhece o saldo inicial.
+
+### DRE (resultado do período)
+
+- Por **competência**: as vendas contam no dia em que foram feitas; os lançamentos, no dia de competência, pagos ou não. Cancelados ficam de fora.
+
+| Linha | De onde vem |
+|---|---|
+| Receita bruta | itens vendidos + acréscimos das formas de pagamento + receitas lançadas no grupo "receita de vendas" |
+| (−) Descontos | desconto do gerente + descontos das formas de pagamento |
+| (−) Deduções | lançamentos do grupo "deduções" (impostos sobre a venda, taxas de cartão, devoluções) |
+| = Receita líquida | |
+| (−) CMV | custo gravado nos itens vendidos + lançamentos do grupo "custo das vendas" |
+| = Lucro bruto | |
+| (−) Despesas operacionais | lançamentos do grupo, abertos por categoria |
+| (+) Outras receitas, (−) outras despesas | lançamentos dos grupos |
+| = Resultado | |
+
+- As deduções, o CMV, o lucro bruto, as despesas e o resultado mostram também o percentual sobre a receita líquida. As linhas abrem em detalhes (por exemplo, cada categoria de despesa).
+- **Compra de mercadoria, retirada dos sócios, empréstimo e aporte ficam fora do resultado**: aparecem só no fluxo de caixa.
+- **Sem custo, sem lucro inventado**: se nenhuma venda do período tem custo gravado e não há custo lançado, o CMV, o lucro bruto e o resultado aparecem como "—", com o motivo. Se só parte dos itens tem custo, as três linhas vêm marcadas como parciais e um aviso diz quantos itens e quanto em vendas ficaram sem custo.
+- Sem vendas nem lançamentos no período, a tela mostra "—" e o motivo, em todas as linhas.
+
+### Rentabilidade por produto
+
+- Por produto vendido no período: quantidade, receita, custo, margem em reais e em %. A receita do produto é o que o cliente pagou por ele: o desconto do gerente e o desconto ou acréscimo das formas de pagamento são divididos entre os itens pela proporção do valor, sem perder centavos.
+- O custo é o gravado em cada venda. Produto com alguma venda sem custo aparece com "—" no custo e na margem e fica fora do total da margem; a tela mostra separadas a receita dos produtos com custo e a dos sem custo.
+
+### O que ainda não existe nestas telas
+
+Ficha técnica e produção (para quem fabrica); contagem de vários produtos de uma vez (inventário); prazo e taxa das maquininhas no fluxo de caixa; saldo inicial e conta bancária; contas que se repetem todo mês; centro de custo e anexos; comparação de períodos; margem por categoria de produto; exportar para Excel e imprimir em A4; lançamento automático de impostos e taxas (hoje são digitados como lançamento).
