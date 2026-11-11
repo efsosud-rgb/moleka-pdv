@@ -476,6 +476,7 @@ def test_importar_confere_tudo_antes_de_gravar(cliente, loja, tmp_path):
     recusa(_decisoes(loja) + [{"numero": 3, "acao": "ignorar"}], "mais de uma decisão")
     recusa(_decisoes(loja, copo="talvez"), "Item 3: escolha o que fazer")
     recusa(_decisoes(loja, picole=0), "Item 1: o fator de conversão precisa ser maior que zero")
+    recusa(_decisoes(loja, picole=100001), "Item 1: o fator de conversão está grande demais")
     sem_produto = _decisoes(loja)
     sem_produto[0]["produto_id"] = None
     recusa(sem_produto, "Item 1: escolha o produto")

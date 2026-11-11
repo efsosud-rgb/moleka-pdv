@@ -229,9 +229,14 @@ def importar(
             continue
         # Três casas, como o banco guarda: o estorno refaz exatamente a mesma conta.
         fator = estoque.arredondar(Decimal(decisao.fator))
-        if fator <= 0 or fator > FATOR_MAXIMO:
+        if fator <= 0:
             raise RegraError(
                 f"Item {item.numero}: o fator de conversão precisa ser maior que zero."
+            )
+        if fator > FATOR_MAXIMO:
+            raise RegraError(
+                f"Item {item.numero}: o fator de conversão está grande demais. "
+                "Confira o que foi digitado."
             )
         produto = None
         if decisao.acao == "vincular":
