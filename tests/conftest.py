@@ -125,3 +125,29 @@ def loja(cliente):
         "sorvete": sorvete,
         "agua": agua,
     }
+
+
+@pytest.fixture()
+def vender(cliente):
+    """Faz uma venda inteira pela API: itens, um pagamento e a finalização.
+
+    `itens` é uma lista de (produto_id, quantidade). Devolve a venda finalizada.
+    """
+
+    def _vender(itens, forma="dinheiro", desconto_centavos=None, quem=None):
+        janela = quem or cliente
+        for produto_id, quantidade in itens:
+            item = janela.post(
+                "/api/venda/itens", json={"produto_id": produto_id, "quantidade": quantidade}
+            )
+            assert item.status_code == 201, item.text
+        if desconto_centavos:
+            desconto = cliente.put("/api/venda/desconto", json={"centavos": desconto_centavos})
+            assert desconto.status_code == 200, desconto.text
+        pago = janela.post("/api/venda/pagamentos", json={"forma": forma})
+        assert pago.status_code == 201, pago.text
+        final = janela.post("/api/venda/finalizar", json={})
+        assert final.status_code == 200, final.text
+        return final.json()["venda"]
+
+    return _vender

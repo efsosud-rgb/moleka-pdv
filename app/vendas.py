@@ -29,7 +29,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app import dinheiro, tempo
+from app import dinheiro, estoque, tempo
 from app.models import (
     Cliente,
     FormaPagamento,
@@ -54,7 +54,7 @@ from app.precos import PrecoProduto as Faixas
 log = logging.getLogger("moleka.vendas")
 
 # Unidades em que a quantidade pode ter casas decimais (ex.: 0,350 kg). As outras são inteiras.
-UNIDADES_FRACIONADAS = frozenset({"KG", "G", "L", "ML", "M"})
+UNIDADES_FRACIONADAS = estoque.UNIDADES_FRACIONADAS
 AJUSTE_MAXIMO_BP = 5000  # 50%, para mais ou para menos
 # Troco acima disto (R$ 1.000,00) quase sempre é engano: valor digitado sem a vírgula ou o
 # leitor de código de barras bipado com o cursor no campo do valor.
@@ -402,6 +402,8 @@ def finalizar(sessao: Session, venda: Venda, operador: Operador, *, quer_nfce: b
     venda.finalizada_em = agora
     venda.quer_nfce = quer_nfce
     for item in venda.itens:
+        # O custo de hoje fica guardado na venda: o lucro não muda se o custo mudar depois.
+        item.custo_unitario_centavos = item.produto.custo_centavos
         sessao.add(
             MovimentoEstoque(
                 produto_id=item.produto_id,

@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app import acesso, db, documentos, vendas
+from app import acesso, catalogo, db, documentos, vendas
 from app.caixa import ROTULOS
 from app.models import (
     Cliente,
@@ -239,11 +239,6 @@ class ProdutoOut(BaseModel):
     precos: list[FaixaOut]
 
 
-def _proximo_codigo(sessao: Session) -> str:
-    numeros = [int(c) for (c,) in sessao.execute(select(Produto.codigo)) if c.isdigit()]
-    return str(max(numeros, default=0) + 1)
-
-
 def _so_digitos(valor: str | None, tamanhos: tuple[int, ...], campo: str) -> str | None:
     limpo = "".join((valor or "").split())
     if not limpo:
@@ -287,7 +282,7 @@ def _gravar_produto(sessao: Session, produto: Produto, dados: ProdutoIn) -> None
     descricao = _texto(dados.descricao, 120, "Descrição")
     if not descricao:
         raise RegraError("Digite a descrição do produto.")
-    codigo = _texto(dados.codigo, 30, "Código") or produto.codigo or _proximo_codigo(sessao)
+    codigo = _texto(dados.codigo, 30, "Código") or produto.codigo or catalogo.proximo_codigo(sessao)
     repetido = sessao.scalar(select(Produto).where(Produto.codigo == codigo))
     if repetido is not None and repetido.id != produto.id:
         raise RegraError(f"Já existe um produto com o código {codigo}.", status=409)
