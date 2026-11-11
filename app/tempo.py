@@ -33,6 +33,19 @@ def limites_do_dia(dia: date | None = None) -> tuple[datetime, datetime]:
     )
 
 
+def limites_do_periodo(inicio: date, fim: date) -> tuple[datetime, datetime]:
+    """Do começo de `inicio` ao fim de `fim` (dias da loja), em UTC sem fuso."""
+    return limites_do_dia(inicio)[0], limites_do_dia(fim)[1]
+
+
+def meio_dia(dia: date) -> datetime:
+    """Guarda uma data "sem hora" (vencimento, competência, dia do pagamento).
+
+    Vai como meio-dia para que nenhuma conversão de fuso a empurre para o dia vizinho.
+    """
+    return datetime.combine(dia, time(12, 0))
+
+
 def na_loja(momento: datetime) -> datetime:
     """Converte uma hora do banco (UTC sem fuso) para o horário da loja."""
     return momento.replace(tzinfo=UTC).astimezone(FUSO)

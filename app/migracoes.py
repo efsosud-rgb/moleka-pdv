@@ -23,7 +23,7 @@ from app.models import Base
 
 log = logging.getLogger("moleka.banco")
 
-VERSAO_DO_BANCO = 2
+VERSAO_DO_BANCO = 3
 
 
 def _colunas(con: Connection, tabela: str) -> set[str]:
@@ -64,8 +64,44 @@ def _formato_1_para_2(con: Connection) -> None:
     con.exec_driver_sql("CREATE INDEX IF NOT EXISTS ix_produto_categoria ON produto (categoria)")
 
 
+def _formato_2_para_3(con: Connection) -> None:
+    """Versão 0.4.0: estoque, entrada de NF por XML e financeiro."""
+    _acrescentar_colunas(con, "produto", {"ultimo_custo_centavos": "INTEGER"})
+    _acrescentar_colunas(con, "venda_item", {"custo_unitario_centavos": "INTEGER"})
+    _acrescentar_colunas(
+        con,
+        "nota_entrada",
+        {
+            "importada_por_id": "INTEGER REFERENCES operador(id)",
+            "estornada_em": "DATETIME",
+            "estornada_por_id": "INTEGER REFERENCES operador(id)",
+            "motivo_estorno": "VARCHAR(160)",
+        },
+    )
+    _acrescentar_colunas(
+        con,
+        "nota_entrada_item",
+        {
+            "numero": "INTEGER",
+            "fator_conversao": "NUMERIC(12, 3) NOT NULL DEFAULT 1",
+            "custo_total_centavos": "INTEGER NOT NULL DEFAULT 0",
+            "custo_antes_centavos": "INTEGER",
+            "custo_depois_centavos": "INTEGER",
+        },
+    )
+    _acrescentar_colunas(
+        con,
+        "lancamento",
+        {
+            "criado_por_id": "INTEGER REFERENCES operador(id)",
+            "cancelado_em": "DATETIME",
+            "cancelado_por_id": "INTEGER REFERENCES operador(id)",
+        },
+    )
+
+
 # PASSOS[n] leva o banco da versão n para a n + 1.
-PASSOS: dict[int, Callable[[Connection], None]] = {1: _formato_1_para_2}
+PASSOS: dict[int, Callable[[Connection], None]] = {1: _formato_1_para_2, 2: _formato_2_para_3}
 
 
 class BancoMaisNovoError(RuntimeError):

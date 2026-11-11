@@ -48,7 +48,10 @@ class Produto(Base):
     cest: Mapped[str | None] = mapped_column(String(7))
     cst_csosn: Mapped[str | None] = mapped_column(String(4))
     origem: Mapped[str] = mapped_column(String(1), default="0")  # 0 = nacional
-    custo_centavos: Mapped[int | None] = mapped_column(Integer)  # último custo (XML) ou manual
+    # Custo médio por unidade: é o que a venda guarda para o cálculo do lucro. Vem das entradas
+    # (XML ou ajuste com custo) ou é digitado no cadastro.
+    custo_centavos: Mapped[int | None] = mapped_column(Integer)
+    ultimo_custo_centavos: Mapped[int | None] = mapped_column(Integer)  # da última entrada
     estoque_minimo: Mapped[Decimal] = mapped_column(Numeric(12, 3), default=Decimal("0"))
     ativo: Mapped[bool] = mapped_column(Boolean, default=True)
     criado_em: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
@@ -233,6 +236,9 @@ class VendaItem(Base):
     codigo: Mapped[str | None] = mapped_column(String(30))
     descricao: Mapped[str | None] = mapped_column(String(120))
     unidade: Mapped[str | None] = mapped_column(String(6))
+    # Custo médio do produto quando a venda foi finalizada (formato 3). Vazio = o produto estava
+    # sem custo: o lucro dessa venda não pode ser calculado.
+    custo_unitario_centavos: Mapped[int | None] = mapped_column(Integer)
 
     venda: Mapped[Venda] = relationship(back_populates="itens")
     produto: Mapped[Produto] = relationship()
@@ -363,8 +369,15 @@ class NotaEntrada(Base):
     total_centavos: Mapped[int] = mapped_column(Integer)
     xml_caminho: Mapped[str] = mapped_column(String(300))
     importada_em: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    # Formato 3 do banco (versão 0.4.0):
+    importada_por_id: Mapped[int | None] = mapped_column(ForeignKey("operador.id"))
+    estornada_em: Mapped[datetime | None] = mapped_column(DateTime)
+    estornada_por_id: Mapped[int | None] = mapped_column(ForeignKey("operador.id"))
+    motivo_estorno: Mapped[str | None] = mapped_column(String(160))
 
-    itens: Mapped[list[NotaEntradaItem]] = relationship(back_populates="nota")
+    itens: Mapped[list[NotaEntradaItem]] = relationship(
+        back_populates="nota", order_by="NotaEntradaItem.id", cascade="all, delete-orphan"
+    )
 
 
 class NotaEntradaItem(Base):
@@ -380,9 +393,22 @@ class NotaEntradaItem(Base):
     unidade: Mapped[str] = mapped_column(String(6))
     quantidade: Mapped[Decimal] = mapped_column(Numeric(12, 3))
     valor_unitario_centavos: Mapped[int] = mapped_column(Integer)
-    valor_total_centavos: Mapped[int] = mapped_column(Integer)
+    valor_total_centavos: Mapped[int] = mapped_column(Integer)  # vProd do item
+    # Formato 3 do banco (versão 0.4.0):
+    numero: Mapped[int | None] = mapped_column(Integer)  # nItem da nota
+    # 1 unidade da nota = `fator_conversao` unidades do nosso produto (CX de 24 → 24).
+    fator_conversao: Mapped[Decimal] = mapped_column(
+        Numeric(12, 3), default=Decimal("1"), server_default="1"
+    )
+    # O que o item custou de fato: produto - desconto + frete, seguro, outras, IPI e ICMS-ST.
+    custo_total_centavos: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    # Custo médio do produto logo antes e logo depois desta entrada. O estorno usa os dois: se
+    # ninguém mexeu no custo desde então, ele volta exatamente ao que era.
+    custo_antes_centavos: Mapped[int | None] = mapped_column(Integer)
+    custo_depois_centavos: Mapped[int | None] = mapped_column(Integer)
 
     nota: Mapped[NotaEntrada] = relationship(back_populates="itens")
+    produto: Mapped[Produto | None] = relationship()
 
 
 class DeParaFornecedor(Base):
@@ -413,6 +439,9 @@ class GrupoDRE(enum.StrEnum):
     DESPESA_OPERACIONAL = "despesa_operacional"
     OUTRAS_RECEITAS = "outras_receitas"
     OUTRAS_DESPESAS = "outras_despesas"
+    # Entra no fluxo de caixa, mas não no resultado: compra de mercadoria para revenda (o custo
+    # vai para o CMV quando o produto é vendido), retirada dos sócios, empréstimos.
+    FORA_DO_DRE = "fora_do_dre"
 
 
 class CategoriaFinanceira(Base):
@@ -454,6 +483,10 @@ class Lancamento(Base):
     )
     referencia: Mapped[str | None] = mapped_column(String(60))
     criado_em: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    # Formato 3 do banco (versão 0.4.0). Lançamento não é apagado: é cancelado, com o autor.
+    criado_por_id: Mapped[int | None] = mapped_column(ForeignKey("operador.id"))
+    cancelado_em: Mapped[datetime | None] = mapped_column(DateTime)
+    cancelado_por_id: Mapped[int | None] = mapped_column(ForeignKey("operador.id"))
 
     categoria: Mapped[CategoriaFinanceira] = relationship()
 
