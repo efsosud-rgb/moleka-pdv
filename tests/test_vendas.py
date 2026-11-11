@@ -194,6 +194,18 @@ def test_dinheiro_tem_troco_e_cartao_nao(cliente, loja):
     assert venda["total_centavos"] == 1500 and venda["pode_finalizar"] is True
 
 
+def test_troco_absurdo_e_recusado(cliente, loja):
+    """Valor sem a vírgula, ou o leitor bipado no campo do valor: o caixa não aceita."""
+    _item(cliente, produto_id=loja["agua"], quantidade=1)  # 3,00
+    bipado = _pagar(cliente, "dinheiro", 789000000001700)  # um código de barras lido como valor
+    assert bipado.status_code == 422 and "muito maior" in bipado.json()["detail"]
+    assert _venda(cliente)["pagamentos"] == []
+    assert _pagar(cliente, "dinheiro", 300 + vendas.TROCO_MAXIMO + 1).status_code == 422
+    # Nota de 200 para uma compra de 3,00 é normal: troco de 197,00.
+    venda = _pagar(cliente, "dinheiro", 20000).json()["venda"]
+    assert venda["troco_centavos"] == 19700 and venda["pode_finalizar"] is True
+
+
 def test_trocar_a_forma_depois_de_escolhida_e_remover_pagamento(cliente, loja):
     _ajustar_formas(cliente, pix=-500, credito=300)
     _item(cliente, produto_id=loja["picole"], quantidade=20)  # 90,00

@@ -271,6 +271,17 @@
     adicionar({ codigo: texto }, texto);
   });
 
+  /* Letra ou número digitado fora de um campo vai para o campo do produto. O leitor de código
+     de barras "digita" o código e manda Enter: sem isto, o Enter cairia no botão que estivesse
+     com o foco (por exemplo, "Finalizar venda"). */
+  document.addEventListener("keydown", function (evento) {
+    if (evento.ctrlKey || evento.altKey || evento.metaKey || !/^[0-9a-zA-Z*]$/.test(evento.key)) return;
+    if (campoProd.disabled || document.querySelector("dialog[open]")) return;
+    const foco = document.activeElement;
+    if (foco && foco.matches("input, select, textarea")) return;
+    campoProd.focus();
+  });
+
   // ------------------------------------------------------------------ itens
   function textoDosPagamentos(v) {
     return v.pagamentos.map(function (p) { return p.rotulo + " " + M.formatarCentavos(p.valor_centavos); }).join(" + ");

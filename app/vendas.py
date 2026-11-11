@@ -56,6 +56,9 @@ log = logging.getLogger("moleka.vendas")
 # Unidades em que a quantidade pode ter casas decimais (ex.: 0,350 kg). As outras são inteiras.
 UNIDADES_FRACIONADAS = frozenset({"KG", "G", "L", "ML", "M"})
 AJUSTE_MAXIMO_BP = 5000  # 50%, para mais ou para menos
+# Troco acima disto (R$ 1.000,00) quase sempre é engano: valor digitado sem a vírgula ou o
+# leitor de código de barras bipado com o cursor no campo do valor.
+TROCO_MAXIMO = 100_000
 
 
 @dataclass(frozen=True)
@@ -332,6 +335,11 @@ def adicionar_pagamento(
             raise RegraError(
                 f"O valor é maior que o que falta pagar ({dinheiro.formatar(devido)}). "
                 "Só o dinheiro tem troco."
+            )
+        if valor_centavos - devido > TROCO_MAXIMO:
+            raise RegraError(
+                f"O valor em dinheiro ({dinheiro.formatar(valor_centavos)}) é muito maior que o "
+                f"que falta pagar ({dinheiro.formatar(devido)}). Confira o que foi digitado."
             )
         pagamento = Pagamento(
             forma=forma,
