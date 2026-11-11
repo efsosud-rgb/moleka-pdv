@@ -36,7 +36,7 @@ Não pede senha de administrador. Pode instalar por cima da versão 0.4.0: os da
 ## Importante
 
 - **O comprovante não é documento fiscal** (isso sai escrito nele). A NFC-e ainda não é emitida.
-- **Nenhum cupom saiu ainda numa impressora de verdade.** A impressão foi testada com uma impressora de teste, que grava num arquivo o que receberia; a impressora da loja (ELGIN i9) só pode ser testada aí. O primeiro teste é o da tela Configurações.
+- **Nenhum cupom saiu ainda numa impressora de verdade.** A impressão foi testada com impressoras de teste, que gravam num arquivo o que receberiam; a impressora da loja (ELGIN i9) só pode ser testada aí. O primeiro teste é o da tela Configurações.
 - "Enviado para a impressora" quer dizer que o Windows aceitou o trabalho. Se a impressora estiver desligada, sem papel ou com o cabo solto, o trabalho fica parado na fila do Windows.
 - **Sem pasta extra, a cópia de segurança fica no mesmo disco do sistema**: protege de um erro de uso, mas não se o disco estragar ou o computador for roubado.
 - Voltar uma cópia de segurança ainda é feito à mão, com o programa fechado (o passo a passo está em `docs/ESPECIFICACAO.md`, seção 15). Se precisar, peça ajuda antes de mexer.
@@ -56,4 +56,4 @@ Feche o sistema, aperte `Win + R`, cole o comando abaixo e dê Enter. Aparece um
 "%LOCALAPPDATA%\Programs\MolekaPDV\MolekaPDV.exe" --redefinir-senha
 ```
 
-Os prints abaixo (`janela-pasta.png` e `janela-instalado.png`) foram tirados pelo teste automático num Windows de verdade: o primeiro mostra o primeiro acesso; o segundo, a tela de login. As telas novas foram conferidas no navegador (152 conferências), não dentro da janela do Windows.
+Os prints abaixo (`janela-pasta.png` e `janela-instalado.png`) foram tirados pelo teste automático num Windows de verdade: o primeiro mostra o primeiro acesso; o segundo, a tela de login. O mesmo teste faz, dentro do programa instalado e sem abrir as telas, um roteiro completo pela API (cadastro, venda, nota fictícia, financeiro). Nesta versão ele também grava os dados da loja, faz a cópia de segurança (a do dia e a da pasta extra), compara a lista de impressoras do sistema com a do Windows e **imprime pela fila de impressão do Windows** numa impressora de teste que grava em arquivo: a página de teste, o comprovante de uma venda e uma venda em dinheiro com o pulso da gaveta, conferindo os bytes. Isso mostra que o cupom chega certo à fila do Windows; **não mostra a impressora da loja** (papel, acentos, corte e gaveta). As telas novas foram conferidas no navegador (152 conferências), não dentro da janela do Windows.

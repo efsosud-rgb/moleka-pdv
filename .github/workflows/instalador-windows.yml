@@ -88,7 +88,7 @@ jobs:
       - name: Testa o programa empacotado
         if: steps.plano.outputs.construir == 'sim'
         shell: pwsh
-        run: ./packaging/teste_windows.ps1
+        run: ./packaging/teste_windows.ps1 -ExigirImpressao
 
       - name: Baixa o instalador do WebView2 (Microsoft)
         if: steps.plano.outputs.construir == 'sim'
@@ -114,7 +114,7 @@ jobs:
       - name: Testa o instalador
         if: steps.plano.outputs.construir == 'sim'
         shell: pwsh
-        run: ./packaging/teste_windows.ps1 -Instalador (Get-ChildItem dist\MolekaPDV-Instalador-*.exe).FullName
+        run: ./packaging/teste_windows.ps1 -ExigirImpressao -Instalador (Get-ChildItem dist\MolekaPDV-Instalador-*.exe).FullName
 
       - name: Guarda o instalador e os prints do teste
         if: always() && steps.plano.outputs.construir == 'sim'

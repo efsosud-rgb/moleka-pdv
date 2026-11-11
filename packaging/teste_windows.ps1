@@ -9,11 +9,13 @@
 #   .\packaging\teste_windows.ps1                               # testa dist\MolekaPDV\MolekaPDV.exe
 #   .\packaging\teste_windows.ps1 -Instalador dist\Moleka...exe # instala em silêncio e testa o instalado
 #   .\packaging\teste_windows.ps1 -SoServidor                   # só a parte sem janela (API, páginas e login)
+#   .\packaging\teste_windows.ps1 -ExigirImpressao              # falha se a impressão pela fila do Windows não for conferida
 param(
   [string]$Exe = 'dist\MolekaPDV\MolekaPDV.exe',
   [string]$Instalador = '',
   [string]$Saida = 'dist\teste',
-  [switch]$SoServidor
+  [switch]$SoServidor,
+  [switch]$ExigirImpressao
 )
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -289,6 +291,19 @@ try {
         }
         function Hex([byte[]]$Bytes) { return (($Bytes | ForEach-Object { $_.ToString('x2') }) -join '') }
         $latin1 = [Text.Encoding]::GetEncoding(28591)
+        # Escreve no registro o papel que saiu da fila do Windows (sem os comandos da impressora),
+        # para qualquer pessoa poder ler o cupom. Se não der para mostrar, o teste segue.
+        function Mostrar-Papel([string]$Nome, [byte[]]$Bytes) {
+          try {
+            try { $cp850 = [Text.Encoding]::GetEncoding(850) }
+            catch { [Text.Encoding]::RegisterProvider([Text.CodePagesEncodingProvider]::Instance); $cp850 = [Text.Encoding]::GetEncoding(850) }
+            $papel = $cp850.GetString($Bytes)
+            foreach ($comando in "`e@", "`et$([char]2)", "`eE$([char]1)", "`eE$([char]0)", "$([char]29)!$([char]1)", "$([char]29)!$([char]0)", "$([char]29)VB$([char]0)") { $papel = $papel.Replace($comando, '') }
+            Write-Host "----- papel: $Nome -----"
+            foreach ($linha in ($papel -split "`n")) { Write-Host ("| " + ($linha -replace '[\x00-\x1f]', '')) }
+            Write-Host '----- fim do papel -----'
+          } catch { Write-Host "Aviso: não mostrei o papel no registro ($($_.Exception.Message))" }
+        }
 
         $lista = Pedir GET '/api/impressoras'
         if (@($lista.impressoras | Where-Object { $_.nome -eq $nomeDaImpressora }).Count -ne 1) { throw "a impressora de teste criada no Windows não apareceu na lista do sistema" }
@@ -306,6 +321,7 @@ try {
         if (-not $hex.Contains('494d5052455353c74f')) { throw 'a página de teste não traz "IMPRESSÃO" na página de código 850 (Ã = C7)' }
         if (-not $latin1.GetString($bytes).Contains('123456789012345678901234567890123456789012345678')) { throw 'a página de teste não traz a régua de 48 colunas' }
         Write-Host "OK: a página de teste passou pela fila do Windows e saiu na impressora de teste ($($bytes.Length) bytes conferidos)"
+        Mostrar-Papel 'página de teste' $bytes
         $null = Pedir POST '/api/impressao/teste/confirmar' @{ saiu = $true }
         Conferir 'indicador da impressora de cupom depois da confirmação' (Pedir GET '/api/status').impressora_cupom.ok 'True'
 
@@ -319,6 +335,7 @@ try {
         }
         if ((Hex $bytes).StartsWith('1b70')) { throw 'a reimpressão não deveria abrir a gaveta' }
         Write-Host "OK: comprovante da venda impresso pela fila do Windows ($($bytes.Length) bytes conferidos)"
+        Mostrar-Papel 'comprovante da venda' $bytes
 
         # 3) Venda nova em dinheiro com "imprimir sozinho" e gaveta: o pulso vem antes do comprovante.
         $null = Pedir POST '/api/caixa/abrir' @{ fundo_troco_centavos = 0 }
@@ -341,6 +358,7 @@ try {
     }
   }
   if ($impressaoConferida) { Write-Host "OK: impressão do cupom pela fila do Windows (RAW) CONFERIDA nesta máquina de teste ($rotulo)" }
+  elseif ($ExigirImpressao) { throw "a impressão do cupom pela fila do Windows não pôde ser conferida nesta máquina ($rotulo), e este teste foi chamado com -ExigirImpressao" }
   else { Write-Host "NAO VERIFICADO ($rotulo): impressão do cupom pela fila do Windows (sem impressora de teste nesta máquina)" }
 
   # Recuperação de acesso (senha esquecida): o programa sorteia uma senha provisória e mostra numa
