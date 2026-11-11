@@ -86,7 +86,8 @@ Consequência para o sistema: a opção "emitir ou não" será construída, mas 
 ## 7. Instalação e atualização
 
 - `Moleka-PDV-Setup.exe` (Inno Setup) com o app empacotado pelo PyInstaller; instala o WebView2 Runtime se faltar; cria atalho na Área de Trabalho e tarefa de backup diário.
-- Sem certificado de assinatura de código, o Windows mostra o aviso do SmartScreen na primeira execução ("Mais informações → Executar assim mesmo"). Assinatura é decisão posterior.
+- Sem certificado de assinatura de código, o Windows mostra o aviso do SmartScreen na primeira execução ("Mais informações → Executar assim mesmo").
+- No Windows 11 com o Controle Inteligente de Aplicativos (Smart App Control) ligado, o instalador sem assinatura é bloqueado de vez (erro 4551), sem botão para liberar. Visto em 11/11/2026 no PC do Eric. Para esses computadores, a assinatura digital é obrigatória; a compra do certificado é decisão pendente (ver DECISOES de 11/11).
 - Atualização: o app verifica uma versão nova em um endereço configurável e baixa o novo instalador (v2).
 
 ## 8. Fora de escopo da v1

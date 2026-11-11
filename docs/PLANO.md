@@ -22,6 +22,7 @@ Cada frente é um bloco que uma sessão do Claude Code (Opus 5.5) constrói de p
 - [x] Telas reajustadas para a área útil real da janela maximizada (1366×697). Na versão 0.1.0, Início, Produtos e Financeiro rolavam um pouco: a conferência de 10/11 tinha usado 1366×768.
 - [x] Os 9 pedidos do Eric de 11/11 registrados (ESPECIFICACAO §11) e distribuídos nas frentes abaixo.
 - [ ] **Não verificado**: login e telas internas dentro da janela do Windows (o teste automático no Windows confere a API, as páginas e o print da capa; as telas internas foram vistas só no navegador daqui).
+- [ ] **Instalação no PC do Eric: bloqueada pelo Windows** (11/11, Windows 11 Pro, versão 10.0.26200). O Controle Inteligente de Aplicativos (Smart App Control) estava ligado e recusou o instalador 0.2.0 por falta de assinatura digital: erro 4551 na tela e evento 3077 da política `VerifiedAndReputableDesktop` no registro do Windows. Caminhos e decisão pendente em DECISOES (11/11).
 
 Ordem aprovada pelo Eric em 11/11: Frente 1 → Frente 2 → Frente 3 → Frente 4. A cada função pronta sai um instalador novo.
 
@@ -54,7 +55,8 @@ Saldos (soma de movimentos), ajuste com motivo, inventário; importação de XML
 Lançamentos (receitas/despesas, categorias com grupo DRE), fluxo de caixa realizado + previsto, DRE por período com comparação, rentabilidade por produto (preço − custo). Exportar Excel (`openpyxl`) e imprimir A4.
 
 ## Frente 9 — Instalador e atualização
-Feito em 10/11/2026: PyInstaller em pasta + Inno Setup (`MolekaPDV-Instalador-<versão>.exe`), instalador do WebView2 embutido, atalhos, fontes embutidas, build e teste no GitHub Actions. Falta: backup diário (cópia agendada de `moleka.db`), assinatura digital do instalador (tira o aviso do Windows) e verificação de versão nova.
+Feito em 10/11/2026: PyInstaller em pasta + Inno Setup (`MolekaPDV-Instalador-<versão>.exe`), instalador do WebView2 embutido, atalhos, fontes embutidas, build e teste no GitHub Actions. Falta: backup diário (cópia agendada de `moleka.db`), assinatura digital do instalador e verificação de versão nova.
+**Assinatura digital subiu de prioridade em 11/11/2026**: sem ela, o instalador é bloqueado no Windows 11 que estiver com o Controle Inteligente de Aplicativos ligado, sem botão de "executar assim mesmo". Depende de o Eric decidir a compra de um certificado de assinatura de código (ver DECISOES de 11/11).
 
 ## Fora da v1
 NF-e modelo 55, SAT-CF-e (SP), delivery/iFood, fidelidade, multi-loja em nuvem, PostgreSQL (só se houver 2+ caixas).

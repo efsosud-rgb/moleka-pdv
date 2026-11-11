@@ -10,6 +10,7 @@ Backend em **Python**; interface em HTML/CSS/JS dentro de uma janela desktop (**
 
 1. Abra a página de versões do repositório (**Releases**) e baixe `MolekaPDV-Instalador-<versão>.exe`.
 2. Dois cliques no arquivo. Se aparecer "O Windows protegeu o computador", clique em **Mais informações** e em **Executar assim mesmo** (o instalador ainda não tem assinatura digital).
+   Se aparecer **"Erro 4551: uma política de Controle de Aplicativo bloqueou este arquivo"**, o Windows 11 está com o Controle Inteligente de Aplicativos ligado, que recusa programa sem assinatura e não tem botão para liberar. Ver [`docs/DECISOES.md`](docs/DECISOES.md), em 2026-11-11.
 3. **Avançar** até **Concluir**. O atalho **Moleka PDV** fica na Área de Trabalho e no menu Iniciar.
 
 Não pede senha de administrador. Para atualizar, instale a versão nova por cima: os dados ficam em `%APPDATA%\MolekaPDV` e o programa cuida de adaptá-los (com cópia de segurança antes).
