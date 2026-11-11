@@ -631,3 +631,39 @@ button.chip:focus-visible{outline:3px solid #FCF00C;outline-offset:2px}
 @media (prefers-reduced-motion:reduce){
   .anim .mascote,.anim .inclina,.anim .beijo,.anim .brilho::before,.anim .cobre,.anim .q2,.anim .brilho-capa::before,.anim .beijo-capa,.anim .filme{animation:none}
 }
+
+/* ---------- Configurações (versão 0.5.0) ---------- */
+.cfg{display:flex;align-items:stretch;gap:18px;min-height:0}
+.cfg > .cartao{min-width:0;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:12px 18px}
+.cfg > .principal{flex:1 1 0}
+.cfg > .lado{flex:0 0 396px;max-width:none}
+.cfg h2{font-weight:900;font-size:19px;color:#542424}
+.cfg .vazio{font-size:13px}
+.cfg .form-entrada{gap:8px}
+.cfg .form-entrada .rotulo{margin-bottom:3px}
+.cfg .form-entrada .campo{font-size:14.5px;min-height:38px;padding:6px 10px}
+.cfg .form-entrada .sel select{padding-right:34px}
+.cfg .form-entrada .botoes .btn3d{min-height:40px;padding:8px 14px;font-size:14.5px}
+.cfg .linha{display:grid;gap:10px;align-items:end}
+.cfg .linha.l2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cfg .linha.l3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.cfg .linha.endereco{grid-template-columns:minmax(0,3fr) minmax(0,1fr) minmax(0,2fr)}
+.cfg .linha.cidade{grid-template-columns:minmax(0,3fr) 96px minmax(0,1.4fr)}
+.cfg .linha.impressora{grid-template-columns:minmax(0,1fr) auto}
+.cfg .linha.impressora .fim .btn3d{min-height:38px}
+.cfg .linha.manter{grid-template-columns:150px minmax(0,1fr);align-items:end}
+.cfg .linha.manter .vazio{padding-bottom:9px}
+.cfg .botoes-lado{display:flex;flex-wrap:wrap;gap:8px}
+.cfg .lado .tabela th{padding:6px 8px}
+.cfg .lado .tabela td{padding:5px 8px}
+.cfg .lado [data-im-conferir]{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+.cfg .lado .papel{flex:1;min-height:90px;font-size:11px;padding:10px}
+
+/* O cupom na tela: letra de largura fixa, como sai na impressora térmica. */
+.papel{overflow:auto;padding:12px 14px;border:1px solid #E2CF95;border-radius:6px;background:#FFFEF8;box-shadow:0 2px 0 #E2CF95;font:12.5px/1.4 Consolas,"Cascadia Mono","Courier New",monospace;color:#2A1A18;white-space:pre}
+.papel .l{display:block;min-height:1.4em}
+.papel .l.n{font-weight:700}
+.papel .l.g{font-weight:700;transform:scaleY(1.7);transform-origin:0 0;margin-bottom:1em}
+.dialogo.cupom{width:min(480px,94vw)}
+.dialogo.cupom .papel{max-height:min(56vh,430px);margin-bottom:12px}
+.dialogo.cupom .msg-form{margin-bottom:10px}

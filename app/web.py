@@ -152,6 +152,7 @@ MENUS: tuple[tuple[str, tuple[ItemMenu, ...]], ...] = (
             ItemMenu("Capa do sistema", url="/"),
             ItemMenu("Minha senha", acao="minha-senha"),
             ItemMenu("Trocar de operador", acao="trocar-operador"),
+            ItemMenu("Configurações", url="/configuracoes", so_gerente=True),
             ItemMenu("Tela cheia", acao="tela-cheia"),
             ItemMenu("Sair", acao="sair", atalho="Alt+F4"),
         ),
@@ -228,6 +229,10 @@ ICONES: dict[str, str] = {
     ),
     "grafico": '<path d="M4 4v16h16"/><path d="m7.5 15 4-4 3 3 5-6"/>',
     "recibo": '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+    "impressora": (
+        '<path d="M7 8V4h10v4"/><rect x="4" y="8" width="16" height="9" rx="2"/>'
+        '<path d="M7 14h10v6H7z"/>'
+    ),
     "engrenagem": (
         '<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3'
         'M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>'
@@ -363,6 +368,13 @@ def tela_entrada_de_nota(
     request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
 ) -> Response:
     return _tela(request, "entrada_nf.html", "entrada-nf", operador, so_gerente=True)
+
+
+@router.get("/configuracoes", response_class=HTMLResponse)
+def tela_configuracoes(
+    request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
+) -> Response:
+    return _tela(request, "configuracoes.html", "configuracoes", operador, so_gerente=True)
 
 
 @router.get("/operadores", response_class=HTMLResponse)

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone, chip %}
+{% block titulo_pagina %}Configurações{% endblock %}
+{% block titulo %}Configurações{% endblock %}
+{% block chips %}{{ chip("impressora_cupom", "Cupom") }}{{ chip("backup", "Backup") }}{% endblock %}
+{% block conteudo %}
+<div class="fin2" id="configuracoes">
+<div class="barra-fin">
+<div class="abas" role="tablist" aria-label="Configurações">
+<button class="aba ativa" type="button" role="tab" aria-selected="true" data-aba="loja">Dados da loja</button>
+<button class="aba" type="button" role="tab" aria-selected="false" data-aba="impressao">Impressão</button>
+<button class="aba" type="button" role="tab" aria-selected="false" data-aba="backup">Cópia de segurança</button>
+</div>
+</div>
+
+<div class="cfg" data-painel="loja">
+<section class="cartao principal" aria-labelledby="t-loja">
+<h2 id="t-loja">Dados da loja</h2>
+<form id="form-loja" class="form-entrada" autocomplete="off" novalidate>
+<div class="linha l2">
+<div><label class="rotulo" for="lj-nome">Nome da loja (como o cliente conhece)</label><input id="lj-nome" name="nome_fantasia" class="campo" type="text" maxlength="60"></div>
+<div><label class="rotulo" for="lj-razao">Razão social</label><input id="lj-razao" name="razao_social" class="campo" type="text" maxlength="120"></div>
+</div>
+<div class="linha l3">
+<div><label class="rotulo" for="lj-cnpj">CNPJ</label><input id="lj-cnpj" name="cnpj" class="campo" type="text" maxlength="18" inputmode="numeric" placeholder="00.000.000/0000-00"></div>
+<div><label class="rotulo" for="lj-ie">Inscrição estadual</label><input id="lj-ie" name="ie" class="campo" type="text" maxlength="20" placeholder="números, ou ISENTO"></div>
+<div><label class="rotulo" for="lj-telefone">Telefone</label><input id="lj-telefone" name="telefone" class="campo" type="text" maxlength="20"></div>
+</div>
+<div class="linha endereco">
+<div><label class="rotulo" for="lj-rua">Endereço (rua, avenida)</label><input id="lj-rua" name="logradouro" class="campo" type="text" maxlength="60"></div>
+<div><label class="rotulo" for="lj-numero">Número</label><input id="lj-numero" name="numero" class="campo" type="text" maxlength="10"></div>
+<div><label class="rotulo" for="lj-bairro">Bairro</label><input id="lj-bairro" name="bairro" class="campo" type="text" maxlength="40"></div>
+</div>
+<div class="linha cidade">
+<div><label class="rotulo" for="lj-cidade">Cidade</label><input id="lj-cidade" name="cidade" class="campo" type="text" maxlength="40"></div>
+<div><label class="rotulo" for="lj-uf">Estado</label><div class="sel"><select id="lj-uf" name="uf" class="campo"><option value="">—</option></select>{{ icone("seta", "seta") }}</div></div>
+<div><label class="rotulo" for="lj-cep">CEP</label><input id="lj-cep" name="cep" class="campo" type="text" maxlength="9" inputmode="numeric" placeholder="00000-000"></div>
+</div>
+<div><label class="rotulo" for="lj-rodape">Mensagem no fim do cupom (opcional)</label><input id="lj-rodape" name="rodape" class="campo" type="text" maxlength="120" placeholder="Por exemplo: Obrigado pela preferência!"></div>
+<p class="msg-form" role="alert" hidden></p>
+<div class="botoes"><button class="btn3d verde" type="submit" data-atalho="F10">{{ icone("salvar") }}Salvar (F10)</button></div>
+</form>
+</section>
+<aside class="cartao lado" aria-labelledby="t-loja-ajuda">
+<h2 id="t-loja-ajuda">Para que serve</h2>
+<p class="vazio">Estes dados saem no <b>cabeçalho do cupom</b> (comprovante de venda e fechamento de caixa). Nenhum campo é obrigatório: o cupom mostra só o que estiver preenchido.</p>
+<p class="vazio">Quando a NFC-e for ligada, o sistema usa estes mesmos dados. Para a nota fiscal, eles terão de estar iguais aos do cadastro da empresa na SEFAZ.</p>
+<p class="vazio">Senha de certificado e outros segredos <b>não</b> ficam nesta tela.</p>
+</aside>
+</div>
+
+<div class="cfg" data-painel="impressao" hidden>
+<section class="cartao principal" aria-labelledby="t-imp">
+<h2 id="t-imp">Impressora de cupom</h2>
+<form id="form-impressao" class="form-entrada" autocomplete="off" novalidate>
+<div class="linha impressora">
+<div><label class="rotulo" for="im-impressora">Impressora (como aparece no Windows)</label><div class="sel"><select id="im-impressora" name="impressora" class="campo"><option value="">— nenhuma —</option></select>{{ icone("seta", "seta") }}</div></div>
+<div class="fim"><button class="btn3d mini" type="button" id="btn-atualizar-impressoras">Atualizar a lista</button></div>
+</div>
+<p class="vazio" data-im-motivo hidden></p>
+<div class="linha l3">
+<div><label class="rotulo" for="im-colunas" title="Quantas letras cabem numa linha do papel. Se a linha de números do teste quebrar em duas, escolha uma largura menor.">Largura do papel</label><div class="sel"><select id="im-colunas" name="colunas" class="campo"><option value="48">48 colunas (80 mm)</option><option value="42">42 colunas (80 mm)</option><option value="32">32 colunas (58 mm)</option></select>{{ icone("seta", "seta") }}</div></div>
+<div><label class="rotulo" for="im-acentos">Letras com acento</label><div class="sel"><select id="im-acentos" name="acentos" class="campo"></select>{{ icone("seta", "seta") }}</div></div>
+<div><label class="rotulo" for="im-vias">Vias do comprovante</label><div class="sel"><select id="im-vias" name="vias" class="campo"><option value="1">1 via</option><option value="2">2 vias</option></select>{{ icone("seta", "seta") }}</div></div>
+</div>
+<div><label class="rotulo" for="im-quando">Comprovante de venda</label><div class="sel"><select id="im-quando" name="quando" class="campo"></select>{{ icone("seta", "seta") }}</div></div>
+<label class="check"><input type="checkbox" name="cortar">Cortar o papel no fim (impressora com guilhotina)</label>
+<label class="check"><input type="checkbox" name="gaveta">Abrir a gaveta de dinheiro na venda em dinheiro (gaveta ligada na impressora)</label>
+<p class="msg-form" role="alert" hidden></p>
+<div class="botoes">
+<button class="btn3d" type="button" id="btn-teste">{{ icone("impressora") }}Imprimir teste</button>
+<button class="btn3d verde" type="submit" data-atalho="F10">{{ icone("salvar") }}Salvar (F10)</button>
+</div>
+</form>
+<p class="vazio">Relatórios (DRE, fluxo de caixa, contas, estoque) saem em <b>qualquer impressora do Windows</b>: use o botão <b>Imprimir</b> de cada tela.</p>
+</section>
+<aside class="cartao lado" aria-labelledby="t-imp-teste">
+<h2 id="t-imp-teste">Teste de impressão</h2>
+<p class="vazio" data-im-situacao>—</p>
+<div data-im-conferir hidden>
+<p class="vazio"><b>O teste saiu no papel</b>, com os números numa linha só e os acentos certos?</p>
+<div class="botoes-lado">
+<button class="btn3d verde mini" type="button" data-saiu="sim">Sim, saiu certo</button>
+<button class="btn3d mini" type="button" data-saiu="nao">Não saiu, ou saiu errado</button>
+</div>
+<p class="vazio">O que foi mandado para a impressora:</p>
+<div class="papel" data-im-enviado></div>
+</div>
+</aside>
+</div>
+
+<div class="cfg" data-painel="backup" hidden>
+<section class="cartao principal" aria-labelledby="t-bk">
+<h2 id="t-bk">Cópia de segurança</h2>
+<p class="vazio">O sistema copia o banco de dados <b>uma vez por dia</b>: quando o programa abre, quando o caixa fecha e quando você pede. A cópia fica neste computador e, se você escolher, também numa <b>pasta extra</b>.</p>
+<form id="form-backup" class="form-entrada" autocomplete="off" novalidate>
+<div class="linha impressora">
+<div><label class="rotulo" for="bk-pasta">Pasta extra (pendrive que fica na loja, outro disco ou pasta da nuvem)</label><input id="bk-pasta" name="pasta_extra" class="campo" type="text" maxlength="250" placeholder="Por exemplo: E:\Backup Moleka"></div>
+<div class="fim"><button class="btn3d mini" type="button" id="btn-escolher-pasta" hidden>{{ icone("pasta") }}Escolher a pasta…</button></div>
+</div>
+<div class="linha manter">
+<div><label class="rotulo" for="bk-manter">Guardar as últimas</label><input id="bk-manter" name="manter" class="campo num" type="text" inputmode="numeric" maxlength="3"></div>
+<p class="vazio">cópias diárias (de 7 a 365). As mais antigas são apagadas, aqui e na pasta extra.</p>
+</div>
+<p class="msg-form" role="alert" hidden></p>
+<div class="botoes">
+<button class="btn3d amarelo" type="button" id="btn-copiar">{{ icone("salvar") }}Fazer a cópia agora</button>
+<button class="btn3d verde" type="submit" data-atalho="F10">{{ icone("salvar") }}Salvar (F10)</button>
+</div>
+</form>
+<p class="vazio">Sem pasta extra, a cópia fica no mesmo disco do sistema: ela protege de erro de uso, mas <b>não protege se o disco estragar</b> ou o computador for roubado.</p>
+</section>
+<aside class="cartao lado" aria-labelledby="t-bk-copias">
+<h2 id="t-bk-copias">Cópias guardadas</h2>
+<p class="vazio" data-bk-situacao>—</p>
+<table class="tabela" id="tabela-copias">
+<thead><tr><th>Dia</th><th>Feita às</th><th class="num">Tamanho</th></tr></thead>
+<tbody><tr><td class="sem-linhas" colspan="3">Carregando…</td></tr></tbody>
+</table>
+<p class="vazio">Neste computador: <span data-bk-pasta>—</span></p>
+<p class="vazio">Voltar uma cópia ainda é feito à mão, com o programa fechado. Se precisar, peça ajuda antes de mexer.</p>
+</aside>
+</div>
+</div>
+{% endblock %}
+{% block teclas %}
+<button class="tecla" type="button" data-acao="sobre" data-atalho="F1"><kbd>F1</kbd>Ajuda</button>
+<button class="tecla" type="button" data-salvar><kbd>F10</kbd>Salvar</button>
+<a class="tecla" href="/inicio" data-atalho="Escape"><kbd>Esc</kbd>Início</a>
+{% endblock %}
+{% block scripts %}<script src="/static/js/configuracoes.js?v={{ versao }}" defer></script>{% endblock %}

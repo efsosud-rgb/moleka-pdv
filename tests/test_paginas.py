@@ -19,6 +19,7 @@ PAGINAS = [
     "/estoque",
     "/entrada-nf",
     "/financeiro",
+    "/configuracoes",
     "/operadores",
 ]
 SCRIPTS = [
@@ -33,6 +34,7 @@ SCRIPTS = [
     "estoque.js",
     "entrada_nf.js",
     "financeiro.js",
+    "configuracoes.js",
 ]
 
 

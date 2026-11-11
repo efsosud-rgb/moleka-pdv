@@ -23,7 +23,7 @@ from pathlib import Path
 
 import uvicorn
 
-from app import config, db, operadores
+from app import backup, config, db, operadores
 from app.api import criar_app
 
 log = logging.getLogger("moleka")
@@ -147,6 +147,17 @@ def iniciar_servidor(porta: int) -> uvicorn.Server:
     return servidor
 
 
+def cuidar_da_copia_de_seguranca() -> None:
+    """Faz a cópia de segurança do dia ao abrir e confere de hora em hora.
+
+    A conferência de hora em hora é para o programa que vira a noite aberto: quando o dia
+    muda, a cópia do dia novo é feita sem esperar o próximo fechamento de caixa.
+    """
+    while True:
+        backup.garantir_a_de_hoje()
+        time.sleep(3600)
+
+
 class Ponte:
     """Funções da janela que a interface pode chamar por `window.pywebview.api`.
 
@@ -164,6 +175,19 @@ class Ponte:
     def tela_cheia(self) -> None:
         if self._janela is not None:
             self._janela.toggle_fullscreen()
+
+    def escolher_pasta(self) -> str:
+        """Abre a janela do Windows de escolher pasta. Devolve o caminho, ou "" se desistiu."""
+        if self._janela is None:
+            return ""
+        import webview
+
+        # O nome da opção mudou entre versões do pywebview; vale o que existir.
+        tipo = getattr(getattr(webview, "FileDialog", None), "FOLDER", None)
+        if tipo is None:
+            tipo = webview.FOLDER_DIALOG
+        escolhida = self._janela.create_file_dialog(tipo)
+        return str(escolhida[0]) if escolhida else ""
 
 
 def abrir_janela(url: str, *, tela_cheia: bool, janela_pequena: bool) -> None:
@@ -250,6 +274,9 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     marcar_aberto()
+    threading.Thread(
+        target=cuidar_da_copia_de_seguranca, name="copia-de-seguranca", daemon=True
+    ).start()
     url = f"http://127.0.0.1:{porta}/"
     print(f"{config.APP_NOME} {config.VERSAO} — {url} — dados em {config.pasta_dados()}")
     log.info("servidor local em %s", url)

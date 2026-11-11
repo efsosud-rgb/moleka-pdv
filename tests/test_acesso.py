@@ -15,6 +15,7 @@ TELAS_INTERNAS = [
     "/estoque",
     "/entrada-nf",
     "/financeiro",
+    "/configuracoes",
     "/operadores",
 ]
 
@@ -214,7 +215,8 @@ def test_operador_comum_nao_faz_o_que_e_do_gerente(caixa):
 
 
 @pytest.mark.parametrize(
-    "caminho", ["/produtos", "/estoque", "/entrada-nf", "/financeiro", "/operadores"]
+    "caminho",
+    ["/produtos", "/estoque", "/entrada-nf", "/financeiro", "/configuracoes", "/operadores"],
 )
 def test_tela_do_gerente_manda_o_operador_comum_para_o_inicio(caixa, caminho):
     resposta = caixa.get(caminho, follow_redirects=False)
@@ -227,9 +229,11 @@ def test_inicio_do_operador_comum_mostra_o_que_esta_trancado(caixa, cliente):
     assert "Operador: Caixa de Teste" in do_caixa and "(gerente)" not in do_caixa
     assert "só gerente" in do_caixa and "só o gerente abre" in do_caixa
     assert 'href="/produtos"' not in do_caixa and 'href="/operadores"' not in do_caixa
+    assert 'href="/configuracoes"' not in do_caixa and "Configurações: só o gerente" in do_caixa
     assert 'href="/caixa"' in do_caixa
     do_gerente = cliente.get("/inicio").text
     assert 'href="/produtos"' in do_gerente and 'href="/operadores"' in do_gerente
+    assert 'href="/configuracoes"' in do_gerente
     assert "só gerente" not in do_gerente
 
 

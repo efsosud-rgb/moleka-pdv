@@ -31,10 +31,10 @@ COLUNAS = (48, 42, 32)
 # Como as letras com acento vão para a impressora. A ELGIN i9 usa os comandos ESC/POS da Epson:
 # o número é o da tabela "ESC t n" (página de código).
 ACENTOS: dict[str, str] = {
-    "cp850": "Com acentos (CP850, o mais comum)",
-    "cp860": "Com acentos (CP860, português)",
-    "cp1252": "Com acentos (Windows-1252)",
-    "sem": "Sem acentos (troca á por a, ç por c)",
+    "cp850": "CP850 (mais comum)",
+    "cp860": "CP860 (português)",
+    "cp1252": "Windows-1252",
+    "sem": "Sem acento (á vira a)",
 }
 QUANDO: dict[str, str] = {
     "perguntar": "Oferecer o botão de imprimir depois de cada venda",

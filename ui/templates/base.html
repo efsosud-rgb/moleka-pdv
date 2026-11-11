@@ -61,7 +61,11 @@
 <button class="item em-breve" type="button" data-em-breve="{{ m.rotulo }}: este módulo entra numa próxima versão.">{{ icone(m.icone) }}{{ m.rotulo }}</button>
 {% endif %}
 {% endfor %}
-<button class="item em-breve fim" type="button" data-em-breve="Configurações: este módulo entra numa próxima versão.">{{ icone("engrenagem") }}Configurações</button>
+{% if gerente %}
+<a class="item fim{{ ' ativo' if tela == 'configuracoes' }}" href="/configuracoes"{% if tela == 'configuracoes' %} aria-current="page"{% endif %}>{{ icone("engrenagem") }}Configurações</a>
+{% else %}
+<button class="item em-breve fim" type="button" data-aviso="Configurações: só o gerente abre este módulo.">{{ icone("engrenagem") }}Configurações{{ icone("cadeado", "cadeado") }}</button>
+{% endif %}
 </nav>
 <main class="conteudo">
 {% block conteudo %}{% endblock %}
@@ -114,6 +118,15 @@
 <button class="btn3d amarelo" type="submit">Confirmar (Enter)</button>
 </div>
 </form>
+</dialog>
+<dialog class="dialogo cupom" id="dlg-cupom" aria-labelledby="cp-titulo">
+<h2 id="cp-titulo">Comprovante</h2>
+<div class="papel" data-cupom></div>
+<p class="msg-form" role="alert" hidden></p>
+<div class="botoes">
+<button class="btn3d" type="button" data-fechar-dialogo>Fechar (Esc)</button>
+<button class="btn3d verde" type="button" data-cupom-imprimir>{{ icone("impressora") }}Imprimir</button>
+</div>
 </dialog>
 {% if operador %}
 <dialog class="dialogo" id="minha-senha" aria-labelledby="ms-titulo">

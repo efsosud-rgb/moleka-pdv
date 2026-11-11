@@ -274,6 +274,48 @@
     return function () { return cargas[chave] === numero; };
   };
 
+  /* Mostra um cupom na tela, com as mesmas linhas que vão para a impressora, e o botão de
+     imprimir. opcoes: { titulo, ver: "/api/vendas/7/comprovante",
+     imprimir: "/api/vendas/7/imprimir", corpo: {...} (opcional) }. */
+  let cupomAberto = null;
+  Moleka.verCupom = async function (opcoes) {
+    const dialogo = document.getElementById("dlg-cupom");
+    if (!dialogo) return;
+    const vale = Moleka.novaCarga("cupom");
+    const r = await Moleka.api("GET", opcoes.ver);
+    if (!vale()) return;
+    if (!r.ok) { Moleka.avisar(r.erro); return; }
+    const papel = dialogo.querySelector("[data-cupom]");
+    Moleka.trocar.apply(null, [papel].concat(r.dados.linhas.map(function (l) {
+      return Moleka.el("span", { class: "l" + (l.negrito ? " n" : "") + (l.grande ? " g" : ""), text: l.texto });
+    })));
+    dialogo.querySelector("h2").textContent = opcoes.titulo || "Comprovante";
+    const botao = dialogo.querySelector("[data-cupom-imprimir]");
+    botao.disabled = !r.dados.pode_imprimir;
+    Moleka.mensagem(dialogo, r.dados.pode_imprimir ? "" : r.dados.motivo, "dica");
+    cupomAberto = opcoes;
+    if (!dialogo.open) dialogo.showModal();
+    (r.dados.pode_imprimir ? botao : dialogo.querySelector("[data-fechar-dialogo]")).focus();
+  };
+
+  /* Manda um documento para a impressora de cupom. Devolve a resposta da API ({ ok, erro }). */
+  Moleka.imprimirCupom = async function (caminho, corpo) {
+    const r = await Moleka.api("POST", caminho, corpo);
+    if (r.ok) Moleka.avisar("Enviado para a impressora “" + r.dados.impressora + "”.");
+    return r;
+  };
+
+  function iniciarCupom() {
+    const dialogo = document.getElementById("dlg-cupom");
+    if (!dialogo) return;
+    dialogo.querySelector("[data-cupom-imprimir]").addEventListener("click", async function () {
+      if (!cupomAberto) return;
+      const r = await Moleka.imprimirCupom(cupomAberto.imprimir, cupomAberto.corpo);
+      if (r.ok) dialogo.close();
+      else Moleka.mensagem(dialogo, r.erro);
+    });
+  }
+
   /* Linha de mensagem dos formulários: <p class="msg-form" role="alert" hidden>.
      tipo: "erro" (padrão), "ok" ou "dica". Texto vazio esconde a linha. */
   Moleka.mensagem = function (form, texto, tipo) {
@@ -585,6 +627,7 @@
     iniciarDatas();
     iniciarCapa();
     iniciarMinhaSenha();
+    iniciarCupom();
     avisoDoEndereco();
     Moleka.atualizarStatus();
     Moleka.atualizarResumoDoDia();
