@@ -34,7 +34,9 @@ def test_arquivos_da_interface_e_da_marca(cliente):
     assert css.status_code == 200
     # As fontes e a tira da animação citadas no CSS vêm junto com o programa (nada da internet).
     assert "fonts.googleapis.com" not in css.text
-    for url in re.findall(r"url\\(([^)]+)\\)", css.text):
+    urls = re.findall(r"url\(([^)]+)\)", css.text)
+    assert len(urls) >= 8, "o CSS deveria citar as fontes e a tira da animação"
+    for url in urls:
         caminho = url.strip("'\"")
         if caminho.startswith("../"):
             caminho = "/static/" + caminho[3:]
@@ -48,9 +50,16 @@ def test_arquivos_da_interface_e_da_marca(cliente):
 def test_pagina_nao_traz_numero_inventado(cliente, caminho):
     """Regra do projeto: sem dado real, a tela mostra "—". Nada de valor de exemplo."""
     html = cliente.get(caminho).text
-    assert not re.search(r"R\\$\\s*\\d", html), "há um valor em reais escrito direto na página"
+    assert not re.search(r"R\$\s*\d", html), "há um valor em reais escrito direto na página"
     assert "fictíci" not in html and "Exemplo" not in html
     assert "fonts.googleapis.com" not in html
+
+
+def test_expressao_do_valor_em_reais_pega_um_valor_de_verdade():
+    """O teste acima só vale se a expressão dele reconhecer um valor escrito na página."""
+    assert re.search(r"R\$\s*\d", "<b>R$ 12,50</b>")
+    assert re.search(r"R\$\s*\d", "Total: R$12")
+    assert not re.search(r"R\$\s*\d", "Preço unit. (R$)")
 
 
 def test_modulos_sem_tela_avisam_que_estao_em_construcao(cliente):
