@@ -64,5 +64,7 @@ files = [
     "app/api/cadastros.py",
     "app/catalogo.py",
     "app/estoque.py",
+    "app/financeiro.py",
     "app/api/estoque.py",
+    "app/api/financeiro.py",
 ]

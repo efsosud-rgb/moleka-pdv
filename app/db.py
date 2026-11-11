@@ -72,13 +72,16 @@ def criar_schema() -> None:
 
 
 def semear_padroes() -> None:
-    """Cria o mínimo para a loja começar: as tabelas VAREJO (padrão) e ATACADO e o Caixa 01.
+    """Cria o mínimo para a loja começar: as tabelas VAREJO (padrão) e ATACADO, o Caixa 01 e
+    as categorias do financeiro (só os nomes: aluguel, energia, compra de mercadorias...).
 
     Só cria o que não existe; nunca altera o que a loja já cadastrou. Não são dados de
-    exemplo: são os nomes que o Eric pediu (tabela varejista e atacadista).
+    exemplo: são os nomes que o Eric pediu (tabela varejista e atacadista) e um plano de
+    contas inicial, sem nenhum valor, que o gerente renomeia e completa.
     """
     from sqlalchemy import select
 
+    from app import financeiro  # importado aqui para não criar ciclo de importação
     from app.models import Caixa, TabelaPreco
 
     with nova_sessao() as sessao:
@@ -86,6 +89,7 @@ def semear_padroes() -> None:
             sessao.add_all([TabelaPreco(nome="VAREJO", padrao=True), TabelaPreco(nome="ATACADO")])
         if sessao.scalar(select(Caixa).limit(1)) is None:
             sessao.add(Caixa(nome="Caixa 01"))
+        financeiro.semear_categorias(sessao)
         sessao.commit()
 
 
