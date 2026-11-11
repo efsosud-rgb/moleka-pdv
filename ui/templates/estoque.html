@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone, chip %}
+{% block titulo_pagina %}Estoque{% endblock %}
+{% block titulo %}Estoque{% endblock %}
+{% block conteudo %}
+<div class="cx" id="estoque">
+<div class="kpis">
+<div class="cartao kpi"><div class="r">Produtos com saldo</div><div class="v" data-kpi="com_saldo">—</div><div class="m" data-kpi="com_saldo_m">—</div></div>
+<div class="cartao kpi"><div class="r">Abaixo do mínimo</div><div class="v" data-kpi="abaixo">—</div><div class="m">saldo menor que o mínimo do cadastro</div></div>
+<div class="cartao kpi"><div class="r">Saldo negativo</div><div class="v" data-kpi="negativos">—</div><div class="m">vendido sem ter dado entrada</div></div>
+<div class="cartao kpi"><div class="r">Valor do estoque (a custo)</div><div class="v" data-kpi="valor">—</div><div class="m" data-kpi="valor_m">—</div></div>
+</div>
+<div class="cad">
+<section class="cartao lista" aria-labelledby="t-lista">
+<div class="cab-cartao"><h2 id="t-lista">Saldos</h2><span data-contagem>—</span></div>
+<div class="filtro">
+<div class="com-icone">{{ icone("busca") }}<input id="busca" class="campo" type="search" autocomplete="off" placeholder="Pesquisar (F4): nome, código ou categoria" data-atalho="F4" aria-label="Pesquisar produto"></div>
+<div class="sel curta"><select id="situacao" class="campo" aria-label="Mostrar"><option value="">Todos os produtos</option><option value="com_saldo">Com saldo</option><option value="abaixo">Abaixo do mínimo</option><option value="negativo">Saldo negativo</option></select>{{ icone("seta", "seta") }}</div>
+<label class="check"><input type="checkbox" id="ver-inativos">Inativos</label>
+</div>
+<div class="rolagem">
+<table class="tabela" id="tabela-estoque">
+<thead><tr><th>Produto</th><th class="num" style="width:104px">Saldo</th><th class="num" style="width:92px" title="Custo médio de cada unidade">Custo (R$)</th><th style="width:92px">Situação</th><th style="width:124px"><span class="so-leitor">Ações</span></th></tr></thead>
+<tbody><tr><td class="sem-linhas" colspan="5">Carregando o estoque…</td></tr></tbody>
+</table>
+</div>
+</section>
+<aside class="cartao ficha" aria-labelledby="t-ficha">
+<div data-estado="nenhum">
+<h2 id="t-ficha">Movimentar o estoque</h2>
+<p class="vazio">Escolha um produto na lista (botão <b>Movimentar</b>) para dar entrada, dar saída, fazer a contagem ou ver o histórico.</p>
+<p class="vazio">Compra com nota fiscal entra por <a href="/entrada-nf">Entrada de NF (XML)</a>: o estoque e o custo são atualizados sozinhos.</p>
+<p class="vazio">A venda no caixa já dá baixa sozinha. O saldo não é digitado direto: tudo fica registrado como um movimento, com data, motivo e quem fez.</p>
+</div>
+<div data-estado="produto" hidden>
+<h2 data-ficha="descricao">—</h2>
+<div>
+<div class="dado"><span>Saldo atual</span><b data-ficha="saldo">—</b></div>
+<div class="dado"><span>Custo médio</span><b data-ficha="custo">—</b></div>
+<div class="dado"><span>Valor em estoque</span><b data-ficha="valor">—</b></div>
+</div>
+<form id="form-movimento" class="form-entrada" autocomplete="off" novalidate>
+<div class="par">
+<div><label class="rotulo" for="mv-tipo">O que fazer</label><div class="sel"><select id="mv-tipo" name="tipo" class="campo"><option value="entrada">Entrada</option><option value="saida">Saída</option><option value="contagem">Contagem</option></select>{{ icone("seta", "seta") }}</div></div>
+<div><label class="rotulo" for="mv-qtd" data-rotulo-qtd>Quantidade</label><input id="mv-qtd" name="quantidade" class="campo num" type="text" inputmode="decimal"></div>
+</div>
+<div data-so-entrada><label class="rotulo" for="mv-custo">Custo de cada unidade (R$), se souber</label><input id="mv-custo" name="custo" class="campo num" type="text" inputmode="decimal" placeholder="Em branco: o custo médio não muda"></div>
+<div><label class="rotulo" for="mv-motivo" data-rotulo-motivo>Motivo</label><input id="mv-motivo" name="motivo" class="campo" type="text" maxlength="120"></div>
+<p class="dica-form" data-dica></p>
+<p class="msg-form" role="alert" hidden></p>
+<div class="botoes">
+<button class="btn3d" type="button" id="btn-historico">{{ icone("historico") }}Histórico</button>
+<button class="btn3d verde" type="submit" data-atalho="F10">{{ icone("salvar") }}Lançar (F10)</button>
+</div>
+</form>
+</div>
+</aside>
+</div>
+</div>
+{% endblock %}
+{% block teclas %}
+<button class="tecla" type="button" data-acao="sobre" data-atalho="F1"><kbd>F1</kbd>Ajuda</button>
+<span class="tecla"><kbd>F4</kbd>Pesquisar</span>
+<span class="tecla"><kbd>F10</kbd>Lançar</span>
+<a class="tecla" href="/inicio" data-atalho="Escape"><kbd>Esc</kbd>Início</a>
+{% endblock %}
+{% block dialogos %}
+<dialog class="dialogo maior" id="dlg-historico" aria-labelledby="hs-titulo">
+<h2 id="hs-titulo">Histórico</h2>
+<p data-texto></p>
+<div class="rolagem alta">
+<table class="tabela">
+<thead><tr><th style="width:112px">Quando</th><th style="width:128px">Movimento</th><th class="num" style="width:92px">Quantidade</th><th class="num" style="width:92px">Saldo depois</th><th class="num" style="width:90px">Custo (R$)</th><th>Motivo</th><th style="width:150px">Quem</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+<div class="botoes"><button class="btn3d amarelo" type="button" data-fechar-dialogo>Fechar (Esc)</button></div>
+</dialog>
+{% endblock %}
+{% block scripts %}<script src="/static/js/estoque.js?v={{ versao }}" defer></script>{% endblock %}

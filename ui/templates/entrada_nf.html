@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone, chip %}
+{% block titulo_pagina %}Entrada de NF{% endblock %}
+{% block titulo %}Entrada de NF (XML){% endblock %}
+{% block conteudo %}
+<div class="nf" id="entrada-nf">
+<div class="abas" role="tablist" aria-label="Entrada de nota">
+<button class="aba ativa" type="button" role="tab" aria-selected="true" data-aba="importar">Importar XML</button>
+<button class="aba" type="button" role="tab" aria-selected="false" data-aba="notas">Notas importadas</button>
+</div>
+<section class="cartao painel-nf" data-painel="importar" aria-label="Importar o XML de uma nota">
+<div class="escolher" data-passo="arquivo">
+<span class="selo vermelho">{{ icone("xml") }}</span>
+<h2>Dar entrada pela nota do fornecedor</h2>
+<p>Escolha o arquivo <b>XML</b> da nota fiscal de compra. É o arquivo que o fornecedor manda por e-mail junto com a nota (não é o PDF). O sistema lê a nota e mostra tudo para você conferir.</p>
+<p><b>Nada é gravado antes de você mandar importar.</b></p>
+<button class="btn3d amarelo lg" type="button" id="btn-escolher" data-atalho="F3">{{ icone("pasta") }}Escolher o arquivo XML (F3)</button>
+<input type="file" id="arquivo" accept=".xml,text/xml,application/xml" hidden>
+<p class="msg-form" role="alert" data-msg-arquivo hidden></p>
+</div>
+<div class="conferir" data-passo="conferir" hidden>
+<div class="nf-cab">
+<div class="bloco"><span class="r">Fornecedor</span><b data-nf="fornecedor">—</b><span class="sub" data-nf="documento">—</span></div>
+<div class="bloco"><span class="r">Nota</span><b data-nf="numero">—</b><span class="sub" data-nf="emitida">—</span></div>
+<div class="bloco"><span class="r">Total da nota</span><b data-nf="total">—</b><span class="sub" data-nf="itens">—</span></div>
+<span class="espaco"></span>
+<button class="btn3d mini" type="button" id="btn-trocar" data-atalho="F3">{{ icone("pasta") }}Trocar o arquivo (F3)</button>
+</div>
+<ul class="avisos" data-avisos hidden></ul>
+<div class="lote" data-lote hidden>
+<span data-lote-texto>—</span>
+<button class="btn3d mini" type="button" data-lote-acao="criar">Criar produto novo para eles</button>
+<button class="btn3d mini" type="button" data-lote-acao="ignorar">Não dar entrada neles</button>
+</div>
+<div class="rolagem">
+<table class="tabela" id="tabela-itens">
+<thead><tr><th style="width:34px">Nº</th><th>Item da nota</th><th style="width:186px">O que fazer</th><th style="width:250px">Nosso produto</th><th class="num" style="width:76px" title="Quantas unidades do nosso produto há em cada unidade da nota. Caixa com 24 picolés: 24.">Fator</th><th style="width:150px">Entra no estoque</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+<form id="form-importar" class="nf-rodape" autocomplete="off" novalidate>
+<div class="contas">
+<label class="check"><input type="checkbox" id="gerar-contas" name="gerar_contas"><span data-contas-texto>—</span></label>
+<span class="par-linha" data-sem-parcelas hidden><label class="rotulo" for="nf-vencimento">Vencimento</label><input id="nf-vencimento" name="vencimento" class="campo" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" data-data></span>
+<span class="par-linha"><label class="rotulo" for="nf-categoria" title="Mercadoria para revenda fica fora do resultado: o custo aparece no DRE quando o produto é vendido. Para matéria-prima, escolha uma categoria de custo.">Categoria</label><span class="sel"><select id="nf-categoria" name="categoria" class="campo"></select>{{ icone("seta", "seta") }}</span></span>
+</div>
+<p class="msg-form" role="alert" hidden></p>
+<button class="btn3d verde" type="submit" id="btn-importar" data-atalho="F10">{{ icone("salvar") }}Importar a nota (F10)</button>
+</form>
+</div>
+<div class="escolher" data-passo="feito" hidden>
+<span class="selo verde">{{ icone("check") }}</span>
+<h2 data-feito-titulo>Nota importada</h2>
+<ul class="feito" data-feito></ul>
+<div class="botoes">
+<a class="btn3d" href="/estoque">{{ icone("caixas") }}Ver o estoque</a>
+<button class="btn3d amarelo" type="button" id="btn-outra" data-atalho="F3">{{ icone("pasta") }}Importar outra nota (F3)</button>
+</div>
+</div>
+</section>
+<section class="cartao painel-nf" data-painel="notas" aria-label="Notas importadas" hidden>
+<p class="msg-form faixa" role="alert" data-msg-notas hidden></p>
+<div class="rolagem">
+<table class="tabela" id="tabela-notas">
+<thead><tr><th style="width:104px">Importada em</th><th>Fornecedor</th><th style="width:84px">Nota</th><th class="num" style="width:112px">Total (R$)</th><th class="num" style="width:64px">Itens</th><th class="num" style="width:150px" title="Contas a pagar em aberto ou pagas que nasceram desta nota">Contas a pagar</th><th style="width:104px">Situação</th><th style="width:186px"><span class="so-leitor">Ações</span></th></tr></thead>
+<tbody><tr><td class="sem-linhas" colspan="8">Carregando…</td></tr></tbody>
+</table>
+</div>
+</section>
+</div>
+{% endblock %}
+{% block teclas %}
+<button class="tecla" type="button" data-acao="sobre" data-atalho="F1"><kbd>F1</kbd>Ajuda</button>
+<span class="tecla"><kbd>F3</kbd>Escolher arquivo</span>
+<span class="tecla"><kbd>F10</kbd>Importar</span>
+<a class="tecla" href="/inicio" data-atalho="Escape"><kbd>Esc</kbd>Início</a>
+{% endblock %}
+{% block dialogos %}
+<dialog class="dialogo maior" id="dlg-nota" aria-labelledby="nt-titulo">
+<h2 id="nt-titulo">Nota</h2>
+<p data-texto></p>
+<div class="rolagem alta">
+<table class="tabela">
+<thead><tr><th style="width:34px">Nº</th><th>Item da nota</th><th class="num" style="width:104px">Quantidade</th><th class="num" style="width:104px">Custo (R$)</th><th>Nosso produto</th><th class="num" style="width:104px">Entrou</th><th class="num" style="width:112px">Custo de cada (R$)</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+<div class="botoes"><button class="btn3d amarelo" type="button" data-fechar-dialogo>Fechar (Esc)</button></div>
+</dialog>
+{% endblock %}
+{% block scripts %}<script src="/static/js/entrada_nf.js?v={{ versao }}" defer></script>{% endblock %}

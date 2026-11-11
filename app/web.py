@@ -69,7 +69,13 @@ MODULOS: tuple[Modulo, ...] = (
         so_gerente=True,
     ),
     Modulo(
-        "estoque", "Estoque", "Saldos, ajustes e inventário", "caixas", "vinho", so_gerente=True
+        "estoque",
+        "Estoque",
+        "Saldos, ajustes e inventário",
+        "caixas",
+        "vinho",
+        "/estoque",
+        so_gerente=True,
     ),
     Modulo(
         "entrada-nf",
@@ -77,6 +83,7 @@ MODULOS: tuple[Modulo, ...] = (
         "Importa a compra e atualiza estoque e custo",
         "xml",
         "vermelho",
+        "/entrada-nf",
         so_gerente=True,
     ),
     Modulo(
@@ -111,7 +118,7 @@ MODULOS: tuple[Modulo, ...] = (
         "Resultado do período e margem por produto",
         "grafico",
         "vermelho",
-        "/financeiro",
+        "/financeiro#dre",
         no_menu_lateral=False,
         so_gerente=True,
     ),
@@ -165,16 +172,30 @@ MENUS: tuple[tuple[str, tuple[ItemMenu, ...]], ...] = (
             ItemMenu("Controle de caixa", url="/controle-caixa", atalho="F11"),
         ),
     ),
-    ("Estoque", (ItemMenu("Saldos e ajustes"), ItemMenu("Entrada de NF (XML)"))),
+    (
+        "Estoque",
+        (
+            ItemMenu("Saldos, ajustes e contagem", url="/estoque", so_gerente=True),
+            ItemMenu("Entrada de NF (XML)", url="/entrada-nf", so_gerente=True),
+        ),
+    ),
     (
         "Financeiro",
         (
-            ItemMenu("DRE e fluxo de caixa", url="/financeiro", so_gerente=True),
-            ItemMenu("Lançamentos"),
+            ItemMenu("Contas a pagar e a receber", url="/financeiro#lancamentos", so_gerente=True),
+            ItemMenu("Fluxo de caixa", url="/financeiro#fluxo", so_gerente=True),
+            ItemMenu("DRE (resultado do período)", url="/financeiro#dre", so_gerente=True),
+            ItemMenu("Categorias", url="/financeiro#categorias", so_gerente=True),
         ),
     ),
     ("Fiscal", (ItemMenu("NFC-e emitidas"), ItemMenu("Certificado A1"))),
-    ("Relatórios", (ItemMenu("Vendas por período"), ItemMenu("Rentabilidade por produto"))),
+    (
+        "Relatórios",
+        (
+            ItemMenu("Vendas por período"),
+            ItemMenu("Rentabilidade por produto", url="/financeiro#rentabilidade", so_gerente=True),
+        ),
+    ),
     ("Ajuda", (ItemMenu("Sobre o Moleka PDV", acao="sobre"),)),
 )
 
@@ -236,6 +257,12 @@ ICONES: dict[str, str] = {
     ),
     "pessoa": '<circle cx="12" cy="8" r="4"/><path d="M4 21c.7-4.2 3.8-6.5 8-6.5s7.3 2.3 8 6.5"/>',
     "lapis": '<path d="M4 20h4L19.5 8.5l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+    "pasta": '<path d="M3 6h7l2 2.5h9V19H3z"/>',
+    "historico": (
+        '<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4.5v4h4"/><path d="M12 8v4.5l3 1.8"/>'
+    ),
+    "check": '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+    "voltar": '<path d="M9 7 4 12l5 5"/><path d="M4 12h11a5 5 0 0 1 0 10h-2"/>',
 }
 
 
@@ -322,6 +349,20 @@ def financeiro(
     request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
 ) -> Response:
     return _tela(request, "financeiro.html", "financeiro", operador, so_gerente=True)
+
+
+@router.get("/estoque", response_class=HTMLResponse)
+def tela_estoque(
+    request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
+) -> Response:
+    return _tela(request, "estoque.html", "estoque", operador, so_gerente=True)
+
+
+@router.get("/entrada-nf", response_class=HTMLResponse)
+def tela_entrada_de_nota(
+    request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
+) -> Response:
+    return _tela(request, "entrada_nf.html", "entrada-nf", operador, so_gerente=True)
 
 
 @router.get("/operadores", response_class=HTMLResponse)

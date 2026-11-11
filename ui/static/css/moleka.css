@@ -506,6 +506,112 @@ button.chip:focus-visible{outline:3px solid #FCF00C;outline-offset:2px}
 .troco-fim{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 16px;padding:12px 16px;border-radius:12px;background:linear-gradient(#5E2626,#3B1818);color:#FFE8B0;font:800 13px Inter,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase}
 .troco-fim b{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:40px;letter-spacing:0;color:#FCF00C;font-variant-numeric:tabular-nums}
 
+/* ---------------------------------------------------------------- estoque, entrada de nota e financeiro */
+.tag.alerta{color:#542424;background:#FFD95A;box-shadow:inset 0 0 0 1px #C9A400}
+.tag.perigo{color:#FFFFFF;background:#C8202A}
+.filtro .sel{flex:0 0 196px}
+.filtro .sel .campo{padding:8px 34px 8px 12px}
+.dialogo.maior{width:min(920px,94vw)}
+.rolagem.alta{max-height:min(360px,54vh);overflow:auto;margin-bottom:14px;border:1px solid #EADBA8;border-radius:10px}
+.rolagem.alta thead th{position:sticky;top:0;z-index:1;border-top:0}
+.cx .ficha .dado b{font-size:16px}
+.cx .ficha .dado{padding:4px 0}
+
+/* Entrada de NF: escolher o arquivo, conferir item por item e importar. */
+.nf{display:flex;flex-direction:column;height:100%;min-height:0}
+.nf .abas{flex:none}
+.painel-nf{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.escolher{margin:auto;max-width:620px;display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 24px;text-align:center}
+.escolher h2{font-weight:900;font-size:22px;color:#542424}
+.escolher p{font-size:14px;line-height:1.5;color:#5A4237}
+.escolher p b{color:#542424}
+.escolher .selo{width:52px;height:52px}
+.escolher .selo .ic{width:30px;height:30px}
+.escolher .botoes{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:6px}
+.feito{align-self:stretch;max-height:236px;overflow:auto;margin:0;padding:0 0 0 20px;text-align:left;font-size:14px;line-height:1.55;color:#2A1A18}
+.feito .apagado{color:#76604F}
+.feito .destaque{color:#9E1A20}
+.conferir{flex:1;min-height:0;display:flex;flex-direction:column}
+.nf-cab{flex:none;display:flex;align-items:center;gap:8px 28px;padding:9px 14px}
+.nf-cab .bloco{min-width:0}
+.nf-cab .r{display:block;font:800 10.5px Inter,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#5A4237}
+.nf-cab b{display:block;max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:16.5px;color:#542424}
+.nf-cab .espaco{flex:1}
+.avisos{flex:none;max-height:84px;overflow:auto;margin:0;padding:7px 14px 7px 32px;border-top:1px solid #EADBA8;background:#FFF6CC;font-size:13px;line-height:1.45;color:#542424}
+.avisos.grave{background:#FCE3E3;color:#9E1A20;font-weight:700}
+.lote{flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:7px 14px;border-top:1px solid #EADBA8;font-size:13.5px;font-weight:700;color:#9E1A20}
+.conferir .rolagem,.painel-nf > .rolagem{flex:1;min-height:0;overflow:auto}
+.painel-nf thead th{position:sticky;top:0;z-index:1}
+.painel-nf .tabela th{padding:7px 8px}
+.painel-nf .tabela td{padding:6px 8px}
+.painel-nf .tabela .campo{min-height:36px;padding:5px 9px;font-size:14px}
+.painel-nf .tabela .sel select{padding-right:28px}
+.painel-nf .tabela td b{display:block;color:#542424;font-variant-numeric:tabular-nums}
+.painel-nf tr.sem-entrada td{background:#FFFDF6;color:#76604F}
+.nf-rodape{flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;padding:8px 14px 10px;border-top:1px solid #EADBA8;background:#FFFDF6}
+.nf-rodape .contas{flex:1 1 420px;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px}
+.nf-rodape .check{font-size:13.5px}
+.nf-rodape .par-linha{display:inline-flex;align-items:center;gap:8px}
+.nf-rodape .par-linha .rotulo{margin:0}
+.nf-rodape .campo{width:auto;min-height:36px;padding:5px 10px;font-size:14px}
+.nf-rodape .sel select{max-width:320px;padding-right:32px}
+.nf-rodape .msg-form{order:3;flex-basis:100%}
+.nf-rodape .btn3d{min-height:42px;font-size:15px;padding:9px 16px}
+.msg-form.faixa{padding:8px 14px;border-bottom:1px solid #EADBA8;background:#FFF6CC}
+.acoes-linha{white-space:nowrap}
+.acoes-linha .btn3d + .btn3d{margin-left:6px}
+.sugestoes.flutua{position:fixed;right:auto;top:0;z-index:60;margin:0}
+
+/* Financeiro: abas com o período ao lado; cada aba ocupa a altura da janela e a tabela rola por dentro. */
+.fin2{display:flex;flex-direction:column;height:100%;min-height:0}
+.barra-fin{flex:none;display:flex;align-items:flex-end;flex-wrap:wrap;gap:0 14px;margin-bottom:10px;border-bottom:3px solid #D42828}
+.barra-fin .abas{flex:1 1 auto;margin:0;border-bottom:0}
+.barra-fin .aba{font-size:13.5px;padding:6px 13px}
+.periodo-fin{display:flex;align-items:center;gap:8px;padding-bottom:5px}
+.periodo-fin .rotulo{margin:0}
+.periodo-fin .campo{width:auto;min-height:34px;padding:4px 10px;font-size:14px}
+.periodo-fin .sel select{padding-right:32px}
+.periodo-fin .datas{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#5A4237}
+.campo[data-data]{font-variant-numeric:tabular-nums}
+.periodo-fin .campo[data-data],.nf-rodape .campo[data-data]{width:118px}
+.fin2 > [data-painel]{flex:1;min-height:0}
+.fin2 > .fin{flex-wrap:nowrap;align-items:stretch}
+.fin2 .fin-lado{flex:0 0 330px;max-width:none;min-height:0}
+.cartao.rolavel{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.cartao.rolavel > .rolagem{flex:1;min-height:0;overflow:auto}
+.cartao.rolavel thead th{position:sticky;top:0;z-index:1}
+.cartao.rolavel .tabela th{padding:8px 12px}
+.cartao.rolavel .tabela td{padding:7px 12px}
+.cartao.rolavel > .filtro{padding:10px 14px}
+.cartao.rolavel > .filtro .sel.larga{flex-basis:244px}
+.cartao.rolavel > .filtro .conta{font-size:13px;color:#5A4237}
+.cartao.rolavel > .filtro .espaco{flex:1}
+.cartao.rolavel > .nota{flex:none;margin-top:0;padding:8px 14px}
+.cartao.rolavel > .avisos{border-top:0;border-bottom:1px solid #EADBA8}
+.kpi .v.menor{margin:5px 0 3px;font-size:14.5px;line-height:1.3}
+.kpi .v.positivo{color:#166B30}
+.kpi .v.negativo{color:#B81E22}
+.tag.despesa{color:#9E1A20;background:#FCE3E3}
+.tag.receita{color:#166B30;background:#DDF3E3}
+.tabela td.zero{color:#B5A396}
+.sub.em-linha{display:inline}
+#tabela-fluxo td:first-child,.rolagem.alta td:first-child{white-space:nowrap}
+.tabela tr.principal td{font-weight:700;color:#542424}
+.tabela tr.detalhe td{font-size:13.5px;color:#5A4237}
+.tabela tr.detalhe td:first-child{padding-left:40px}
+.tabela .parcial{margin-left:8px;cursor:help}
+.tabela tr.forte td .sub,.tabela tr.final td .sub,.tabela tr.principal td .sub{font:400 12px Inter,system-ui,sans-serif;color:#76604F}
+.fin2 .dre.rolavel .tabela td{padding:5px 16px}
+.fin2 .fin-lado .kpi{padding:8px 12px}
+.fin2 .fin-lado .kpi .v{font-size:20px}
+.cartao.rolavel tr.final td{position:sticky;bottom:0}
+.explica{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:6px;padding:12px 14px}
+.explica h2{font-weight:900;font-size:15px;color:#542424}
+.explica p{font-size:12.5px;line-height:1.45;color:#5A4237}
+.explica b{color:#542424}
+.dialogo .tres{margin:0}
+.dialogo .form-entrada .check{min-height:30px}
+
 /* ---------------------------------------------------------------- telas menores e menos movimento */
 @media (max-width:1000px){
   .grade{grid-template-columns:repeat(2,minmax(0,1fr))}

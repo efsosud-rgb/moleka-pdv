@@ -75,6 +75,27 @@
     return p ? p[2] + "/" + p[1] + " " + p[3] : "—";
   };
 
+  /* "03/12/2026", a partir de "2026-12-03" (ou de um texto que comece assim). Vazio se não for data. */
+  Moleka.dataBR = function (iso) {
+    const p = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
+    return p ? p[3] + "/" + p[2] + "/" + p[1] : "";
+  };
+
+  /* Lê uma data digitada ("3/12/2026", "03/12/26" ou "03122026") e devolve "2026-12-03", ou null
+     se não for uma data de verdade (31/02, mês 13, ano fora de 2000 a 2099). */
+  Moleka.lerData = function (texto) {
+    let t = String(texto === null || texto === undefined ? "" : texto).trim();
+    if (/^\d{6}$|^\d{8}$/.test(t)) t = t.slice(0, 2) + "/" + t.slice(2, 4) + "/" + t.slice(4);
+    const p = /^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/.exec(t);
+    if (!p) return null;
+    const dia = Number(p[1]);
+    const mes = Number(p[2]);
+    const ano = p[3].length === 2 ? 2000 + Number(p[3]) : Number(p[3]);
+    const d = new Date(ano, mes - 1, dia);
+    if (ano < 2000 || ano > 2099 || d.getFullYear() !== ano || d.getMonth() !== mes - 1 || d.getDate() !== dia) return null;
+    return ano + "-" + String(mes).padStart(2, "0") + "-" + String(dia).padStart(2, "0");
+  };
+
   /* Cria um elemento. Texto entra sempre como texto (nunca como HTML).
      Moleka.el("td", { class: "num", text: "12,50" }) ou Moleka.el("tr", null, td1, td2). */
   Moleka.el = function (tag, props) {
@@ -503,6 +524,32 @@
     });
   }
 
+  // ------------------------------------------------------------------ campos de data
+  /* <input data-data>: a data é digitada como dia/mês/ano e as barras entram sozinhas. Não é o
+     campo de data do navegador, porque ele mostra mês/dia em computadores com o Windows em
+     inglês; aqui o formato é o mesmo em qualquer máquina. */
+  function comBarras(valor) {
+    const partes = valor.replace(/[^\d/]/g, "").split("/").slice(0, 3);
+    for (let i = 0; i < 2; i++) { // dia e mês têm até 2 algarismos; o que passar vai para a parte seguinte
+      if (partes[i] !== undefined && partes[i].length > 2) {
+        partes[i + 1] = partes[i].slice(2) + (partes[i + 1] || "");
+        partes[i] = partes[i].slice(0, 2);
+      }
+    }
+    if (partes[2] !== undefined) partes[2] = partes[2].slice(0, 4);
+    return partes.join("/");
+  }
+
+  function iniciarDatas() {
+    document.addEventListener("input", function (evento) {
+      const campo = evento.target;
+      if (!campo.matches || !campo.matches("input[data-data]")) return;
+      if (evento.inputType && evento.inputType.indexOf("delete") === 0) return; // apagando: não mexe
+      const novo = comBarras(campo.value);
+      if (novo !== campo.value) campo.value = novo;
+    });
+  }
+
   // ------------------------------------------------------------------ capa: a arte se inclina com o mouse
   function iniciarCapa() {
     const vitrine = document.querySelector(".vitrine");
@@ -523,6 +570,7 @@
     iniciarMenus();
     iniciarCliques();
     iniciarAtalhos();
+    iniciarDatas();
     iniciarCapa();
     iniciarMinhaSenha();
     avisoDoEndereco();

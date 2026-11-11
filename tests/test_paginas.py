@@ -16,6 +16,8 @@ PAGINAS = [
     "/produtos",
     "/clientes",
     "/tabelas-preco",
+    "/estoque",
+    "/entrada-nf",
     "/financeiro",
     "/operadores",
 ]
@@ -28,6 +30,9 @@ SCRIPTS = [
     "tabelas.js",
     "controle_caixa.js",
     "caixa.js",
+    "estoque.js",
+    "entrada_nf.js",
+    "financeiro.js",
 ]
 
 
@@ -84,15 +89,43 @@ def test_expressao_do_valor_em_reais_pega_um_valor_de_verdade():
 
 def test_modulos_sem_tela_avisam_que_estao_em_construcao(cliente):
     html = cliente.get("/inicio").text
-    assert html.count("em breve") >= 6
+    # O que ainda não existe (Fiscal, vendas por período) aparece como "em breve", não como link.
+    assert html.count("em breve") >= 3
     assert "data-em-breve" in html
-    # O Financeiro ainda é só o visual; as telas que já gravam dados não trazem o aviso.
-    assert "Tela em construção" in cliente.get("/financeiro").text
-    for tela in ("/caixa", "/controle-caixa", "/produtos", "/clientes", "/tabelas-preco"):
+    assert re.search(r'class="cartao tile em-breve"[^>]*>.*?Fiscal / NFC-e', html, re.S)
+    # Estoque, Entrada de NF e Financeiro já são telas de verdade: têm link e não têm aviso.
+    for modulo in ("/estoque", "/entrada-nf", "/financeiro"):
+        assert f'<a class="cartao tile" href="{modulo}"' in html, modulo
+    for tela in PAGINAS[1:]:
         assert "Tela em construção" not in cliente.get(tela).text, tela
 
 
-@pytest.mark.parametrize("caminho", ["/caixa", "/controle-caixa", "/produtos", "/clientes"])
+def test_menus_levam_as_telas_novas(cliente):
+    html = cliente.get("/inicio").text
+    for destino in (
+        "/estoque",
+        "/entrada-nf",
+        "/financeiro#lancamentos",
+        "/financeiro#fluxo",
+        "/financeiro#dre",
+        "/financeiro#rentabilidade",
+        "/financeiro#categorias",
+    ):
+        assert f'<a href="{destino}"' in html, destino
+
+
+@pytest.mark.parametrize(
+    "caminho",
+    [
+        "/caixa",
+        "/controle-caixa",
+        "/produtos",
+        "/clientes",
+        "/estoque",
+        "/entrada-nf",
+        "/financeiro",
+    ],
+)
 def test_telas_que_gravam_carregam_o_seu_script(cliente, caminho):
     html = cliente.get(caminho).text
     scripts = re.findall(r'<script src="(/static/js/[^"?]+)', html)
@@ -102,7 +135,14 @@ def test_telas_que_gravam_carregam_o_seu_script(cliente, caminho):
 
 def test_teclas_dos_menus_valem_em_todas_as_telas(cliente):
     """F2 (venda) e F11 (controle de caixa) saem dos menus, que estão em toda tela com moldura."""
-    for caminho in ("/inicio", "/produtos", "/clientes", "/tabelas-preco", "/operadores"):
+    for caminho in (
+        "/inicio",
+        "/produtos",
+        "/clientes",
+        "/tabelas-preco",
+        "/operadores",
+        "/estoque",
+    ):
         html = cliente.get(caminho).text
         assert 'data-atalho-menu="F2"' in html, caminho
         assert 'data-atalho-menu="F11"' in html, caminho

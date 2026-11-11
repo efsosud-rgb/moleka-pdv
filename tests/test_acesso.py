@@ -8,7 +8,15 @@ from sqlalchemy import select
 from app import acesso, db, operadores
 from app.models import Operador, Perfil
 
-TELAS_INTERNAS = ["/inicio", "/caixa", "/produtos", "/financeiro", "/operadores"]
+TELAS_INTERNAS = [
+    "/inicio",
+    "/caixa",
+    "/produtos",
+    "/estoque",
+    "/entrada-nf",
+    "/financeiro",
+    "/operadores",
+]
 
 
 def _operador_no_banco(login):
@@ -205,7 +213,9 @@ def test_operador_comum_nao_faz_o_que_e_do_gerente(caixa):
     assert caixa.post("/api/clientes", json={"nome": "Maria"}).status_code == 201
 
 
-@pytest.mark.parametrize("caminho", ["/produtos", "/financeiro", "/operadores"])
+@pytest.mark.parametrize(
+    "caminho", ["/produtos", "/estoque", "/entrada-nf", "/financeiro", "/operadores"]
+)
 def test_tela_do_gerente_manda_o_operador_comum_para_o_inicio(caixa, caminho):
     resposta = caixa.get(caminho, follow_redirects=False)
     assert resposta.status_code == 303
