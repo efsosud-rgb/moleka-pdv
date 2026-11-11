@@ -29,6 +29,16 @@ O instalador é gerado e testado no GitHub (`.github/workflows/instalador-window
 
   Com mais de um gerente, diga de quem é a senha: `... --redefinir-senha usuario`. Cada uso fica registrado em `%APPDATA%\MolekaPDV\logs\moleka.log`.
 
+## Rodar pelo código no Windows, sem instalador
+
+Para testar num Windows 11 que recusa o instalador (erro 4551, acima). Precisa do Python 3.12 ou mais novo. Com o código numa pasta (zip extraído ou `git clone`), no PowerShell:
+
+```powershell
+py tools\abrir_pelo_codigo.py
+```
+
+O roteiro cria um ambiente do Python só do Moleka, instala as bibliotecas, confere se o Windows deixa carregá-las e abre o sistema na janela própria; se a janela não puder abrir, abre no navegador (`--navegador` força esse modo). Não altera nenhuma configuração do Windows, e os dados ficam em `%APPDATA%\MolekaPDV`, como no programa instalado.
+
 ## Como rodar (desenvolvimento)
 
 ```powershell
@@ -85,7 +95,7 @@ moleka-pdv/
 │   └── static/          # css/moleka.css, js/ (moleka, entrada, operadores), fonts/ (Inter e Nunito)
 ├── assets/brand/        # logo, mascote, artes da capa e ícone do programa
 ├── packaging/           # PyInstaller, Inno Setup e teste do instalador no Windows
-├── tools/               # design/ (logo em vetor, ícone, exportação do protótipo) e scripts do PC do caixa
+├── tools/               # abrir_pelo_codigo.py (roda sem instalador), design/ e scripts do PC do caixa
 ├── docs/                # ESPECIFICACAO.md, DECISOES.md, PLANO.md, prototipo/
 └── tests/               # pytest (dinheiro, preços, senhas, login e perfis, API, páginas, banco)
 ```
