@@ -18,7 +18,7 @@
 @font-face{font-family:Nunito;font-style:normal;font-weight:900;font-display:swap;src:url(../fonts/nunito-latin-900-normal.woff2) format("woff2")}
 
 *{box-sizing:border-box}
-html,body{margin:0;min-height:100%}
+html,body{margin:0;height:100%}
 body{background:#FFF9E3;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#2A1A18;font-size:14px}
 a{color:#9E1A20}a:hover{color:#542424}
 button,input,select{font:inherit}
@@ -26,11 +26,13 @@ h1,h2,h3,p{margin:0}
 h1,h2,h3{font-family:Nunito,Inter,sans-serif}
 .ic{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .num{text-align:right;font-variant-numeric:tabular-nums}
-.tela{min-height:100vh;display:flex;flex-direction:column;background:#FFF9E3}
+/* A moldura (menus, faixa do topo, barra de status) fica sempre na tela; se a janela for baixa,
+   só o miolo rola. Área útil da janela maximizada numa tela de 1366x768: cerca de 1366x697. */
+.tela{height:100vh;min-height:0;overflow:hidden;display:flex;flex-direction:column;background:#FFF9E3}
 kbd{font:800 11.5px Inter,system-ui,sans-serif;color:#542424;background:linear-gradient(#FFF98F,#FCF00C);border:1px solid #C9A400;border-radius:5px;padding:3px 6px;box-shadow:0 2px 0 #9C7F00}
 
 /* ---------------------------------------------------------------- barra de menus */
-.menubar{position:relative;z-index:5;display:flex;align-items:center;flex-wrap:wrap;gap:2px;padding:3px 10px;background:linear-gradient(#7A181C,#5C1216);border-bottom:1px solid #3A0B0D}
+.menubar{position:relative;z-index:5;flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:2px;padding:3px 10px;background:linear-gradient(#7A181C,#5C1216);border-bottom:1px solid #3A0B0D}
 .menu{position:relative}
 .menu-botao{font-size:13px;font-weight:600;color:#FFF1DA;background:transparent;border:0;border-radius:6px;padding:6px 11px;cursor:pointer}
 .menu-botao:hover,.menu-botao:focus-visible,.menu.aberto .menu-botao{background:#FCF00C;color:#542424;outline:none}
@@ -45,8 +47,8 @@ kbd{font:800 11.5px Inter,system-ui,sans-serif;color:#542424;background:linear-g
 
 /* ---------------------------------------------------------------- faixa do topo
    A parede vermelha da loja, com o escorrido das geladeiras na borda de baixo. */
-.topo{position:relative;z-index:2;display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;padding:8px 24px 10px;background:linear-gradient(#EC3C3C,#DC2B2D 50%,#C8202A)}
-.topo .titulo h1{font-weight:900;font-size:30px;line-height:1.05;color:#FFFFFF;text-shadow:0 2px 0 #9E1A20,0 5px 10px rgba(60,0,0,.35)}
+.topo{position:relative;z-index:2;flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:6px 20px;padding:6px 24px 9px;background:linear-gradient(#EC3C3C,#DC2B2D 50%,#C8202A)}
+.topo .titulo h1{font-weight:900;font-size:28px;line-height:1.05;color:#FFFFFF;text-shadow:0 2px 0 #9E1A20,0 5px 10px rgba(60,0,0,.35)}
 .topo .titulo p{margin-top:5px;font-size:13px;font-weight:600;color:#FFFFFF}
 .topo .chips{margin-left:auto;display:flex;flex-wrap:wrap;gap:10px}
 .pingos{position:absolute;left:0;bottom:-15px;width:100%;height:16px;pointer-events:none}
@@ -58,21 +60,21 @@ kbd{font:800 11.5px Inter,system-ui,sans-serif;color:#542424;background:linear-g
 .marca{display:flex;align-items:flex-end;text-decoration:none}
 .marca span{display:block}
 .oval-wrap{position:relative;perspective:700px;margin-bottom:8px}
-.oval{display:block;width:160px;height:auto;transform:rotateX(10deg) rotateY(-10deg);filter:drop-shadow(0 2px 0 #E8C300) drop-shadow(0 2px 0 #B8960A) drop-shadow(0 9px 8px rgba(60,0,0,.45));transition:transform .45s ease}
+.oval{display:block;width:144px;height:auto;transform:rotateX(10deg) rotateY(-10deg);filter:drop-shadow(0 2px 0 #E8C300) drop-shadow(0 2px 0 #B8960A) drop-shadow(0 9px 8px rgba(60,0,0,.45));transition:transform .45s ease}
 .oval-wrap:hover .oval{transform:rotateX(0deg) rotateY(0deg) scale(1.05)}
 .brilho{position:absolute;left:3%;right:4%;top:5%;bottom:9%;border-radius:50%;overflow:hidden;pointer-events:none;transform:rotateX(10deg) rotateY(-10deg);transition:transform .45s ease}
 .oval-wrap:hover .brilho{transform:rotateX(0deg) rotateY(0deg) scale(1.05)}
 .brilho::before{content:"";position:absolute;top:-30%;bottom:-30%;left:-45%;width:28%;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.7),rgba(255,255,255,0));transform:skewX(-18deg)}
 .anim .brilho::before{animation:brilho 6s ease-in-out infinite}
 @keyframes brilho{0%,58%{left:-45%}80%,100%{left:125%}}
-.mascote-wrap{position:relative;width:62px;height:100px;margin-left:-4px}
+.mascote-wrap{position:relative;width:56px;height:90px;margin-left:-4px}
 .inclina{position:absolute;left:0;top:0;right:0;bottom:0;transform-origin:50% 100%}
 .mascote{position:absolute;left:0;bottom:0;height:100%;width:auto;transform-origin:50% 100%;filter:drop-shadow(0 6px 5px rgba(60,0,0,.35))}
 .anim .mascote{animation:balanca 4s ease-in-out infinite}
 .anim .inclina{animation:aponta 6s ease-in-out infinite}
 @keyframes balanca{0%,100%{transform:rotate(-1.5deg) translateY(0)}50%{transform:rotate(2deg) translateY(-3px)}}
 @keyframes aponta{0%,48%,100%{transform:translateX(0) rotate(0deg)}60%{transform:translateX(-7px) rotate(-6deg)}72%{transform:translateX(-3px) rotate(-3deg)}}
-.beijo{position:absolute;left:16px;top:22px;width:15px;height:15px;color:#FFE1E8;opacity:0;pointer-events:none}
+.beijo{position:absolute;left:14px;top:20px;width:14px;height:14px;color:#FFE1E8;opacity:0;pointer-events:none}
 .beijo svg{display:block;width:100%;height:100%;filter:drop-shadow(0 1px 0 #9E1A20)}
 .anim .beijo{animation:beijo 6s ease-out infinite}
 .anim .beijo.b2{animation-delay:.3s}
@@ -92,8 +94,8 @@ kbd{font:800 11.5px Inter,system-ui,sans-serif;color:#542424;background:linear-g
 .chip.obra .ic{width:16px;height:16px;color:#9E1A20}
 
 /* ---------------------------------------------------------------- corpo: menu lateral e conteúdo */
-.corpo{flex:1;display:flex;flex-wrap:wrap;align-items:stretch}
-.lateral{flex:1 1 236px;max-width:236px;display:flex;flex-direction:column;gap:3px;padding:24px 12px 12px;background:#FFFFFF;border-right:1px solid #EADBA8}
+.corpo{flex:1;min-height:0;display:flex;align-items:stretch}
+.lateral{flex:0 0 236px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;padding:18px 12px 10px;background:#FFFFFF;border-right:1px solid #EADBA8}
 .item{display:flex;align-items:center;gap:12px;width:100%;min-height:40px;padding:7px 11px;border:2px solid transparent;border-radius:10px;background:transparent;color:#542424;font-weight:600;font-size:14px;text-align:left;text-decoration:none;cursor:pointer}
 .item:hover{background:#FFF6CC;color:#542424}
 .item:focus-visible{outline:3px solid #1F6FD1;outline-offset:1px}
@@ -103,12 +105,10 @@ kbd{font:800 11.5px Inter,system-ui,sans-serif;color:#542424;background:linear-g
 .item.em-breve{color:#76604F}
 .item.em-breve .ic{color:#B5A396}
 .lateral .fim{margin-top:auto}
-.conteudo{flex:999 1 560px;min-width:0;padding:28px 26px 18px}
-[data-tela="financeiro"] .conteudo{padding:24px 26px 14px}
-[data-tela="produtos"] .conteudo{padding:22px 26px 12px}
+.conteudo{flex:1 1 0;min-width:0;overflow:auto;padding:18px 24px 12px}
 
 /* ---------------------------------------------------------------- barra de status */
-.rodape{display:flex;align-items:center;flex-wrap:wrap;gap:6px 18px;padding:6px 14px;background:#542424;color:#FFE8B0;font-size:12.5px}
+.rodape{flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:6px 18px;padding:6px 14px;background:#542424;color:#FFE8B0;font-size:12.5px}
 .rodape .dir{margin-left:auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
 .status{display:inline-flex;align-items:center;gap:7px}
 .tecla{display:inline-flex;align-items:center;gap:6px;padding:0;border:0;background:transparent;color:#FFE8B0;font-size:12.5px;text-decoration:none;cursor:pointer}
@@ -166,15 +166,15 @@ span.tecla{cursor:default}
 .tabela td.sem-linhas{padding:22px 14px;color:#5A4237;font-size:13.5px;text-align:center}
 .tabela tr.forte td{font-weight:800;color:#542424;background:#FFFBEA}
 .tabela tr.final td{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:15.5px;color:#9E1A20;background:#FFF4CC;border-bottom:0}
-.abas{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px;border-bottom:3px solid #D42828}
-.aba{font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:14px;color:#542424;background:linear-gradient(#FFFDF4,#FFF1BF);border:1px solid #E2CF95;border-bottom:0;border-radius:10px 10px 0 0;padding:9px 16px;min-height:40px;cursor:pointer}
+.abas{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;border-bottom:3px solid #D42828}
+.aba{font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:14px;color:#542424;background:linear-gradient(#FFFDF4,#FFF1BF);border:1px solid #E2CF95;border-bottom:0;border-radius:10px 10px 0 0;padding:7px 16px;min-height:36px;cursor:pointer}
 .aba:hover{background:#FFF6CC}
 .aba:focus-visible{outline:3px solid #1F6FD1;outline-offset:1px}
 .aba.ativa{color:#FFFFFF;background:linear-gradient(#EA3F3F,#D42828);border-color:#B81E22;text-shadow:0 1px 0 rgba(0,0,0,.25)}
-.ferramentas{display:flex;align-items:flex-end;flex-wrap:wrap;gap:10px 12px;margin-bottom:14px}
+.ferramentas{display:flex;align-items:flex-end;flex-wrap:wrap;gap:10px 12px;margin-bottom:8px}
 .ferramentas .espaco{flex:1}
-.ferramentas .btn3d,.form .btn3d:not(.mini){font-size:14.5px;padding:10px 15px;min-height:44px}
-.ferramentas .campo{font-size:14.5px;padding:10px 12px;min-height:44px}
+.ferramentas .btn3d,.form .btn3d:not(.mini){font-size:14.5px;padding:9px 15px;min-height:42px}
+.ferramentas .campo{font-size:14.5px;padding:9px 12px;min-height:42px}
 .ferramentas .com-icone .campo{padding-left:42px}
 
 /* ---------------------------------------------------------------- avisos: torrada e caixa "Sobre" */
@@ -190,39 +190,39 @@ span.tecla{cursor:default}
 .dialogo form{display:flex;justify-content:flex-end}
 
 /* ---------------------------------------------------------------- início: módulos e resumo do dia */
-.inicio{display:flex;flex-wrap:wrap;align-items:flex-start;gap:24px}
+.inicio{display:flex;flex-wrap:wrap;align-items:flex-start;gap:20px 22px}
 .modulos{flex:999 1 520px;min-width:0}
-.cab-secao{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-bottom:14px}
+.cab-secao{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-bottom:10px}
 .cab-secao h2{font-weight:900;font-size:24px;color:#542424}
 .cab-secao span{font-size:13px;color:#5A4237}
-.grade{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
-.tile{position:relative;display:flex;flex-direction:column;gap:9px;min-height:168px;padding:15px 14px 14px;color:#2A1A18;text-decoration:none;transition:transform .15s ease,box-shadow .15s ease}
+.grade{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px 14px}
+.tile{position:relative;display:flex;flex-direction:column;gap:7px;min-height:150px;padding:12px 13px 12px;color:#2A1A18;text-decoration:none;transition:transform .15s ease,box-shadow .15s ease}
 a.tile:hover{transform:translateY(-3px);color:#2A1A18;box-shadow:inset 0 1px 0 #FFFFFF,0 8px 0 #EFDFA6,0 18px 28px rgba(120,70,0,.18)}
 a.tile:active{transform:translateY(3px);box-shadow:inset 0 1px 0 #FFFFFF,0 2px 0 #EFDFA6,0 6px 12px rgba(120,70,0,.16)}
 a.tile:focus-visible{outline:3px solid #1F6FD1;outline-offset:2px}
 .tile .t{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:16.5px;line-height:1.15;color:#542424}
-.tile .d{font-size:12.5px;line-height:1.4;color:#5A4237}
-.tile kbd,.tile .breve{position:absolute;right:12px;top:14px}
+.tile .d{font-size:12.5px;line-height:1.35;color:#5A4237}
+.tile kbd,.tile .breve{position:absolute;right:11px;top:12px}
 .tile.em-breve{cursor:default}
 .tile.em-breve .selo{filter:grayscale(.55) opacity(.8)}
 .breve{font:800 10px Inter,system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#5A4237;background:#FFF6CC;border:1px dashed #CDB77A;border-radius:6px;padding:3px 6px}
-.selo{display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:13px}
+.selo{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:12px}
 .selo .ic{width:24px;height:24px}
 .selo.vermelho{color:#FFFFFF;background:linear-gradient(#EF4848,#D42828);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 3px 0 #8E1A1F}
 .selo.amarelo{color:#9E1A20;border:2px solid #E43030;background:linear-gradient(#FFF98F,#FCF00C 60%,#F2DA0A);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 3px 0 #C9A400}
 .selo.verde{color:#FFFFFF;background:linear-gradient(#2BA352,#1B7F39);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 3px 0 #0E4D24}
 .selo.vinho{color:#FCF00C;background:linear-gradient(#6E2E2E,#542424);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 3px 0 #2E1010}
-.aviso{display:flex;align-items:center;gap:12px;margin-top:18px;padding:12px 16px;font-size:13px;line-height:1.45;color:#5A4237}
+.aviso{display:flex;align-items:center;gap:12px;margin-top:14px;padding:9px 16px;font-size:13px;line-height:1.45;color:#5A4237}
 .aviso .ic{width:22px;height:22px;color:#C8202A}
 .aviso b{color:#542424}
-.resumo{flex:1 1 280px;max-width:320px;display:flex;flex-direction:column;gap:10px;padding:20px}
+.resumo{flex:1 1 270px;max-width:310px;display:flex;flex-direction:column;gap:9px;padding:16px 18px}
 .resumo h2{font-weight:900;font-size:20px;color:#542424}
 .resumo .data{margin-top:-6px;font-size:12.5px;color:#5A4237}
-.linha-res{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed #E2CF95;font-size:14px;color:#5A4237}
+.linha-res{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed #E2CF95;font-size:14px;color:#5A4237}
 .linha-res b{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:18px;color:#542424}
 
 /* ---------------------------------------------------------------- caixa: venda */
-.pdv{flex:1;display:flex;flex-wrap:wrap;align-items:stretch;gap:18px 20px;padding:26px 22px 16px}
+.pdv{flex:1;min-height:0;overflow:auto;display:flex;flex-wrap:wrap;align-items:stretch;gap:18px 20px;padding:26px 22px 16px}
 .esq{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:14px}
 .lado{flex:1 1 320px;max-width:372px;display:flex;flex-direction:column;gap:12px}
 .busca{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px}
@@ -247,17 +247,17 @@ a.tile:focus-visible{outline:3px solid #1F6FD1;outline-offset:2px}
 
 /* ---------------------------------------------------------------- financeiro */
 .ferramentas .periodo{flex:0 1 230px}
-.fin{display:flex;flex-wrap:wrap;align-items:flex-start;gap:20px}
+.fin{display:flex;flex-wrap:wrap;align-items:flex-start;gap:16px 20px}
 .dre{flex:999 1 480px;min-width:0;overflow:hidden}
-.cab-cartao{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;padding:11px 16px 9px}
+.cab-cartao{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;padding:9px 16px 8px}
 .cab-cartao h2{font-weight:900;font-size:17px;color:#542424}
 .cab-cartao span{font-size:13px;color:#5A4237}
 .dre .tabela th{padding:8px 16px}
-.dre .tabela td{padding:6px 16px}
-.dre .vazio{padding:10px 16px 12px}
-.fin-lado{flex:1 1 340px;max-width:400px;display:flex;flex-direction:column;gap:14px}
+.dre .tabela td{padding:5px 16px}
+.dre .vazio{padding:8px 16px 10px}
+.fin-lado{flex:1 1 340px;max-width:400px;display:flex;flex-direction:column;gap:12px}
 .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.kpi{padding:10px 14px}
+.kpi{padding:8px 14px}
 .kpi .r{font:800 11px Inter,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#5A4237}
 .kpi .v{margin:2px 0 1px;font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:26px;line-height:1.1;color:#542424}
 .kpi .m{font-size:12px;line-height:1.35;color:#5A4237}
@@ -269,35 +269,33 @@ a.tile:focus-visible{outline:3px solid #1F6FD1;outline-offset:2px}
 /* ---------------------------------------------------------------- produtos
    Caixas de grupo com o título na borda, como nos ERPs de mesa. */
 .ferramentas .pesquisa{flex:999 1 360px;min-width:0}
-[data-tela="produtos"] .ferramentas{margin-bottom:12px}
-[data-tela="produtos"] .abas{margin-bottom:12px}
-.form{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px 16px}
-.form .rotulo{margin-bottom:5px}
-.form .campo{font-size:14.5px;padding:9px 12px;min-height:42px}
+.form{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:8px 16px}
+.form .rotulo{margin-bottom:4px}
+.form .campo{font-size:14.5px;padding:8px 12px;min-height:40px}
 .form .com-icone .campo{padding-left:42px}
 .form .sel select{padding-right:36px}
-.form .check{min-height:42px}
-fieldset.grupo{min-width:0;margin:0;padding:4px 16px 12px;border:1px solid #DCC88A;border-radius:12px;background:#FFFFFF;box-shadow:0 4px 0 #EFDFA6,0 10px 18px rgba(120,70,0,.1)}
+.form .check{min-height:40px}
+fieldset.grupo{min-width:0;margin:0;padding:2px 16px 8px;border:1px solid #DCC88A;border-radius:12px;background:#FFFFFF;box-shadow:0 4px 0 #EFDFA6,0 10px 18px rgba(120,70,0,.1)}
 .grupo legend{padding:0 8px;font:900 12px Nunito,Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#9E1A20}
 .linha{display:grid;gap:10px 12px}
-.linha + .linha{margin-top:10px}
+.linha + .linha{margin-top:8px}
 .l4{grid-template-columns:110px minmax(0,1.5fr) minmax(0,1fr) 92px}
 .l2a{grid-template-columns:minmax(0,1fr) 110px}
 .l2{grid-template-columns:repeat(2,minmax(0,1fr))}
-.grupo .tabela th{padding:7px 12px}
-.grupo .tabela td{padding:9px 12px;font-size:13px;line-height:1.4;color:#5A4237}
-.sob-tabela{display:flex;justify-content:flex-end;margin-top:8px}
+.grupo .tabela th{padding:6px 12px}
+.grupo .tabela td{padding:7px 12px;font-size:13px;line-height:1.4;color:#5A4237}
+.sob-tabela{display:flex;justify-content:flex-end;margin-top:6px}
 .dado{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed #E2CF95;font-size:14px;color:#5A4237}
 .dado b{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:17px;color:#542424}
 .grupo .vazio{margin-top:8px}
-.acoes{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:12px;margin-top:14px}
-.acoes .btn3d{min-height:46px;font-size:16px;padding:11px 20px}
+.acoes{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:12px;margin-top:8px}
+.acoes .btn3d{min-height:44px;font-size:16px;padding:10px 20px}
 
 /* ---------------------------------------------------------------- capa
    Artes novas na vitrine (logo 3D e loja se alternando), animação da mascote no telão e a
    entrada do sistema. */
-.capa{flex:1;display:flex;flex-wrap:wrap;align-items:stretch;background:linear-gradient(#EA3939,#D42828)}
-.vitrine{flex:999 1 560px;min-width:0;min-height:420px;display:flex;justify-content:center;padding:18px 0 22px 18px;perspective:1400px;container-type:size}
+.capa{flex:1;min-height:0;overflow:auto;display:flex;flex-wrap:wrap;align-items:stretch;background:linear-gradient(#EA3939,#D42828)}
+.vitrine{flex:999 1 560px;min-width:0;min-height:380px;display:flex;justify-content:center;padding:18px 0 22px 18px;perspective:1400px;container-type:size}
 .arte{position:relative;flex:1;max-width:calc((100cqh - 12px) * 1.7768 + 12px);overflow:hidden;border:6px solid #FCF00C;border-radius:22px;background:#3B1818;box-shadow:0 0 0 2px #542424,0 6px 0 2px #7E1A1E,0 24px 34px rgba(40,0,0,.5);transition:transform .3s ease-out}
 .quadro{position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden}
 .cobre{position:absolute;left:36.6%;top:50%;height:100%;aspect-ratio:1672/941;transform:translate(-36.6%,-50%)}
