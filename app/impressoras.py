@@ -110,6 +110,7 @@ _MOTIVOS = {
     5: "o Windows não deu permissão para usar esta impressora",
     1722: "o serviço de impressão do Windows não respondeu",
     1801: "o nome da impressora não existe mais no Windows",
+    1804: "esta impressora não aceita o cupom direto (não é impressora térmica de cupom)",
     1905: "a impressora foi removida do Windows",
     3012: "nenhuma impressora foi encontrada",
 }

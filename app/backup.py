@@ -22,6 +22,7 @@ import re
 import shutil
 import sqlite3
 import threading
+import time
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
@@ -35,6 +36,8 @@ log = logging.getLogger("moleka.backup")
 
 _NOME = re.compile(r"^moleka-(\d{4})-(\d{2})-(\d{2})\.db$")
 _uma_por_vez = threading.Lock()
+_TENTATIVAS = 6  # vezes que a troca de nome é tentada quando o arquivo antigo está em uso
+_ESPERA = 0.25  # segundos entre uma tentativa e outra
 
 
 @dataclass(frozen=True)
@@ -117,18 +120,43 @@ def _apagar_antigas(onde: Path, manter: int) -> int:
     return apagadas
 
 
+def _trocar(provisorio: Path, destino: Path) -> None:
+    """Dá o nome definitivo ao arquivo provisório, por cima do anterior.
+
+    No Windows a troca é recusada enquanto outro programa (antivírus, sincronização com a nuvem)
+    está com o arquivo anterior aberto. Costuma durar um instante: tenta de novo algumas vezes.
+    """
+    for tentativa in range(_TENTATIVAS):
+        try:
+            provisorio.replace(destino)
+            return
+        except PermissionError:
+            if tentativa == _TENTATIVAS - 1:
+                raise
+            time.sleep(_ESPERA)
+
+
+def _descartar(provisorio: Path) -> None:
+    """Apaga o arquivo provisório que não serviu. Se nem isso der, fica para a próxima cópia."""
+    try:
+        provisorio.unlink(missing_ok=True)
+    except OSError as erro:
+        log.warning("não consegui apagar o arquivo provisório %s: %s", provisorio, erro)
+
+
 def _copiar_para_a_pasta_extra(copia: Path, pasta_extra: str, manter: int) -> str:
     """Devolve "" se deu certo, ou o motivo de não ter dado (pendrive fora, pasta apagada...)."""
     destino = Path(pasta_extra)
+    provisorio = destino / (copia.name + ".parcial")
     try:
         if not destino.is_dir():
             return f"a pasta “{destino}” não foi encontrada (o pendrive está conectado?)"
-        provisorio = destino / (copia.name + ".parcial")
         shutil.copyfile(copia, provisorio)
-        provisorio.replace(destino / copia.name)
+        _trocar(provisorio, destino / copia.name)
         _apagar_antigas(destino, manter)
     except OSError as erro:
         log.warning("cópia de segurança na pasta extra falhou: %s", erro)
+        _descartar(provisorio)
         return f"não consegui gravar em “{destino}”: {erro.strerror or erro}"
     return ""
 
@@ -140,7 +168,7 @@ def copiar(sessao: Session, motivo: str) -> Resultado:
     destino = pasta() / nome_do_dia(hoje)
     provisorio = destino.with_name(destino.name + ".parcial")
     with _uma_por_vez:
-        provisorio.unlink(missing_ok=True)
+        _descartar(provisorio)
         origem = db.engine().raw_connection()
         try:
             copia = sqlite3.connect(provisorio)
@@ -149,17 +177,33 @@ def copiar(sessao: Session, motivo: str) -> Resultado:
             finally:
                 copia.close()
         except sqlite3.Error as erro:
-            provisorio.unlink(missing_ok=True)
+            _descartar(provisorio)
             log.exception("cópia de segurança falhou")
             raise RegraError(f"Não consegui fazer a cópia de segurança: {erro}", 500) from erro
         finally:
             origem.close()
         try:
             _conferir(provisorio)
-        except (RegraError, sqlite3.Error):
-            provisorio.unlink(missing_ok=True)
+        except RegraError:
+            _descartar(provisorio)
             raise
-        provisorio.replace(destino)
+        except sqlite3.Error as erro:
+            _descartar(provisorio)
+            log.exception("a cópia de segurança não abriu na conferência")
+            raise RegraError(
+                f"A cópia foi feita, mas não abriu na conferência do banco: {erro}", 500
+            ) from erro
+        try:
+            _trocar(provisorio, destino)
+        except OSError as erro:
+            _descartar(provisorio)
+            log.exception("a cópia de segurança não pôde receber o nome definitivo")
+            raise RegraError(
+                "Não consegui gravar a cópia de segurança de hoje: o arquivo anterior está em uso "
+                "por outro programa (antivírus ou sincronização com a nuvem?). Tente de novo em "
+                "instantes.",
+                500,
+            ) from erro
         apagadas = _apagar_antigas(pasta(), opcoes.manter)
         extra_erro = ""
         if opcoes.pasta_extra:

@@ -1,7 +1,9 @@
 """Cópia de segurança do banco: a do dia, a da pasta extra, a limpeza das antigas e o status."""
 
 import sqlite3
+from contextlib import closing
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import pytest
 
@@ -32,7 +34,7 @@ def test_copia_do_dia_e_feita_conferida_e_aparece_no_status(cliente, loja):
     assert not list(_hoje().parent.glob("*.parcial"))  # o arquivo provisório não fica para trás
 
     # A cópia é um banco de verdade, com o que havia: os 3 produtos e o gerente da loja de teste.
-    with sqlite3.connect(_hoje()) as copia:
+    with closing(sqlite3.connect(_hoje())) as copia:  # fechada: no Windows, aberta, trava o arquivo
         assert copia.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
         assert copia.execute("SELECT count(*) FROM produto").fetchone()[0] == 3
         assert copia.execute("SELECT login FROM operador").fetchall() == [("gerente",)]
@@ -48,7 +50,7 @@ def test_copia_do_dia_e_feita_conferida_e_aparece_no_status(cliente, loja):
     cliente.post("/api/clientes", json={"nome": "Cliente de Teste"})
     assert cliente.post("/api/backup").status_code == 201
     assert len(backup.listar()) == 1
-    with sqlite3.connect(_hoje()) as copia:
+    with closing(sqlite3.connect(_hoje())) as copia:  # fechada: no Windows, aberta, trava o arquivo
         assert copia.execute("SELECT count(*) FROM cliente").fetchone()[0] == 1
 
 
@@ -57,7 +59,7 @@ def test_fechar_o_caixa_faz_a_copia_do_dia(cliente, loja):
     contado = {"dinheiro": 10000, "pix": 0, "debito": 0, "credito": 0}
     fechado = cliente.post("/api/caixa/fechar", json={"contado": contado})
     assert fechado.status_code == 200, fechado.text
-    with sqlite3.connect(_hoje()) as copia:
+    with closing(sqlite3.connect(_hoje())) as copia:  # fechada: no Windows, aberta, trava o arquivo
         # A cópia já tem o caixa fechado.
         assert copia.execute(
             "SELECT count(*) FROM sessao_caixa WHERE fechado_em IS NOT NULL"
@@ -191,6 +193,56 @@ def test_pasta_extra_escolhida_depois_da_copia_fica_avisada_ate_receber(
     cliente.put("/api/configuracoes/backup", json={"pasta_extra": str(outra), "manter": 30})
     tudo = cliente.get("/api/configuracoes").json()["backup"]
     assert tudo["extra_em"] is None and tudo["extra_erro"] == ""
+    assert _status(cliente)["ok"] is False
+
+
+def test_copia_anterior_em_uso_por_outro_programa_tenta_de_novo_e_depois_avisa(
+    cliente, loja, tmp_path_factory, monkeypatch
+):
+    """No Windows, trocar o arquivo é recusado enquanto outro programa (antivírus, sincronização
+    com a nuvem) está com a cópia anterior aberta. Aqui a recusa é simulada."""
+    assert cliente.post("/api/backup").status_code == 201
+    anterior = _hoje().read_bytes()
+    cliente.post("/api/clientes", json={"nome": "Cliente de Teste"})
+    verdadeira = Path.replace
+    recusas = {"faltam": 2}
+    monkeypatch.setattr(backup.time, "sleep", lambda _segundos: None)
+
+    def ocupada(self, destino):
+        if self.name.endswith(".parcial") and recusas["faltam"] > 0:
+            recusas["faltam"] -= 1
+            raise PermissionError(5, "Acesso negado")
+        return verdadeira(self, destino)
+
+    monkeypatch.setattr(Path, "replace", ocupada)
+    # Ocupada só por um instante: a cópia sai na terceira tentativa.
+    assert cliente.post("/api/backup").status_code == 201
+    assert recusas["faltam"] == 0 and _hoje().read_bytes() != anterior
+
+    # Ocupada o tempo todo: a tela recebe o motivo, a cópia anterior continua inteira e não
+    # sobra arquivo provisório.
+    boa = _hoje().read_bytes()
+    recusas["faltam"] = 1000
+    recusada = cliente.post("/api/backup")
+    assert recusada.status_code == 500
+    assert "em uso por outro programa" in recusada.json()["detail"]
+    assert _hoje().read_bytes() == boa
+    assert not list(backup.pasta().glob("*.parcial"))
+
+    # A pasta extra ocupada não derruba a cópia deste computador: vira aviso, sem sobra lá.
+    extra = tmp_path_factory.mktemp("pendrive ocupado")
+    cliente.put("/api/configuracoes/backup", json={"pasta_extra": str(extra), "manter": 30})
+
+    def so_a_extra(self, destino):
+        if self.parent == extra:
+            raise PermissionError(5, "Acesso negado")
+        return verdadeira(self, destino)
+
+    monkeypatch.setattr(Path, "replace", so_a_extra)
+    feita = cliente.post("/api/backup")
+    assert feita.status_code == 201
+    assert feita.json()["extra_erro"] == f"não consegui gravar em “{extra}”: Acesso negado"
+    assert list(extra.iterdir()) == []
     assert _status(cliente)["ok"] is False
 
 

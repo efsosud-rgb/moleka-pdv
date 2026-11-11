@@ -231,7 +231,9 @@
   botaoPasta.addEventListener("click", async function () {
     const api = ponte();
     if (!api || !api.escolher_pasta) return;
-    const escolhida = await api.escolher_pasta();
+    let escolhida = "";
+    try { escolhida = await api.escolher_pasta(); }
+    catch (falha) { M.mensagem(formBackup, "Não foi possível abrir a janela de escolher pasta. Digite o caminho da pasta no campo."); return; }
     if (escolhida) { formBackup.pasta_extra.value = escolhida; M.mensagem(formBackup, "Pasta escolhida. Clique em Salvar para gravar.", "dica"); }
   });
 

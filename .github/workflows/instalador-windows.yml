@@ -79,7 +79,7 @@ jobs:
 
       - name: Roda os testes
         if: steps.plano.outputs.construir == 'sim'
-        run: python -m pytest -q -rs
+        run: python -m pytest -rs
 
       - name: Empacota o programa (PyInstaller)
         if: steps.plano.outputs.construir == 'sim'
