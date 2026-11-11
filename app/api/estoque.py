@@ -158,16 +158,16 @@ def ver_estoque(
 ) -> EstoqueOut:
     saldos = estoque.saldos(sessao)
     produtos = sessao.scalars(select(Produto).order_by(func.sem_acento(Produto.descricao)))
-    todos = [item_out(p, saldos.get(p.id, Decimal("0.000"))) for p in produtos]
-    resumo = _resumo(todos)
+    todos = [(p, item_out(p, saldos.get(p.id, Decimal("0.000")))) for p in produtos]
+    resumo = _resumo([item for _produto, item in todos])
     termo = sem_acento(busca.strip()) if busca and busca.strip() else ""
     itens = []
-    for item in todos:
+    for produto, item in todos:
         if not item.ativo and not inativos:
             continue
-        if termo and not any(
-            termo in sem_acento(campo) for campo in (item.descricao, item.codigo, item.categoria)
-        ):
+        # Nome, código, categoria ou código de barras (o leitor também serve para achar).
+        campos = (item.descricao, item.codigo, item.categoria, produto.ean)
+        if termo and not any(termo in sem_acento(campo) for campo in campos):
             continue
         if situacao == "abaixo" and item.situacao != "abaixo":
             continue

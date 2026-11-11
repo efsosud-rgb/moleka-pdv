@@ -228,7 +228,7 @@ As três telas são só do gerente. Nenhuma das regras abaixo foi combinada ante
 
 - O saldo de cada produto é a soma dos movimentos: venda (sai), cancelamento de venda (volta), entrada de nota, estorno de nota, entrada e saída feitas à mão e contagem. Ninguém digita o saldo direto.
 - No alto: quantos produtos têm saldo, quantos estão abaixo do mínimo do cadastro, quantos estão com saldo negativo e o **valor do estoque a custo** (saldo × custo médio; produto sem custo fica fora da soma, e a tela diz quantos são).
-- A lista filtra por nome ou código (sem acento também acha) e por situação: todos, com saldo, abaixo do mínimo, saldo negativo.
+- A lista filtra por nome, código, código de barras ou categoria (sem acento também acha) e por situação: todos, com saldo, abaixo do mínimo, saldo negativo.
 - **Entrada** e **saída** à mão: quantidade e motivo obrigatório (por exemplo: quebra, produção do dia). Na entrada, o custo de cada unidade é opcional; informado, entra na média.
 - **Contagem**: digita-se quanto há na prateleira; o sistema grava a diferença como movimento e o saldo passa a ser o contado. A contagem não mexe no custo.
 - Antes de gravar, a tela mostra o saldo de agora e o saldo depois. O **histórico** do produto mostra cada movimento com data, quantidade, saldo depois, custo, motivo e quem fez.
@@ -276,7 +276,7 @@ As três telas são só do gerente. Nenhuma das regras abaixo foi combinada ante
 |---|---|
 | Receita bruta | itens vendidos + acréscimos das formas de pagamento + receitas lançadas no grupo "receita de vendas" |
 | (−) Descontos | desconto do gerente + descontos das formas de pagamento |
-| (−) Deduções | lançamentos do grupo "deduções" (impostos sobre a venda, taxas de cartão, devoluções) |
+| (−) Deduções | lançamentos do grupo "deduções" (impostos sobre a venda, taxas de cartão e Pix) |
 | = Receita líquida | |
 | (−) CMV | custo gravado nos itens vendidos + lançamentos do grupo "custo das vendas" |
 | = Lucro bruto | |

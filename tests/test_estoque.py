@@ -269,6 +269,7 @@ def test_estoque_minimo_pesquisa_e_inativos(cliente, loja):
 
     assert achados(busca="agua") == ["Água de teste"]  # sem acento, como se digita no caixa
     assert achados(busca="PICOLES") == ["Picolé de teste"]  # pela categoria
+    assert achados(busca="7890000000017") == ["Picolé de teste"]  # pelo código de barras (leitor)
     assert achados(busca="não existe") == []
 
     # Produto inativo some da lista e do resumo, mas aparece quando pedido.
