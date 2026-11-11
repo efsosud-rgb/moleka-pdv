@@ -629,16 +629,51 @@
     const feita = r.dados.venda;
     campoQtd.value = "1";
     M.atualizarResumoDoDia();
+    const impressao = recadoDaImpressora(r.dados.depois);
     if (feita.troco_centavos > 0) {
       porId("dt-titulo").textContent = "Venda nº " + feita.numero + " finalizada";
       dlgFim.querySelector("[data-troco-resumo]").textContent = "Total " + M.formatarCentavos(feita.total_centavos) + " · " + textoDosPagamentos(feita);
       dlgFim.querySelector("[data-troco-valor]").textContent = M.formatarCentavos(feita.troco_centavos);
+      const linha = dlgFim.querySelector("[data-fim-impressao]");
+      linha.textContent = impressao;
+      linha.hidden = !impressao;
       dlgFim.showModal();
+      dlgFim.querySelector('button[type="submit"]').focus(); // Enter continua sendo "Nova venda"
     } else {
-      M.avisar("Venda nº " + feita.numero + " finalizada: " + M.formatarCentavos(feita.total_centavos) + ".");
+      M.avisar("Venda nº " + feita.numero + " finalizada: " + M.formatarCentavos(feita.total_centavos) + "." + (impressao ? " " + impressao : ""));
       campoProd.focus();
     }
   }
+
+  // ------------------------------------------------------------------ comprovante (impressora de cupom)
+  /* O que a impressora fez logo depois da venda, nas palavras do caixa. `depois` vem do servidor:
+     a venda já está gravada, então uma falha aqui é só um aviso. */
+  function recadoDaImpressora(depois) {
+    if (!depois) return "";
+    if (depois.erro) return "ATENÇÃO: " + depois.erro;
+    if (depois.enviado) return "Comprovante enviado para a impressora.";
+    if (depois.impressora && depois.quando === "perguntar") return "Ctrl+P imprime o comprovante.";
+    return "";
+  }
+
+  let imprimindo = false; // uma tecla repetida não imprime duas vezes
+
+  /* Imprime o comprovante da última venda encerrada nesta tela. Se a impressora não puder
+     imprimir (ou não houver impressora), o comprovante aparece na tela, com o motivo. */
+  async function comprovante() {
+    const v = ultima;
+    if (!v) { M.avisar("Nenhuma venda encerrada nesta tela ainda. Para ver uma venda anterior, use o Controle de caixa (F11)."); return; }
+    if (imprimindo) return;
+    imprimindo = true;
+    const caminho = "/api/vendas/" + v.id;
+    const r = await M.api("POST", caminho + "/imprimir");
+    imprimindo = false;
+    if (r.ok) { M.avisar("Comprovante da venda nº " + v.numero + " enviado para “" + r.dados.impressora + "”."); return; }
+    M.verCupom({ titulo: "Comprovante da venda nº " + v.numero, ver: caminho + "/comprovante", imprimir: caminho + "/imprimir", erro: r.erro });
+  }
+
+  porId("btn-comprovante").addEventListener("click", comprovante);
+  porId("dt-comprovante").addEventListener("click", comprovante);
 
   porId("df-sem").addEventListener("click", function () { concluir(false); });
   porId("df-com").addEventListener("click", function () { concluir(true); });

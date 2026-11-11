@@ -249,6 +249,18 @@
     dlgHistorico.showModal();
   });
 
+  // ------------------------------------------------------------------ imprimir (impressora comum)
+  document.getElementById("btn-imprimir").addEventListener("click", function () {
+    const pesquisa = busca.value.trim();
+    M.imprimirRelatorio({
+      titulo: "Posição do estoque",
+      detalhes: ["Lista: " + situacao.selectedOptions[0].textContent + (pesquisa ? " · pesquisa “" + pesquisa + "”" : "")
+        + (verInativos.checked ? " · com os inativos" : "") + " · " + contagem.textContent],
+      resumo: M.cartoesParaOPapel(raiz),
+      tabelas: [document.getElementById("tabela-estoque")],
+    });
+  });
+
   form.tipo.addEventListener("change", function () { M.mensagem(form, ""); ajustarFormulario(); });
   situacao.addEventListener("change", carregar);
   verInativos.addEventListener("change", carregar);

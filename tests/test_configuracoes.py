@@ -181,6 +181,24 @@ def test_windows_sem_impressora_instalada(cliente, monkeypatch):
     assert lista["motivo"] == "O Windows não tem nenhuma impressora instalada."
 
 
+def test_quando_o_windows_nao_entrega_a_lista_a_tela_mostra_o_motivo(cliente, monkeypatch):
+    """Lista vazia por falha não pode aparecer como "nenhuma impressora instalada"."""
+    from app.operadores import RegraError
+
+    def falha():
+        raise RegraError("O Windows não entregou a lista de impressoras: erro 1722.", status=500)
+
+    monkeypatch.setattr(impressoras, "disponivel", lambda: (True, ""))
+    monkeypatch.setattr(impressoras, "listar", falha)
+    lista = cliente.get("/api/impressoras")
+    assert lista.status_code == 200
+    assert lista.json() == {
+        "disponivel": False,
+        "motivo": "O Windows não entregou a lista de impressoras: erro 1722.",
+        "impressoras": [],
+    }
+
+
 def test_impressora_de_teste_grava_um_arquivo_por_impressao(impressora_de_teste):
     assert impressoras.disponivel() == (True, "")
     impressoras.enviar(impressoras.NOME_DE_TESTE, b"um", "primeiro")

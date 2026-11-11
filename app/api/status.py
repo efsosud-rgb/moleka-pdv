@@ -97,6 +97,14 @@ def _copia_de_seguranca(sessao: Session) -> Indicador:
             estado=f"{quando}, sem a pasta extra",
             motivo=f"a cópia deste computador foi feita, mas a da pasta extra falhou: {erro}",
         )
+    if backup.falta_a_pasta_extra(sessao):
+        return Indicador(
+            ok=False,
+            texto="",
+            estado=f"{quando}, sem a pasta extra",
+            motivo=f"a pasta extra ({opcoes.pasta_extra}) ainda não recebeu a cópia de hoje: "
+            "use “Fazer a cópia agora” em Configurações",
+        )
     if not opcoes.pasta_extra:
         motivo = (
             "cópia só neste computador: escolha uma pasta extra (pendrive ou nuvem) em "

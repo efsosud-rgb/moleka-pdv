@@ -639,6 +639,36 @@
     lcSituacao.value = "todas_em_aberto";
     carregarLancamentos();
   });
+  // ------------------------------------------------------------------ imprimir (impressora comum)
+  const TITULOS = {
+    lancamentos: "Contas a pagar e a receber",
+    fluxo: "Fluxo de caixa",
+    dre: "Demonstração do resultado (DRE)",
+    rentabilidade: "Rentabilidade por produto",
+  };
+
+  /* Imprime a aba que está na tela, com o período e os filtros escritos no alto da folha. */
+  function imprimir() {
+    const painel = raiz.querySelector('[data-painel="' + aba + '"]');
+    const faixa = intervalo();
+    const detalhes = ["Período: " + (faixa ? textoDoPeriodo(faixa[0], faixa[1]) : "—")];
+    const avisos = Array.prototype.map.call(painel.querySelectorAll(".avisos:not([hidden]) li"), function (li) { return li.textContent; });
+    if (aba === "lancamentos") {
+      detalhes.push("Lista: " + lcTipo.selectedOptions[0].textContent + " · " + lcSituacao.selectedOptions[0].textContent
+        + " · " + raiz.querySelector("[data-lc-contagem]").textContent);
+      if (!faixaFora.hidden) avisos.push(textoFora.textContent);
+    }
+    M.imprimirRelatorio({
+      titulo: TITULOS[aba],
+      detalhes: detalhes,
+      resumo: M.cartoesParaOPapel(painel),
+      avisos: avisos,
+      tabelas: painel.querySelectorAll("table.tabela"),
+      notas: Array.prototype.filter.call(painel.querySelectorAll(".nota"), function (p) { return !p.hidden; }).map(function (p) { return p.textContent; }),
+    });
+  }
+
+  document.getElementById("btn-imprimir").addEventListener("click", imprimir);
   document.getElementById("btn-novo").addEventListener("click", function () { abrirLancamento(null); });
   // F3 abre um lançamento novo em qualquer aba desta tela.
   document.addEventListener("keydown", function (evento) {

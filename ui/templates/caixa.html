@@ -46,6 +46,7 @@
 <div class="itens-rodape">
 <button class="btn3d vermelho mini" type="button" id="btn-cancelar" data-atalho="F12">{{ icone("x") }}Cancelar venda (F12)</button>
 <span class="espaco"></span>
+<button class="btn3d mini" type="button" id="btn-comprovante" data-atalho="Ctrl+P" title="Imprime o comprovante da última venda encerrada nesta tela">{{ icone("impressora") }}Comprovante (Ctrl+P)</button>
 {% if gerente %}
 <button class="btn3d mini" type="button" id="btn-desconto" data-atalho="F5">{{ icone("etiqueta") }}Desconto (F5)</button>
 {% else %}
@@ -113,7 +114,11 @@
 <h2 id="dt-titulo">Venda finalizada</h2>
 <p data-troco-resumo></p>
 <div class="troco-fim"><span>Troco</span><b data-troco-valor>—</b></div>
-<form method="dialog"><button class="btn3d verde" type="submit">Nova venda (Enter)</button></form>
+<p class="vazio" data-fim-impressao hidden></p>
+<form method="dialog" class="botoes">
+<button class="btn3d" type="button" id="dt-comprovante" data-atalho="Ctrl+P">{{ icone("impressora") }}Comprovante (Ctrl+P)</button>
+<button class="btn3d verde" type="submit">Nova venda (Enter)</button>
+</form>
 </dialog>
 <dialog class="dialogo estreito" id="dlg-saldo" aria-labelledby="ds-titulo">
 <h2 id="ds-titulo">Vendas de hoje</h2>

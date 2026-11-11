@@ -21,7 +21,7 @@
   const dlgFechar = document.getElementById("dlg-fechar");
   const formFechar = document.getElementById("form-fechar");
   const corpoFechar = formFechar.querySelector("tbody");
-  const colunasDeVendas = gerente ? 7 : 6;
+  const colunasDeVendas = 7;
 
   let situacao = null; // { aberto, sessao }, de /api/caixa
   let vendas = []; // vendas encerradas da sessão mostrada
@@ -125,15 +125,17 @@
         M.el("td", { text: pagamentos, title: pagamentos === "—" ? "sem pagamento lançado" : "" }),
         M.el("td", { class: "num", text: M.reais(v.total_centavos) }),
         M.el("td", null, situacaoDaVenda),
-        gerente ? M.el("td", null, finalizada && podeCancelar
-          ? M.el("button", { type: "button", class: "btn3d mini", text: "Cancelar", "aria-label": "Cancelar a venda nº " + v.numero, onclick: function () { cancelarVenda(v); } })
-          : null) : null);
+        M.el("td", { class: "acoes-linha" },
+          botaoDeImprimir("Ver e imprimir o comprovante da venda nº " + v.numero, function () { verComprovante(v); }),
+          gerente && finalizada && podeCancelar
+            ? M.el("button", { type: "button", class: "btn3d mini", text: "Cancelar", "aria-label": "Cancelar a venda nº " + v.numero, onclick: function () { cancelarVenda(v); } })
+            : null));
     })));
   }
 
   function desenharHistorico() {
     if (!corpoHistorico) return;
-    if (!historico.length) { linhaUnica(corpoHistorico, 7, "Nenhum caixa fechado até agora."); return; }
+    if (!historico.length) { linhaUnica(corpoHistorico, 8, "Nenhum caixa fechado até agora."); return; }
     M.trocar.apply(null, [corpoHistorico].concat(historico.map(function (s) {
       const dinheiro = s.formas.find(function (f) { return f.forma === "dinheiro"; });
       const outras = s.formas.filter(function (f) { return f.forma !== "dinheiro"; });
@@ -147,7 +149,9 @@
         M.el("td", { class: "num", text: String(s.vendas_quantidade) }),
         M.el("td", { class: "num", text: s.vendas_quantidade ? M.reais(s.vendas_total_centavos) : "—", title: s.vendas_quantidade ? "" : "sem vendas finalizadas" }),
         celulaDeDiferenca(dinheiro ? dinheiro.diferenca_centavos : null),
-        celulaDeDiferenca(difOutras));
+        celulaDeDiferenca(difOutras),
+        M.el("td", { class: "acoes-linha" },
+          botaoDeImprimir("Ver e imprimir o fechamento de " + M.dataHora(s.fechado_em), function () { verResumo(s); })));
     })));
   }
 
@@ -163,8 +167,36 @@
       partes.unshift(M.el("span", null, M.el("b", { text: "Caixa fechado em " + M.dataHora(s.fechado_em) + (s.fechado_por ? " por " + s.fechado_por : "") + ". " })));
       if (s.observacao) partes.push(M.el("span", { text: " · Observação: " + s.observacao }));
     }
+    partes.push(M.el("button", {
+      type: "button", class: "btn3d mini", text: s.fechado_em ? "Imprimir o fechamento" : "Imprimir o resumo",
+      title: "Mostra o papel na tela antes de imprimir", onclick: function () { verResumo(s); },
+    }));
     M.trocar.apply(null, [resumo].concat(partes));
     resumo.hidden = false;
+  }
+
+  // ------------------------------------------------------------------ impressão (impressora de cupom)
+  /* O botão das linhas: só o desenho da impressora (o texto não cabe na tabela); o que ele faz
+     está na dica do mouse e no rótulo para leitor de tela. */
+  function botaoDeImprimir(rotulo, acao) {
+    const desenho = document.getElementById("ic-impressora").content.firstElementChild.cloneNode(true);
+    return M.el("button", { type: "button", class: "btn3d mini so-icone", title: rotulo, "aria-label": rotulo, onclick: acao }, desenho);
+  }
+
+  /* Os dois abrem o papel na tela, com o botão Imprimir. Sem impressora, a caixa diz o motivo. */
+  function verComprovante(v) {
+    const caminho = "/api/vendas/" + v.id;
+    M.verCupom({ titulo: "Comprovante da venda nº " + v.numero, ver: caminho + "/comprovante", imprimir: caminho + "/imprimir" });
+  }
+
+  function verResumo(s, soComImpressora) {
+    M.verCupom({
+      titulo: s.fechado_em ? "Fechamento de caixa" : "Resumo do caixa (ainda aberto)",
+      ver: "/api/caixa/resumo-impresso?sessao_id=" + s.id,
+      imprimir: "/api/caixa/imprimir",
+      corpo: { sessao_id: s.id },
+      soComImpressora: !!soComImpressora,
+    });
   }
 
   function desenhar() {
@@ -343,6 +375,7 @@
     M.avisar("Caixa fechado.");
     await carregar();
     M.atualizarStatus();
+    verResumo(fechada, true); // com impressora de cupom, o papel do fechamento já aparece pronto para imprimir
   });
 
   raiz.querySelectorAll("[data-aba]").forEach(function (botao) {

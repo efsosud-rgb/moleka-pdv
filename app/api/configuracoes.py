@@ -116,7 +116,12 @@ def _backup_out(sessao: Session) -> BackupOut:
 
 def _impressoras_out() -> ImpressorasOut:
     pode, motivo = impressoras.disponivel()
-    lista = impressoras.listar() if pode else []
+    lista: list[impressoras.Impressora] = []
+    if pode:
+        try:
+            lista = impressoras.listar()
+        except RegraError as erro:  # o Windows não entregou a lista: a tela mostra o motivo
+            pode, motivo = False, str(erro)
     if pode and not lista:
         motivo = "O Windows não tem nenhuma impressora instalada."
     return ImpressorasOut(

@@ -268,6 +268,10 @@ def gravar_backup(sessao: Session, dados: Backup) -> Backup:
     if not COPIAS_MINIMO <= dados.manter <= COPIAS_MAXIMO:
         raise RegraError(f"Cópias guardadas: de {COPIAS_MINIMO} a {COPIAS_MAXIMO}.")
     novo = Backup(pasta_extra=conferir_pasta_extra(dados.pasta_extra), manter=dados.manter)
+    if novo.pasta_extra != ler_backup(sessao).pasta_extra:
+        # Outra pasta: o que se sabia da anterior (recebeu a cópia, ou falhou) não vale mais.
+        gravar_valor(sessao, "backup.extra_em", "")
+        gravar_valor(sessao, "backup.extra_erro", "")
     gravar_valor(sessao, "backup.pasta_extra", novo.pasta_extra)
     gravar_valor(sessao, "backup.manter", str(novo.manter))
     return novo

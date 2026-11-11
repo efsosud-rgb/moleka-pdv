@@ -1,7 +1,7 @@
 """Cópia de segurança do banco: a do dia, a da pasta extra, a limpeza das antigas e o status."""
 
 import sqlite3
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import pytest
 
@@ -159,6 +159,39 @@ def test_pasta_extra_recebe_a_copia_e_o_status_avisa_quando_ela_some(
     assert "a da pasta extra falhou" in status["motivo"]
     tudo = cliente.get("/api/configuracoes").json()["backup"]
     assert "não foi encontrada" in tudo["extra_erro"] and tudo["extra_em"] is None
+
+
+def test_pasta_extra_escolhida_depois_da_copia_fica_avisada_ate_receber(
+    cliente, loja, tmp_path_factory
+):
+    cliente.post("/api/backup")  # a cópia de hoje, só neste computador
+    assert _status(cliente)["ok"] is True
+    extra = tmp_path_factory.mktemp("pendrive novo")
+    cliente.put("/api/configuracoes/backup", json={"pasta_extra": str(extra), "manter": 30})
+    status = _status(cliente)
+    assert status["ok"] is False and status["estado"].endswith("sem a pasta extra")
+    assert "ainda não recebeu a cópia de hoje" in status["motivo"]
+
+    # De hora em hora o sistema tenta de novo sozinho (o pendrive pode ter voltado).
+    backup.garantir_a_de_hoje()
+    assert (extra / backup.nome_do_dia(tempo.hoje())).exists()
+    status = _status(cliente)
+    assert status["ok"] is True and status["motivo"] == f"também copiada para {extra}"
+    # A hora gravada é a da loja, com o fuso, e não a hora UTC do banco.
+    recebeu = datetime.fromisoformat(cliente.get("/api/configuracoes").json()["backup"]["extra_em"])
+    assert recebeu.utcoffset() == datetime.now(tempo.FUSO).utcoffset()
+    assert abs(recebeu - datetime.now(tempo.FUSO)) < timedelta(minutes=1)
+    # Com tudo em dia, a conferência de hora em hora não refaz a cópia.
+    antes = (extra / backup.nome_do_dia(tempo.hoje())).stat().st_mtime_ns
+    backup.garantir_a_de_hoje()
+    assert (extra / backup.nome_do_dia(tempo.hoje())).stat().st_mtime_ns == antes
+
+    # Trocar de pasta zera o que se sabia da anterior: a nova ainda não recebeu nada.
+    outra = tmp_path_factory.mktemp("outro pendrive")
+    cliente.put("/api/configuracoes/backup", json={"pasta_extra": str(outra), "manter": 30})
+    tudo = cliente.get("/api/configuracoes").json()["backup"]
+    assert tudo["extra_em"] is None and tudo["extra_erro"] == ""
+    assert _status(cliente)["ok"] is False
 
 
 def test_pasta_extra_precisa_existir_e_ficar_fora_da_pasta_do_sistema(cliente, tmp_path_factory):

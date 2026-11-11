@@ -436,6 +436,13 @@ fieldset.grupo{min-width:0;margin:0;padding:2px 16px 8px;border:1px solid #DCC88
 .cx .aba{font-size:13.5px;padding:6px 13px}
 .cx .resumo-cx{flex:none;padding:8px 14px;border-top:1px dashed #E2CF95;font-size:13px;line-height:1.5;color:#5A4237}
 .cx .resumo-cx b{color:#542424;font-variant-numeric:tabular-nums}
+.cx .resumo-cx .btn3d{margin-left:12px;vertical-align:middle}
+.btn3d.mini.so-icone{padding:6px 9px}
+.btn3d.mini.so-icone .ic{margin:0}
+#tabela-vendas th,#tabela-vendas td,#tabela-historico th,#tabela-historico td{padding-left:8px;padding-right:8px}
+#tabela-vendas th:first-child,#tabela-vendas td:first-child,#tabela-historico th:first-child,#tabela-historico td:first-child{padding-left:14px}
+#tabela-historico th{white-space:normal;vertical-align:bottom}
+.cab-cartao .btn3d.fim{margin-left:auto;align-self:center}
 .cx .ficha > div{display:flex;flex-direction:column;gap:10px}
 .cx .ficha hr{width:100%;margin:2px 0;border:0;border-top:1px dashed #E2CF95}
 
@@ -559,6 +566,7 @@ button.chip:focus-visible{outline:3px solid #FCF00C;outline-offset:2px}
 .nf-rodape .btn3d{min-height:42px;font-size:15px;padding:9px 16px}
 .msg-form.faixa{padding:8px 14px;border-bottom:1px solid #EADBA8;background:#FFF6CC}
 .acoes-linha{white-space:nowrap}
+.acoes-linha .btn3d{vertical-align:middle}
 .acoes-linha .btn3d + .btn3d{margin-left:6px}
 .sugestoes.flutua{position:fixed;right:auto;top:0;z-index:60;margin:0}
 
@@ -667,3 +675,38 @@ button.chip:focus-visible{outline:3px solid #FCF00C;outline-offset:2px}
 .dialogo.cupom{width:min(480px,94vw)}
 .dialogo.cupom .papel{max-height:min(56vh,430px);margin-bottom:12px}
 .dialogo.cupom .msg-form{margin-bottom:10px}
+
+/* ---------- Relatório em impressora comum (A4) ----------
+   Na tela a folha não aparece. No papel, só ela aparece: menus, botões e o resto da tela ficam
+   de fora. A folha é montada por Moleka.imprimirRelatorio (moleka.js). */
+#impressao{display:none}
+@media print{
+  @page{size:A4;margin:14mm 12mm}
+  html,body{height:auto!important;min-height:0!important;overflow:visible!important;background:#fff!important}
+  body > *:not(#impressao){display:none!important}
+  #impressao{display:block;font:10.5pt/1.35 "Segoe UI",Arial,Helvetica,sans-serif}
+  #impressao,#impressao *{color:#000!important;background:none!important;box-shadow:none!important;text-shadow:none!important}
+  #impressao header{border-bottom:1.5pt solid #000;padding-bottom:5pt;margin-bottom:7pt}
+  #impressao .imp-loja{font-size:10pt}
+  #impressao h1{font-size:16pt;font-weight:800;margin-top:2pt}
+  #impressao .imp-detalhe{font-size:10pt;margin-top:2pt}
+  #impressao .imp-resumo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5pt;margin:8pt 0}
+  #impressao .imp-resumo div{border:.75pt solid #666;border-radius:3pt;padding:4pt 6pt;break-inside:avoid}
+  #impressao .imp-resumo span{display:block;font-size:8.5pt}
+  #impressao .imp-resumo b{display:block;font-size:12.5pt;font-variant-numeric:tabular-nums}
+  #impressao .imp-aviso{margin:6pt 0;padding:4pt 6pt;border:.75pt dashed #444;font-size:9.5pt}
+  #impressao .imp-nota{margin-top:6pt;font-size:9pt}
+  #impressao table{width:100%;border-collapse:collapse;margin:8pt 0;font-size:9.5pt}
+  #impressao thead{display:table-header-group}
+  #impressao tr{break-inside:avoid}
+  #impressao th,#impressao td{position:static;border:0;border-bottom:.5pt solid #999;padding:3pt 5pt;text-align:left;vertical-align:top;font-variant-numeric:tabular-nums}
+  #impressao th{border-bottom:1pt solid #000;font-weight:700;text-transform:none;letter-spacing:0;font-size:9pt}
+  #impressao th{white-space:normal}
+  #impressao th.num,#impressao td.num{text-align:right}
+  #impressao td.num{white-space:nowrap}
+  #impressao td .sub{display:block;font-size:8.5pt}
+  #impressao tr.detalhe td:first-child{padding-left:16pt}
+  #impressao .tag{padding:0;border:0;border-radius:0;font-weight:400;font-size:inherit;text-transform:none;letter-spacing:0}
+  #impressao .sem-linhas{text-align:center;padding:10pt 5pt;font-style:italic}
+  #impressao footer{margin-top:10pt;border-top:.5pt solid #999;padding-top:4pt;font-size:8.5pt}
+}

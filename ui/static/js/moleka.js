@@ -285,6 +285,7 @@
     const r = await Moleka.api("GET", opcoes.ver);
     if (!vale()) return;
     if (!r.ok) { Moleka.avisar(r.erro); return; }
+    if (opcoes.soComImpressora && !r.dados.pode_imprimir) return; // oferta automática: sem impressora, não abre
     const papel = dialogo.querySelector("[data-cupom]");
     Moleka.trocar.apply(null, [papel].concat(r.dados.linhas.map(function (l) {
       return Moleka.el("span", { class: "l" + (l.negrito ? " n" : "") + (l.grande ? " g" : ""), text: l.texto });
@@ -292,7 +293,9 @@
     dialogo.querySelector("h2").textContent = opcoes.titulo || "Comprovante";
     const botao = dialogo.querySelector("[data-cupom-imprimir]");
     botao.disabled = !r.dados.pode_imprimir;
-    Moleka.mensagem(dialogo, r.dados.pode_imprimir ? "" : r.dados.motivo, "dica");
+    // Sem impressora, o motivo aparece como dica; uma tentativa que falhou aparece como erro.
+    if (opcoes.erro && r.dados.pode_imprimir) Moleka.mensagem(dialogo, opcoes.erro);
+    else Moleka.mensagem(dialogo, r.dados.pode_imprimir ? "" : r.dados.motivo, "dica");
     cupomAberto = opcoes;
     if (!dialogo.open) dialogo.showModal();
     (r.dados.pode_imprimir ? botao : dialogo.querySelector("[data-fechar-dialogo]")).focus();
@@ -315,6 +318,69 @@
       else Moleka.mensagem(dialogo, r.erro);
     });
   }
+
+  // ------------------------------------------------------------------ relatório em folha comum (A4)
+  /* A cópia de uma tabela da tela para o papel: sem botões, sem a coluna de ações (a que só tem
+     título para leitor de tela) e sem as larguras em pixels, que são da tela. */
+  function tabelaParaOPapel(tabela) {
+    const copia = tabela.cloneNode(true);
+    copia.removeAttribute("id");
+    const titulos = Array.prototype.slice.call(copia.querySelectorAll("thead th"));
+    const fora = [];
+    titulos.forEach(function (th, i) {
+      const filho = th.firstElementChild;
+      if (th.children.length === 1 && filho.classList.contains("so-leitor") && th.textContent.trim() === filho.textContent.trim()) fora.push(i);
+    });
+    copia.querySelectorAll("tr").forEach(function (tr) {
+      const celulas = Array.prototype.slice.call(tr.children);
+      if (celulas.length === 1 && celulas[0].colSpan > 1) { celulas[0].colSpan = Math.max(1, titulos.length - fora.length); return; }
+      fora.forEach(function (i) { if (celulas[i]) celulas[i].remove(); });
+    });
+    copia.querySelectorAll("button, input, select, [hidden]").forEach(function (el) { el.remove(); });
+    copia.querySelectorAll("[style]").forEach(function (el) { el.removeAttribute("style"); });
+    return copia;
+  }
+
+  /* Os cartões de números de um pedaço da tela, como [rótulo, valor, detalhe], para o resumo
+     do relatório impresso. */
+  Moleka.cartoesParaOPapel = function (onde) {
+    return Array.prototype.map.call(onde.querySelectorAll(".kpi"), function (cartao) {
+      const parte = function (classe) { const el = cartao.querySelector("." + classe); return el ? el.textContent.trim() : ""; };
+      return [parte("r"), parte("v"), parte("m")];
+    });
+  };
+
+  /* Monta uma folha só com o que interessa — loja, título, filtros, números e tabelas que estão
+     na tela — e chama a impressão do Windows. Os valores são os da tela: nada é recalculado aqui.
+     opcoes: { titulo, detalhes: [texto], resumo: [[rótulo, valor, detalhe]], avisos: [texto],
+               tabelas: [<table>], notas: [texto] }. Devolve true se a impressão foi chamada. */
+  Moleka.imprimirRelatorio = async function (opcoes) {
+    const r = await Moleka.api("GET", "/api/impressao/cabecalho");
+    if (!r.ok) { Moleka.avisar("Não foi possível preparar a impressão: " + r.erro); return false; }
+    const c = r.dados;
+    let folha = document.getElementById("impressao");
+    if (!folha) { folha = Moleka.el("div", { id: "impressao" }); document.body.appendChild(folha); }
+    const partes = [Moleka.el("header", null,
+      Moleka.el("p", { class: "imp-loja", text: (c.loja || "Moleka PDV") + (c.cnpj ? " · CNPJ " + c.cnpj : "") }),
+      Moleka.el("h1", { text: opcoes.titulo }))];
+    (opcoes.detalhes || []).forEach(function (texto) { if (texto) partes.push(Moleka.el("p", { class: "imp-detalhe", text: texto })); });
+    const resumo = (opcoes.resumo || []).filter(function (linha) { return linha && linha[0]; });
+    if (resumo.length) {
+      partes.push(Moleka.el.apply(null, ["div", { class: "imp-resumo" }].concat(resumo.map(function (linha) {
+        return Moleka.el("div", null,
+          Moleka.el("span", { class: "imp-r", text: linha[0] }),
+          Moleka.el("b", { text: linha[1] || "—" }),
+          linha[2] ? Moleka.el("span", { class: "imp-m", text: linha[2] }) : null);
+      }))));
+    }
+    (opcoes.avisos || []).forEach(function (texto) { if (texto) partes.push(Moleka.el("p", { class: "imp-aviso", text: texto })); });
+    Array.prototype.forEach.call(opcoes.tabelas || [], function (tabela) { partes.push(tabelaParaOPapel(tabela)); });
+    (opcoes.notas || []).forEach(function (texto) { if (texto) partes.push(Moleka.el("p", { class: "imp-nota", text: texto })); });
+    partes.push(Moleka.el("footer", { text: "Impresso em " + Moleka.dataBR(c.agora) + " às " + Moleka.hora(c.agora) + " por " + c.operador + " · Moleka PDV " + c.versao }));
+    Moleka.trocar.apply(null, [folha].concat(partes));
+    window.print();
+    return true;
+  };
 
   /* Linha de mensagem dos formulários: <p class="msg-form" role="alert" hidden>.
      tipo: "erro" (padrão), "ok" ou "dica". Texto vazio esconde a linha. */
@@ -537,6 +603,19 @@
 
   function iniciarAtalhos() {
     document.addEventListener("keydown", function (evento) {
+      // Ctrl+P é o botão de imprimir da tela (ou da caixa que estiver aberta por cima). A
+      // impressão do navegador não é usada: ela imprimiria a tela inteira, com menus e botões.
+      if (evento.ctrlKey && !evento.altKey && !evento.metaKey && (evento.key === "p" || evento.key === "P")) {
+        evento.preventDefault();
+        if (evento.repeat) return;
+        const abertas = document.querySelectorAll("dialog[open]");
+        const foco = document.activeElement;
+        const caixa = (foco && foco.closest("dialog[open]")) || (abertas.length ? abertas[abertas.length - 1] : null);
+        const botao = Array.prototype.find.call((caixa || document).querySelectorAll('[data-atalho="Ctrl+P"]'), visivel);
+        if (!botao) Moleka.avisar(caixa ? "Aqui não há o que imprimir." : "Esta tela não tem impressão.");
+        else if (!botao.disabled && botao.getAttribute("aria-disabled") !== "true") botao.click();
+        return;
+      }
       if (evento.ctrlKey || evento.altKey || evento.metaKey) return;
       const dialogo = document.querySelector("dialog[open]");
       if (dialogo) return; // a caixa aberta cuida das próprias teclas (Esc fecha)

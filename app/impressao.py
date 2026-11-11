@@ -74,4 +74,12 @@ def depois_da_venda(sessao: Session, venda: Venda) -> DepoisDaVenda:
     except RegraError as erro:
         log.warning("depois da venda %s: %s", venda.numero, erro)
         return DepoisDaVenda(opcoes.impressora, opcoes.quando, enviado=False, erro=str(erro))
+    except Exception as erro:  # a venda já está gravada: nenhum defeito da impressão a desfaz
+        log.exception("depois da venda %s: a impressão falhou", venda.numero)
+        return DepoisDaVenda(
+            opcoes.impressora,
+            opcoes.quando,
+            enviado=False,
+            erro=f"A impressora de cupom falhou: {erro}.",
+        )
     return DepoisDaVenda(opcoes.impressora, opcoes.quando, enviado=False, erro="")

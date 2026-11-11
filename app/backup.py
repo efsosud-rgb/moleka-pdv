@@ -169,7 +169,9 @@ def copiar(sessao: Session, motivo: str) -> Resultado:
         configuracoes.gravar_valor(
             sessao,
             "backup.extra_em",
-            tempo.agora().isoformat() if opcoes.pasta_extra and not extra_erro else "",
+            (tempo.iso_na_loja(tempo.agora()) or "")
+            if opcoes.pasta_extra and not extra_erro
+            else "",
         )
         sessao.commit()
     feita = next(c for c in listar() if c.arquivo == destino)
@@ -183,13 +185,24 @@ def copiar(sessao: Session, motivo: str) -> Resultado:
     return Resultado(feita, apagadas, opcoes.pasta_extra, extra_erro)
 
 
+def falta_a_pasta_extra(sessao: Session) -> bool:
+    """Há pasta extra escolhida e ela ainda não recebeu a cópia de hoje?"""
+    if not configuracoes.ler_backup(sessao).pasta_extra:
+        return False
+    recebeu_em = configuracoes.ler_valor(sessao, "backup.extra_em")
+    return recebeu_em[:10] != tempo.hoje().isoformat()
+
+
 def garantir_a_de_hoje() -> None:
-    """Ao abrir o programa: faz a cópia do dia se ela ainda não existe. Nunca levanta erro."""
+    """Ao abrir o programa, e depois de hora em hora: faz a cópia do dia se ela ainda não
+    existe, ou de novo se a pasta extra ainda não a recebeu (o pendrive pode ter voltado).
+    Nunca levanta erro."""
     try:
-        if (pasta() / nome_do_dia(tempo.hoje())).exists():
-            return
+        feita = (pasta() / nome_do_dia(tempo.hoje())).exists()
         with db.nova_sessao() as sessao:
-            copiar(sessao, "abertura do programa")
+            if feita and not falta_a_pasta_extra(sessao):
+                return
+            copiar(sessao, "pasta extra em falta" if feita else "abertura do programa")
     except Exception:  # noqa: BLE001 - a cópia não pode impedir o sistema de abrir
         log.exception("cópia de segurança da abertura falhou")
 

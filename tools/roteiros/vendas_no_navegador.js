@@ -355,7 +355,7 @@ const LARGURA = 1366, ALTURA = Number(process.argv[4] || 697); // área útil da
   await espera('#tabela-vendas tbody tr:nth-child(4)', /^1 .* Maria de Teste Pix 20,00 \+ Crédito 52,45 72,45 Finalizada/, 'venda 1 com cliente e duas formas');
   await foto('controle-caixa-vendas');
   // O gerente cancela a venda 2 (dinheiro): sai dos totais.
-  await page.click('#tabela-vendas tbody tr:nth-child(3) button');
+  await page.click('#tabela-vendas tbody tr:nth-child(3) button:has-text("Cancelar")'); // o primeiro botão da linha é o de imprimir
   await page.waitForSelector('#dlg-confirmar[open]');
   await page.keyboard.press('Enter');
   await espera('#dlg-confirmar .msg-form', /Escreva o motivo/, 'cancelar venda finalizada exige o motivo');

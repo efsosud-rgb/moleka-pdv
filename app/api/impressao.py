@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app import acesso, config, configuracoes, cupom, db, impressao
+from app import acesso, config, configuracoes, cupom, db, documentos, impressao, tempo
 from app import caixa as regras_do_caixa
 from app.models import Operador, SessaoCaixa, StatusVenda, Venda
 from app.operadores import RegraError
@@ -53,6 +53,34 @@ def _cupom_out(sessao: Session, documento: cupom.Cupom) -> CupomOut:
 
 def _impresso(opcoes: configuracoes.Impressao, vias: int | None = None) -> ImpressoOut:
     return ImpressoOut(impressora=opcoes.impressora, vias=vias or opcoes.vias)
+
+
+# ---------------------------------------------------------------- relatórios em folha comum
+
+
+class CabecalhoOut(BaseModel):
+    """O que vai no alto e no pé dos relatórios impressos em impressora comum (A4)."""
+
+    loja: str  # nome da loja em Configurações; vazio = ainda não preenchido
+    cnpj: str  # com a pontuação; vazio = não preenchido
+    operador: str
+    versao: str
+    agora: str  # data e hora da loja, para o "impresso em"
+
+
+@router.get("/impressao/cabecalho", response_model=CabecalhoOut)
+def cabecalho_dos_relatorios(
+    sessao: Session = Depends(db.sessao),
+    operador: Operador = Depends(acesso.exigir_operador),
+) -> CabecalhoOut:
+    loja = configuracoes.ler_loja(sessao)
+    return CabecalhoOut(
+        loja=loja.nome_fantasia or loja.razao_social,
+        cnpj=documentos.formatar(loja.cnpj),
+        operador=operador.nome,
+        versao=config.VERSAO,
+        agora=tempo.iso_na_loja(tempo.agora()) or "",
+    )
 
 
 # ---------------------------------------------------------------- comprovante de venda

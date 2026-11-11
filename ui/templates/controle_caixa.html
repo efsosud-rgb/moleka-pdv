@@ -32,19 +32,20 @@
 </div>
 <div class="rolagem" data-painel="vendas" hidden>
 <table class="tabela" id="tabela-vendas">
-<thead><tr><th style="width:60px">Nº</th><th style="width:70px">Hora</th><th>Cliente</th><th>Pagamento</th><th class="num" style="width:110px">Total (R$)</th><th style="width:104px">Situação</th>{% if gerente %}<th style="width:104px"><span class="so-leitor">Ações</span></th>{% endif %}</tr></thead>
+<thead><tr><th style="width:60px">Nº</th><th style="width:70px">Hora</th><th>Cliente</th><th>Pagamento</th><th class="num" style="width:110px">Total (R$)</th><th style="width:104px">Situação</th><th style="width:{{ '146px' if gerente else '60px' }}"><span class="so-leitor">Ações</span></th></tr></thead>
 <tbody><tr><td class="sem-linhas" colspan="7">Carregando…</td></tr></tbody>
 </table>
 </div>
 {% if gerente %}
 <div class="rolagem" data-painel="historico" hidden>
 <table class="tabela" id="tabela-historico">
-<thead><tr><th>Abertura</th><th>Fechamento</th><th>Abriu / fechou</th><th class="num">Vendas</th><th class="num">Total (R$)</th><th class="num">Dif. dinheiro (R$)</th><th class="num">Dif. outras (R$)</th></tr></thead>
-<tbody><tr><td class="sem-linhas" colspan="7">Carregando…</td></tr></tbody>
+<thead><tr><th>Abertura</th><th>Fechamento</th><th>Abriu / fechou</th><th class="num">Vendas</th><th class="num">Total (R$)</th><th class="num">Dif. dinheiro (R$)</th><th class="num">Dif. outras (R$)</th><th style="width:60px"><span class="so-leitor">Ações</span></th></tr></thead>
+<tbody><tr><td class="sem-linhas" colspan="8">Carregando…</td></tr></tbody>
 </table>
 </div>
 {% endif %}
 <p class="resumo-cx" data-resumo-cx hidden></p>
+<template id="ic-impressora">{{ icone("impressora") }}</template>
 </section>
 <aside class="cartao ficha" aria-labelledby="t-acao">
 <div data-estado="carregando"><h2>Controle de caixa</h2><p class="vazio">Carregando a situação do caixa…</p></div>

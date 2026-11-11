@@ -319,6 +319,84 @@ def test_impressora_com_defeito_nao_desfaz_a_venda(cliente, loja, impressora_de_
     assert de_novo.status_code == 409 and "removida do Windows" in de_novo.json()["detail"]
 
 
+def test_defeito_inesperado_da_impressora_tambem_nao_desfaz_a_venda(
+    cliente, loja, impressora_de_teste, monkeypatch
+):
+    """Um erro que não é "regra" (falha do próprio Windows, por exemplo) vira aviso."""
+    _impressora(cliente, quando="sempre")
+
+    def quebrada(nome, dados, titulo):
+        raise OSError("falha fictícia do sistema")
+
+    monkeypatch.setattr(impressoras, "enviar", quebrada)
+    feita = _vender_em(cliente, loja["picole"], "dinheiro")
+    assert feita["venda"]["status"] == "finalizada"
+    assert feita["depois"]["enviado"] is False
+    assert feita["depois"]["erro"] == "A impressora de cupom falhou: falha fictícia do sistema."
+    assert cliente.get("/api/vendas/resumo-hoje").json()["quantidade"] == 1
+
+
+def test_impressora_de_teste_que_nao_grava_avisa_em_vez_de_quebrar(
+    cliente, loja, vender, impressora_de_teste
+):
+    _impressora(cliente)
+    venda = vender([(loja["picole"], 1)])
+    impressora_de_teste.mkdir(parents=True, exist_ok=True)
+    for arquivo in impressora_de_teste.iterdir():
+        arquivo.unlink()
+    impressora_de_teste.rmdir()
+    impressora_de_teste.write_text("no lugar da pasta há um arquivo", encoding="utf-8")
+    recusada = cliente.post(f"/api/vendas/{venda['id']}/imprimir")
+    assert recusada.status_code == 409
+    assert recusada.json()["detail"].startswith(
+        "Não consegui imprimir em “Impressora de teste (grava em arquivo)”: "
+    )
+
+
+# ---------------------------------------------------------------- relatórios em folha comum
+
+
+def test_cabecalho_dos_relatorios_traz_a_loja_quem_imprime_e_a_hora_da_loja(cliente, caixa):
+    from datetime import datetime, timedelta
+
+    from app import config, tempo
+
+    vazio = cliente.get("/api/impressao/cabecalho").json()
+    assert (vazio["loja"], vazio["cnpj"]) == ("", "")  # nada de nome inventado
+    assert (vazio["operador"], vazio["versao"]) == ("Gerente de Teste", config.VERSAO)
+    agora = datetime.fromisoformat(vazio["agora"])
+    assert agora.utcoffset() == datetime.now(tempo.FUSO).utcoffset()  # hora da loja, não UTC
+    assert abs(agora - datetime.now(tempo.FUSO)) < timedelta(minutes=1)
+
+    cliente.put(
+        "/api/configuracoes/loja",
+        json={
+            "nome_fantasia": "",
+            "razao_social": "Sorveteria de Teste Ltda",
+            "cnpj": "11.222.333/0001-81",
+            "ie": "",
+            "logradouro": "",
+            "numero": "",
+            "bairro": "",
+            "cidade": "",
+            "uf": "",
+            "cep": "",
+            "telefone": "",
+            "rodape": "",
+        },
+    )
+    so_razao = cliente.get("/api/impressao/cabecalho").json()
+    assert so_razao["loja"] == "Sorveteria de Teste Ltda"  # sem nome fantasia, vale a razão social
+    assert so_razao["cnpj"] == "11.222.333/0001-81"
+    # O operador comum também imprime relatório das telas que ele abre.
+    do_caixa = caixa.get("/api/impressao/cabecalho")
+    assert do_caixa.status_code == 200 and do_caixa.json()["operador"] == "Caixa de Teste"
+
+
+def test_cabecalho_dos_relatorios_exige_login(anonimo):
+    assert anonimo.get("/api/impressao/cabecalho").status_code == 401
+
+
 # ---------------------------------------------------------------- resumo do caixa
 
 

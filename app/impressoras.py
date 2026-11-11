@@ -55,7 +55,15 @@ def listar() -> list[Impressora]:
         return [Impressora(NOME_DE_TESTE, padrao=True)]
     if sys.platform != "win32":
         return []
-    return _listar_no_windows()
+    try:
+        return _listar_no_windows()
+    except RegraError:
+        raise
+    except Exception as erro:  # a lista de impressoras não pode derrubar a tela
+        log.exception("não consegui listar as impressoras do Windows")
+        raise RegraError(
+            f"Não consegui ler a lista de impressoras do Windows: {erro}", status=500
+        ) from erro
 
 
 def enviar(nome: str, dados: bytes, titulo: str) -> None:
@@ -72,13 +80,23 @@ def enviar(nome: str, dados: bytes, titulo: str) -> None:
     if pasta is not None:
         if nome != NOME_DE_TESTE:
             raise RegraError(f"A impressora “{nome}” não existe neste computador.", status=409)
-        pasta.mkdir(parents=True, exist_ok=True)
-        numero = len(list(pasta.glob("impressao-*.bin"))) + 1
-        (pasta / f"impressao-{numero:03d}.bin").write_bytes(dados)
+        try:
+            pasta.mkdir(parents=True, exist_ok=True)
+            numero = len(list(pasta.glob("impressao-*.bin"))) + 1
+            (pasta / f"impressao-{numero:03d}.bin").write_bytes(dados)
+        except OSError as erro:
+            motivo = erro.strerror or str(erro)
+            raise RegraError(f"Não consegui imprimir em “{nome}”: {motivo}.", status=409) from erro
         return
     if sys.platform != "win32":
         raise RegraError(_SO_NO_WINDOWS, status=409)
-    _enviar_no_windows(nome, dados, titulo)
+    try:
+        _enviar_no_windows(nome, dados, titulo)
+    except RegraError:
+        raise
+    except Exception as erro:  # qualquer falha do Windows vira recado, nunca tela de erro
+        log.exception("impressão em %s falhou", nome)
+        raise RegraError(f"Não consegui imprimir em “{nome}”: {erro}.", status=409) from erro
     log.info("cupom enviado para a fila de %s: %s (%d bytes)", nome, titulo, len(dados))
 
 
@@ -166,8 +184,9 @@ def _listar_no_windows() -> list[Impressora]:
         tipos, None, 4, memoria, preciso.value, ctypes.byref(preciso), ctypes.byref(quantas)
     )
     if not feito:
-        log.warning("o Windows não listou as impressoras: %s", _motivo(ctypes.get_last_error()))
-        return []
+        motivo = _motivo(ctypes.get_last_error())
+        log.warning("o Windows não listou as impressoras: %s", motivo)
+        raise RegraError(f"O Windows não entregou a lista de impressoras: {motivo}.", status=500)
     registros = ctypes.cast(memoria, ctypes.POINTER(Info4))
     nomes = sorted(
         {registros[i].pPrinterName for i in range(quantas.value) if registros[i].pPrinterName},
