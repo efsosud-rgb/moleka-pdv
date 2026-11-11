@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone, chip, em_construcao %}
+{% block titulo_pagina %}Financeiro{% endblock %}
+{% block titulo %}Financeiro{% endblock %}
+{% block chips %}{{ em_construcao("Financeiro: o visual está pronto, mas os números só aparecem quando as vendas e os lançamentos estiverem ligados.") }}{{ chip("caixa", "Caixa") }}{{ chip("fiscal", "SEFAZ") }}{% endblock %}
+{% block conteudo %}
+<div class="abas" role="tablist" aria-label="Visões do financeiro">
+<button class="aba ativa" type="button" role="tab" aria-selected="true">DRE</button>
+<button class="aba" type="button" role="tab" aria-selected="false" data-em-breve="Fluxo de caixa: entra numa próxima versão.">Fluxo de caixa</button>
+<button class="aba" type="button" role="tab" aria-selected="false" data-em-breve="Rentabilidade: entra numa próxima versão.">Rentabilidade</button>
+<button class="aba" type="button" role="tab" aria-selected="false" data-em-breve="Lançamentos: entra numa próxima versão.">Lançamentos</button>
+</div>
+<div class="ferramentas">
+<div class="periodo">
+<label class="rotulo" for="periodo">Período</label>
+<div class="sel">
+<select id="periodo" name="periodo" class="campo"><option>Este mês</option><option>Mês passado</option><option>Últimos 7 dias</option><option>Hoje</option><option>Escolher datas…</option></select>
+{{ icone("seta", "seta") }}
+</div>
+</div>
+<button class="btn3d" type="button" data-em-breve="Atualizar: os números entram numa próxima versão.">{{ icone("atualizar") }}Atualizar</button>
+<span class="espaco"></span>
+<button class="btn3d vermelho" type="button" data-em-breve="Lançar despesa: entra numa próxima versão.">{{ icone("mais") }}Lançar despesa</button>
+<button class="btn3d verde" type="button" data-em-breve="Lançar receita: entra numa próxima versão.">{{ icone("mais") }}Lançar receita</button>
+<button class="btn3d" type="button" data-em-breve="Exportar PDF: entra numa próxima versão.">{{ icone("baixar") }}Exportar PDF</button>
+</div>
+<div class="fin">
+<section class="cartao dre" aria-labelledby="t-dre">
+<div class="cab-cartao"><h2 id="t-dre">Demonstração do resultado</h2><span data-mes-ano>—</span></div>
+<div class="rolagem">
+<table class="tabela">
+<thead><tr><th>Conta</th><th class="num" style="width:150px">Valor (R$)</th><th class="num" style="width:130px">% da receita</th></tr></thead>
+<tbody>
+<tr><td>Receita bruta de vendas</td><td class="num">—</td><td class="num">—</td></tr>
+<tr><td>(−) Impostos sobre vendas</td><td class="num">—</td><td class="num">—</td></tr>
+<tr><td>(−) Devoluções e cancelamentos</td><td class="num">—</td><td class="num">—</td></tr>
+<tr class="forte"><td>= Receita líquida</td><td class="num">—</td><td class="num">—</td></tr>
+<tr><td>(−) Custo das mercadorias vendidas</td><td class="num">—</td><td class="num">—</td></tr>
+<tr class="forte"><td>= Lucro bruto</td><td class="num">—</td><td class="num">—</td></tr>
+<tr><td>(−) Despesas operacionais</td><td class="num">—</td><td class="num">—</td></tr>
+<tr><td>(±) Outras receitas e despesas</td><td class="num">—</td><td class="num">—</td></tr>
+<tr class="final"><td>= Resultado do período</td><td class="num">—</td><td class="num">—</td></tr>
+</tbody>
+</table>
+</div>
+<p class="vazio">Sem dados: o registro de vendas e de lançamentos entra numa próxima versão.</p>
+</section>
+<div class="fin-lado">
+<div class="kpis">
+<div class="cartao kpi"><p class="r">Faturamento</p><p class="v">—</p><p class="m">sem registro de vendas</p></div>
+<div class="cartao kpi"><p class="r">Margem bruta</p><p class="v">—</p><p class="m">sem notas de entrada</p></div>
+<div class="cartao kpi"><p class="r">Ticket médio</p><p class="v">—</p><p class="m">sem registro de vendas</p></div>
+<div class="cartao kpi"><p class="r">Saldo em caixa</p><p class="v">—</p><p class="m">sem controle de caixa</p></div>
+</div>
+<section class="cartao fluxo" aria-labelledby="t-fluxo">
+<div class="cab-cartao"><h2 id="t-fluxo">Fluxo de caixa diário</h2><span>entradas e saídas</span></div>
+<div class="sem-grafico">
+{{ icone("grafico") }}
+<b>Sem lançamentos</b>
+<span>O gráfico aparece quando houver entradas e saídas registradas.</span>
+</div>
+</section>
+</div>
+</div>
+{% endblock %}
+{% block teclas %}
+<button class="tecla" type="button" data-acao="sobre" data-atalho="F1"><kbd>F1</kbd>Ajuda</button>
+<a class="tecla" href="/caixa" data-atalho="F2"><kbd>F2</kbd>Caixa</a>
+<a class="tecla" href="/inicio" data-atalho="Escape"><kbd>Esc</kbd>Início</a>
+{% endblock %}

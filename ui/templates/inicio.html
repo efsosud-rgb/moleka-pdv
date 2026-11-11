@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone, chip %}
+{% block titulo_pagina %}Início{% endblock %}
+{% block titulo %}Frente de Loja{% endblock %}
+{% block chips %}{{ chip("caixa", "Caixa") }}{{ chip("fiscal", "SEFAZ") }}{{ chip("impressora_cupom", "Cupom") }}{{ chip("impressora_a4", "A4") }}{% endblock %}
+{% block conteudo %}
+<div class="inicio">
+<section class="modulos" aria-labelledby="t-mod">
+<div class="cab-secao"><h2 id="t-mod">Módulos</h2><span>Clique no módulo ou use a tecla de atalho</span></div>
+<div class="grade">
+{% for m in modulos %}
+{% if m.url %}
+<a class="cartao tile" href="{{ m.url }}">{% if m.atalho %}<kbd>{{ m.atalho }}</kbd>{% endif %}<span class="selo {{ m.cor }}">{{ icone(m.icone) }}</span><span class="t">{{ m.rotulo }}</span><span class="d">{{ m.descricao }}</span></a>
+{% else %}
+<div class="cartao tile em-breve" data-em-breve="{{ m.rotulo }}: este módulo entra numa próxima versão."><span class="breve">em breve</span><span class="selo {{ m.cor }}">{{ icone(m.icone) }}</span><span class="t">{{ m.rotulo }}</span><span class="d">{{ m.descricao }}</span></div>
+{% endif %}
+{% endfor %}
+</div>
+<div class="cartao aviso">
+{{ icone("alerta") }}
+<p><b>Versão {{ versao }}, de teste.</b> Já funcionam a capa, a navegação entre as telas e os indicadores reais do sistema. As funções de cada módulo entram nas próximas versões.</p>
+</div>
+</section>
+<aside class="cartao resumo" aria-labelledby="t-res">
+<h2 id="t-res">Resumo de hoje</h2>
+<p class="data" data-hoje>—</p>
+<div>
+<div class="linha-res"><span>Vendas (R$)</span><b>—</b></div>
+<div class="linha-res"><span>Cupons NFC-e emitidos</span><b>—</b></div>
+<div class="linha-res"><span>Ticket médio</span><b>—</b></div>
+<div class="linha-res"><span>Caixa aberto desde</span><b>—</b></div>
+</div>
+<p class="vazio">Sem dados: o registro de vendas entra numa próxima versão.</p>
+<button class="btn3d verde xl bloco" type="button" data-em-breve="Abertura de caixa: entra numa próxima versão.">{{ icone("caixa") }}Abrir caixa (F11)</button>
+<button class="btn3d bloco" type="button" data-em-breve="Fechamento do dia: entra numa próxima versão.">Fechamento do dia</button>
+</aside>
+</div>
+{% endblock %}

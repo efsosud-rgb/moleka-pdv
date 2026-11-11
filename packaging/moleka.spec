@@ -6,7 +6,7 @@
 
 import os
 
-from PyInstaller.utils.hooks import collect_submodules
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 RAIZ = os.path.abspath(os.path.join(SPECPATH, ".."))
 
@@ -16,8 +16,10 @@ a = Analysis(
     datas=[
         (os.path.join(RAIZ, "ui"), "ui"),
         (os.path.join(RAIZ, "assets", "brand"), os.path.join("assets", "brand")),
+        # Base de fusos horários: o Windows não tem a do sistema, e sem ela o programa não abre.
+        *collect_data_files("tzdata"),
     ],
-    hiddenimports=collect_submodules("uvicorn") + collect_submodules("app"),
+    hiddenimports=collect_submodules("uvicorn") + collect_submodules("app") + ["tzdata"],
     excludes=["tkinter", "pytest", "IPython", "mypy", "ruff"],
     noarchive=False,
 )

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone, chip, em_construcao %}
+{% block titulo_pagina %}Produtos{% endblock %}
+{% block titulo %}Produtos{% endblock %}
+{% block chips %}{{ em_construcao("Produtos: o visual está pronto, mas esta tela ainda não grava. O cadastro entra numa próxima versão.") }}{{ chip("caixa", "Caixa") }}{{ chip("fiscal", "SEFAZ") }}{% endblock %}
+{% block conteudo %}
+<div class="ferramentas">
+<div class="pesquisa">
+<label class="rotulo" for="pesq">Pesquisar produto (F2)</label>
+<div class="com-icone">{{ icone("busca") }}<input id="pesq" name="pesq" class="campo" type="search" autocomplete="off" placeholder="Código de barras, código interno ou nome" data-atalho="F2"></div>
+</div>
+<button class="btn3d amarelo" type="button" data-em-breve="Novo produto: o cadastro entra numa próxima versão." data-atalho="F3">{{ icone("mais") }}Novo produto (F3)</button>
+<button class="btn3d" type="button" data-em-breve="Excluir produto: entra numa próxima versão.">{{ icone("lixeira") }}Excluir</button>
+</div>
+<div class="abas" role="tablist" aria-label="Partes do cadastro">
+<button class="aba ativa" type="button" role="tab" aria-selected="true">Cadastro e preços</button>
+<button class="aba" type="button" role="tab" aria-selected="false" data-em-breve="Fiscal (NFC-e): entra numa próxima versão.">Fiscal (NFC-e)</button>
+<button class="aba" type="button" role="tab" aria-selected="false" data-em-breve="Estoque: entra numa próxima versão.">Estoque</button>
+<button class="aba" type="button" role="tab" aria-selected="false" data-em-breve="Histórico de preços: entra numa próxima versão.">Histórico de preços</button>
+</div>
+<form data-em-breve="Salvar produto: o cadastro entra numa próxima versão.">
+<div class="form">
+<fieldset class="grupo">
+<legend>Identificação</legend>
+<div class="linha l4">
+<div><label class="rotulo" for="cod">Código</label><input id="cod" name="cod" class="campo" type="text" placeholder="Automático"></div>
+<div><label class="rotulo" for="ean">Código de barras (EAN)</label><div class="com-icone">{{ icone("barras") }}<input id="ean" name="ean" class="campo" type="text" autocomplete="off" placeholder="Passe o leitor"></div></div>
+<div><label class="rotulo" for="cat">Categoria</label><div class="sel"><select id="cat" name="cat" class="campo"><option>Selecione…</option></select>{{ icone("seta", "seta") }}</div></div>
+<div><label class="rotulo" for="un">Unidade</label><div class="sel"><select id="un" name="un" class="campo"><option>UN</option><option>KG</option><option>L</option></select>{{ icone("seta", "seta") }}</div></div>
+</div>
+<div class="linha l2a">
+<div><label class="rotulo" for="desc">Descrição</label><input id="desc" name="desc" class="campo" type="text" placeholder="Ex.: Picolé de morango"></div>
+<div><span class="rotulo">Situação</span><label class="check"><input type="checkbox" name="ativo" checked>Ativo</label></div>
+</div>
+</fieldset>
+<fieldset class="grupo">
+<legend>Preços de venda</legend>
+<div class="linha l2">
+<div><label class="rotulo" for="pv">Varejo (R$)</label><input id="pv" name="pv" class="campo num" type="text" inputmode="decimal" placeholder="0,00"></div>
+<div><label class="rotulo" for="pa">Atacado (R$)</label><input id="pa" name="pa" class="campo num" type="text" inputmode="decimal" placeholder="0,00"></div>
+</div>
+<div class="linha l2">
+<div><label class="rotulo" for="qa">Atacado a partir de (un.)</label><input id="qa" name="qa" class="campo num" type="text" inputmode="numeric" placeholder="Ex.: 10"></div>
+<div><label class="rotulo" for="tab">Tabela padrão</label><div class="sel"><select id="tab" name="tab" class="campo"><option>Varejo</option><option>Atacado</option></select>{{ icone("seta", "seta") }}</div></div>
+</div>
+</fieldset>
+<fieldset class="grupo">
+<legend>Faixas de preço por quantidade</legend>
+<table class="tabela">
+<thead><tr><th style="width:110px">De (un.)</th><th style="width:110px">Até (un.)</th><th class="num">Preço unitário (R$)</th></tr></thead>
+<tbody>
+<tr><td colspan="3">Nenhuma faixa cadastrada.</td></tr>
+</tbody>
+</table>
+<div class="sob-tabela"><button class="btn3d mini" type="button" data-em-breve="Adicionar faixa: entra numa próxima versão.">{{ icone("mais") }}Adicionar faixa</button></div>
+</fieldset>
+<fieldset class="grupo">
+<legend>Custo e margem</legend>
+<div class="dado"><span>Custo (última nota de entrada)</span><b>—</b></div>
+<div class="dado"><span>Margem no varejo</span><b>—</b></div>
+<div class="dado"><span>Margem no atacado</span><b>—</b></div>
+<p class="vazio">O custo vem da nota de entrada (XML); sem nota, fica “—”.</p>
+</fieldset>
+</div>
+<div class="acoes">
+<a class="btn3d" href="/inicio">Cancelar (Esc)</a>
+<button class="btn3d verde" type="submit" data-atalho="F10">{{ icone("salvar") }}Salvar (F10)</button>
+</div>
+</form>
+{% endblock %}
+{% block teclas %}
+<button class="tecla" type="button" data-acao="sobre" data-atalho="F1"><kbd>F1</kbd>Ajuda</button>
+<span class="tecla"><kbd>F2</kbd>Pesquisar</span>
+<span class="tecla"><kbd>F3</kbd>Novo</span>
+<span class="tecla"><kbd>F10</kbd>Salvar</span>
+<a class="tecla" href="/inicio" data-atalho="Escape"><kbd>Esc</kbd>Início</a>
+{% endblock %}

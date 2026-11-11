@@ -1,0 +1,35 @@
+{#- Pedaços reaproveitados pelas telas. Os ícones vêm de app/web.py (ICONES). -#}
+
+{%- macro icone(nome, classe="") -%}
+<svg class="ic{{ ' ' ~ classe if classe }}" viewBox="0 0 24 24" aria-hidden="true">{{ icones[nome]|safe }}</svg>
+{%- endmacro -%}
+
+{%- macro coracao() -%}
+<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.3 4.3 2.6.7-1.3 2.1-2.6 4.3-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>
+{%- endmacro -%}
+
+{#- Logo com relevo 3D e a mascote que balança, aponta para o nome e manda beijos. -#}
+{%- macro marca() -%}
+<a class="marca" href="/inicio" aria-label="Moleka Sorvetes: ir para o Início">
+<span class="oval-wrap"><img class="oval" src="/assets/brand/logo_oval_1016px.png" alt="Moleka Sorvetes"><span class="brilho"></span></span>
+<span class="mascote-wrap">
+<span class="inclina"><img class="mascote" src="/assets/brand/mascote.png" alt=""></span>
+<span class="beijo b1">{{ coracao() }}</span><span class="beijo b2">{{ coracao() }}</span><span class="beijo b3">{{ coracao() }}</span>
+</span>
+</a>
+{%- endmacro -%}
+
+{#- O escorrido da borda de baixo da faixa vermelha (como nas geladeiras da loja). -#}
+{%- macro pingos() -%}
+<svg class="pingos" aria-hidden="true"><defs><pattern id="pingo" width="160" height="20" patternUnits="userSpaceOnUse"><path fill="#C8202A" d="M0 0H160V3H136C130 3 128.5 6 128 9.5C127.4 13.8 123.6 15 121 15C118.4 15 114.6 13.8 114 9.5C113.5 6 112 3 106 3H62C57 3 56 5.5 55.6 8C55.2 10.6 52.6 11.5 51 11.5C49.4 11.5 46.8 10.6 46.4 8C46 5.5 45 3 40 3H0Z"/></pattern></defs><rect width="100%" height="16" fill="url(#pingo)"/></svg>
+{%- endmacro -%}
+
+{#- Indicador preenchido por moleka.js a partir de /api/status. Sem resposta, fica "—". -#}
+{%- macro chip(chave, rotulo) -%}
+<span class="chip" data-status="{{ chave }}" data-rotulo="{{ rotulo }}"><span class="dot" aria-hidden="true"></span><span class="texto">{{ rotulo }}: —</span></span>
+{%- endmacro -%}
+
+{#- Aviso de que a tela ainda não grava dados. -#}
+{%- macro em_construcao(motivo) -%}
+<span class="chip obra" title="{{ motivo }}" data-em-breve="{{ motivo }}">{{ icone("obra") }}Tela em construção</span>
+{%- endmacro -%}

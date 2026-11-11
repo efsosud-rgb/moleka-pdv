@@ -1,0 +1,343 @@
+/* Moleka PDV — folha de estilo única da interface.
+
+   Cores da logomarca: vermelho #E43030 (letras), amarelo #FCF00C (oval), vinho #542424
+   (contorno), verde #249C48 (macacão). Fundo creme claro para leitura o dia todo; vermelho e
+   amarelo nas barras, botões e destaques, como na loja.
+
+   Relevo, perspectiva e animações são só CSS (sem WebGL): o PC do caixa tem i3, 4 GB e HD.
+   Tudo o que se mexe para quando o corpo da página não tem a classe "anim" ou quando o
+   Windows pede menos movimento. */
+
+@font-face{font-family:Inter;font-style:normal;font-weight:400;font-display:swap;src:url(../fonts/inter-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Inter;font-style:normal;font-weight:500;font-display:swap;src:url(../fonts/inter-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:Inter;font-style:normal;font-weight:600;font-display:swap;src:url(../fonts/inter-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:Inter;font-style:normal;font-weight:700;font-display:swap;src:url(../fonts/inter-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:Inter;font-style:normal;font-weight:800;font-display:swap;src:url(../fonts/inter-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:Nunito;font-style:normal;font-weight:700;font-display:swap;src:url(../fonts/nunito-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:Nunito;font-style:normal;font-weight:800;font-display:swap;src:url(../fonts/nunito-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:Nunito;font-style:normal;font-weight:900;font-display:swap;src:url(../fonts/nunito-latin-900-normal.woff2) format("woff2")}
+
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:#FFF9E3;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#2A1A18;font-size:14px}
+a{color:#9E1A20}a:hover{color:#542424}
+button,input,select{font:inherit}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{font-family:Nunito,Inter,sans-serif}
+.ic{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.tela{min-height:100vh;display:flex;flex-direction:column;background:#FFF9E3}
+kbd{font:800 11.5px Inter,system-ui,sans-serif;color:#542424;background:linear-gradient(#FFF98F,#FCF00C);border:1px solid #C9A400;border-radius:5px;padding:3px 6px;box-shadow:0 2px 0 #9C7F00}
+
+/* ---------------------------------------------------------------- barra de menus */
+.menubar{position:relative;z-index:5;display:flex;align-items:center;flex-wrap:wrap;gap:2px;padding:3px 10px;background:linear-gradient(#7A181C,#5C1216);border-bottom:1px solid #3A0B0D}
+.menu{position:relative}
+.menu-botao{font-size:13px;font-weight:600;color:#FFF1DA;background:transparent;border:0;border-radius:6px;padding:6px 11px;cursor:pointer}
+.menu-botao:hover,.menu-botao:focus-visible,.menu.aberto .menu-botao{background:#FCF00C;color:#542424;outline:none}
+.submenu{display:none;position:absolute;left:0;top:100%;min-width:240px;margin-top:3px;padding:6px;background:#FFFFFF;border:1px solid #CDB77A;border-radius:10px;box-shadow:0 4px 0 #CDB77A,0 14px 24px rgba(60,20,0,.3)}
+.menu.aberto .submenu{display:block}
+.submenu a,.submenu button,.submenu .em-breve{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;padding:8px 10px;border:0;border-radius:7px;background:transparent;color:#542424;font-size:13.5px;font-weight:600;text-align:left;text-decoration:none;cursor:pointer}
+.submenu a:hover,.submenu button:hover,.submenu a:focus-visible,.submenu button:focus-visible{background:#FCF00C;color:#542424;outline:none}
+.submenu .em-breve{color:#76604F}
+.submenu small{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#9E1A20}
+.submenu kbd{font-size:10.5px;padding:2px 5px;box-shadow:0 1px 0 #9C7F00}
+.menubar .direita{margin-left:auto;padding-right:4px;font-size:12px;color:#F6CDB0}
+
+/* ---------------------------------------------------------------- faixa do topo
+   A parede vermelha da loja, com o escorrido das geladeiras na borda de baixo. */
+.topo{position:relative;z-index:2;display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;padding:8px 24px 10px;background:linear-gradient(#EC3C3C,#DC2B2D 50%,#C8202A)}
+.topo .titulo h1{font-weight:900;font-size:30px;line-height:1.05;color:#FFFFFF;text-shadow:0 2px 0 #9E1A20,0 5px 10px rgba(60,0,0,.35)}
+.topo .titulo p{margin-top:5px;font-size:13px;font-weight:600;color:#FFFFFF}
+.topo .chips{margin-left:auto;display:flex;flex-wrap:wrap;gap:10px}
+.pingos{position:absolute;left:0;bottom:-15px;width:100%;height:16px;pointer-events:none}
+.topo.compacto{gap:6px 18px;padding:6px 22px 8px}
+.topo.compacto .titulo h1{font-size:25px}
+.topo.compacto .titulo p{margin-top:4px}
+
+/* Logo com relevo 3D e brilho; mascote que balança, aponta para o nome e manda beijos. */
+.marca{display:flex;align-items:flex-end;text-decoration:none}
+.marca span{display:block}
+.oval-wrap{position:relative;perspective:700px;margin-bottom:8px}
+.oval{display:block;width:160px;height:auto;transform:rotateX(10deg) rotateY(-10deg);filter:drop-shadow(0 2px 0 #E8C300) drop-shadow(0 2px 0 #B8960A) drop-shadow(0 9px 8px rgba(60,0,0,.45));transition:transform .45s ease}
+.oval-wrap:hover .oval{transform:rotateX(0deg) rotateY(0deg) scale(1.05)}
+.brilho{position:absolute;left:3%;right:4%;top:5%;bottom:9%;border-radius:50%;overflow:hidden;pointer-events:none;transform:rotateX(10deg) rotateY(-10deg);transition:transform .45s ease}
+.oval-wrap:hover .brilho{transform:rotateX(0deg) rotateY(0deg) scale(1.05)}
+.brilho::before{content:"";position:absolute;top:-30%;bottom:-30%;left:-45%;width:28%;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.7),rgba(255,255,255,0));transform:skewX(-18deg)}
+.anim .brilho::before{animation:brilho 6s ease-in-out infinite}
+@keyframes brilho{0%,58%{left:-45%}80%,100%{left:125%}}
+.mascote-wrap{position:relative;width:62px;height:100px;margin-left:-4px}
+.inclina{position:absolute;left:0;top:0;right:0;bottom:0;transform-origin:50% 100%}
+.mascote{position:absolute;left:0;bottom:0;height:100%;width:auto;transform-origin:50% 100%;filter:drop-shadow(0 6px 5px rgba(60,0,0,.35))}
+.anim .mascote{animation:balanca 4s ease-in-out infinite}
+.anim .inclina{animation:aponta 6s ease-in-out infinite}
+@keyframes balanca{0%,100%{transform:rotate(-1.5deg) translateY(0)}50%{transform:rotate(2deg) translateY(-3px)}}
+@keyframes aponta{0%,48%,100%{transform:translateX(0) rotate(0deg)}60%{transform:translateX(-7px) rotate(-6deg)}72%{transform:translateX(-3px) rotate(-3deg)}}
+.beijo{position:absolute;left:16px;top:22px;width:15px;height:15px;color:#FFE1E8;opacity:0;pointer-events:none}
+.beijo svg{display:block;width:100%;height:100%;filter:drop-shadow(0 1px 0 #9E1A20)}
+.anim .beijo{animation:beijo 6s ease-out infinite}
+.anim .beijo.b2{animation-delay:.3s}
+.anim .beijo.b3{animation-delay:.6s}
+@keyframes beijo{0%,60%{opacity:0;transform:translate(0,0) scale(.3)}66%{opacity:1}88%{opacity:.95;transform:translate(-62px,-22px) scale(1.15)}100%{opacity:0;transform:translate(-84px,-34px) scale(.9)}}
+.topo.compacto .oval{width:124px}
+.topo.compacto .oval-wrap{margin-bottom:6px}
+.topo.compacto .mascote-wrap{width:48px;height:78px;margin-left:-3px}
+.topo.compacto .beijo{left:12px;top:17px;width:12px;height:12px}
+
+/* Indicadores (o texto vem de /api/status; sem resposta fica "—" e o motivo vai na dica) */
+.chip{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:#542424;background:#FFFFFF;border:1px solid #F4C6C6;border-radius:999px;padding:6px 12px;box-shadow:0 2px 0 #9E1A20,0 5px 9px rgba(60,0,0,.22)}
+.dot{width:9px;height:9px;flex:none;border-radius:50%;background:#B5A396;box-shadow:inset 0 -1px 0 rgba(0,0,0,.25)}
+.ok>.dot{background:#249C48}
+.erro>.dot{background:#D42828}
+.chip.obra{color:#542424;background:linear-gradient(#FFF98F,#FCF00C);border:1px dashed #9E1A20;cursor:help}
+.chip.obra .ic{width:16px;height:16px;color:#9E1A20}
+
+/* ---------------------------------------------------------------- corpo: menu lateral e conteúdo */
+.corpo{flex:1;display:flex;flex-wrap:wrap;align-items:stretch}
+.lateral{flex:1 1 236px;max-width:236px;display:flex;flex-direction:column;gap:3px;padding:24px 12px 12px;background:#FFFFFF;border-right:1px solid #EADBA8}
+.item{display:flex;align-items:center;gap:12px;width:100%;min-height:40px;padding:7px 11px;border:2px solid transparent;border-radius:10px;background:transparent;color:#542424;font-weight:600;font-size:14px;text-align:left;text-decoration:none;cursor:pointer}
+.item:hover{background:#FFF6CC;color:#542424}
+.item:focus-visible{outline:3px solid #1F6FD1;outline-offset:1px}
+.item .ic{color:#C8202A}
+.item.ativo{font-weight:800;color:#9E1A20;border-color:#E43030;background:linear-gradient(#FFF98F,#FCF00C 55%,#F2DA0A);box-shadow:0 3px 0 #C9A400,0 6px 10px rgba(120,80,0,.22)}
+.item.ativo .ic{color:#9E1A20}
+.item.em-breve{color:#76604F}
+.item.em-breve .ic{color:#B5A396}
+.lateral .fim{margin-top:auto}
+.conteudo{flex:999 1 560px;min-width:0;padding:28px 26px 18px}
+[data-tela="financeiro"] .conteudo{padding:24px 26px 14px}
+[data-tela="produtos"] .conteudo{padding:22px 26px 12px}
+
+/* ---------------------------------------------------------------- barra de status */
+.rodape{display:flex;align-items:center;flex-wrap:wrap;gap:6px 18px;padding:6px 14px;background:#542424;color:#FFE8B0;font-size:12.5px}
+.rodape .dir{margin-left:auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+.status{display:inline-flex;align-items:center;gap:7px}
+.tecla{display:inline-flex;align-items:center;gap:6px;padding:0;border:0;background:transparent;color:#FFE8B0;font-size:12.5px;text-decoration:none;cursor:pointer}
+a.tecla:hover,button.tecla:hover{color:#FFFFFF}
+span.tecla{cursor:default}
+
+/* ---------------------------------------------------------------- botões com relevo */
+.btn3d{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:15px;line-height:1.1;padding:12px 18px;min-height:46px;border:1px solid #CDB77A;border-radius:12px;cursor:pointer;color:#542424;background:linear-gradient(#FFFFFF,#FFF8E6 60%,#F5E7C2);box-shadow:inset 0 1px 0 #FFFFFF,0 4px 0 #CDB77A,0 8px 14px rgba(110,70,0,.18);transition:transform .08s ease,box-shadow .08s ease,filter .15s ease;text-decoration:none;white-space:nowrap}
+.btn3d:hover{filter:brightness(1.03);color:#542424}
+.btn3d:active{transform:translateY(4px);box-shadow:inset 0 1px 0 #FFFFFF,0 0 0 #CDB77A,0 2px 4px rgba(110,70,0,.25)}
+.btn3d:focus-visible{outline:3px solid #1F6FD1;outline-offset:2px}
+.btn3d.amarelo{color:#9E1A20;border:2px solid #E43030;background:linear-gradient(#FFF98F,#FCF00C 55%,#F2DA0A);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 4px 0 #C9A400,0 8px 14px rgba(120,80,0,.28)}
+.btn3d.amarelo:hover{color:#9E1A20}
+.btn3d.amarelo:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 0 0 #C9A400,0 2px 4px rgba(120,80,0,.3)}
+.btn3d.verde{color:#FFFFFF;border-color:#11592A;background:linear-gradient(#2BA352,#1B7F39 55%,#166B30);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 4px 0 #0E4D24,0 8px 14px rgba(10,60,25,.3);text-shadow:0 1px 0 rgba(0,0,0,.3)}
+.btn3d.verde:hover{color:#FFFFFF}
+.btn3d.verde:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 #0E4D24,0 2px 4px rgba(10,60,25,.3)}
+.btn3d.vermelho{color:#FFFFFF;border-color:#7E1A1E;background:linear-gradient(#E83A3A,#D42828 55%,#B81E22);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 4px 0 #7E1A1E,0 8px 14px rgba(90,10,10,.3);text-shadow:0 1px 0 rgba(0,0,0,.3)}
+.btn3d.vermelho:hover{color:#FFFFFF}
+.btn3d.vermelho:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 0 #7E1A1E,0 2px 4px rgba(90,10,10,.3)}
+.btn3d.lg{font-size:17px;min-height:54px}
+.btn3d.xl{font-size:18px;min-height:60px}
+.btn3d.mini{font-size:13px;padding:7px 12px;min-height:36px;border-radius:10px;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #CDB77A,0 6px 10px rgba(110,70,0,.16)}
+.btn3d.bloco{display:flex;width:100%}
+.btn3d .ic{width:22px;height:22px}
+.btn3d:disabled{opacity:.55;cursor:not-allowed;filter:grayscale(.3)}
+
+/* ---------------------------------------------------------------- campos com profundidade */
+.rotulo{display:block;font-weight:800;font-size:11.5px;color:#5A4237;letter-spacing:.06em;text-transform:uppercase;margin:0 0 6px}
+.campo{display:block;width:100%;font-size:15px;color:#2A1A18;background:#FFFFFF;border:1px solid #CDB77A;border-radius:10px;padding:11px 13px;min-height:46px;box-shadow:inset 0 3px 6px rgba(110,70,0,.13),inset 0 1px 2px rgba(110,70,0,.18),0 1px 0 #FFFFFF}
+.campo::placeholder{color:#76604F}
+.campo:focus{outline:none;border-color:#E43030;box-shadow:inset 0 3px 6px rgba(110,70,0,.13),0 0 0 2px #E43030,0 0 0 6px rgba(252,240,12,.8)}
+.campo.lg{font-size:19px;min-height:58px;padding:13px 16px}
+.com-icone{position:relative}
+.com-icone .ic{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#9E1A20;pointer-events:none}
+.com-icone .campo{padding-left:42px}
+.com-icone.grande .ic{left:16px;width:24px;height:24px}
+.com-icone.grande .campo{padding-left:52px}
+.sel{position:relative}
+.sel select{appearance:none;padding-right:38px}
+.sel .seta{position:absolute;left:auto;right:12px;top:50%;transform:translateY(-50%);color:#9E1A20;pointer-events:none}
+.check{display:flex;align-items:center;gap:10px;font-size:14px;color:#5A4237;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:#1B7F39}
+
+/* ---------------------------------------------------------------- cartões, etiquetas, tabelas, abas */
+.cartao{background:#FFFFFF;border:1px solid #EADBA8;border-radius:16px;box-shadow:inset 0 1px 0 #FFFFFF,0 5px 0 #EFDFA6,0 14px 24px rgba(120,70,0,.12)}
+.tag{display:inline-flex;align-items:center;font:800 10.5px Inter,system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase;padding:3px 7px;border-radius:6px;white-space:nowrap}
+.tag.atacado{color:#FFFFFF;background:#1B7F39}
+.vazio{font-size:12.5px;line-height:1.45;color:#5A4237}
+.rolagem{overflow-x:auto}
+.tabela{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
+.tabela th{font:800 11.5px Inter,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#5A4237;text-align:left;padding:9px 14px;background:#FFF4CC;border-top:1px solid #EADBA8;border-bottom:1px solid #EADBA8;white-space:nowrap}
+.tabela td{padding:10px 14px;border-bottom:1px solid #F3E8C4;color:#2A1A18;vertical-align:middle}
+.tabela th.num,.tabela td.num{text-align:right}
+.tabela td.sem-linhas{padding:22px 14px;color:#5A4237;font-size:13.5px;text-align:center}
+.tabela tr.forte td{font-weight:800;color:#542424;background:#FFFBEA}
+.tabela tr.final td{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:15.5px;color:#9E1A20;background:#FFF4CC;border-bottom:0}
+.abas{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px;border-bottom:3px solid #D42828}
+.aba{font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:14px;color:#542424;background:linear-gradient(#FFFDF4,#FFF1BF);border:1px solid #E2CF95;border-bottom:0;border-radius:10px 10px 0 0;padding:9px 16px;min-height:40px;cursor:pointer}
+.aba:hover{background:#FFF6CC}
+.aba:focus-visible{outline:3px solid #1F6FD1;outline-offset:1px}
+.aba.ativa{color:#FFFFFF;background:linear-gradient(#EA3F3F,#D42828);border-color:#B81E22;text-shadow:0 1px 0 rgba(0,0,0,.25)}
+.ferramentas{display:flex;align-items:flex-end;flex-wrap:wrap;gap:10px 12px;margin-bottom:14px}
+.ferramentas .espaco{flex:1}
+.ferramentas .btn3d,.form .btn3d:not(.mini){font-size:14.5px;padding:10px 15px;min-height:44px}
+.ferramentas .campo{font-size:14.5px;padding:10px 12px;min-height:44px}
+.ferramentas .com-icone .campo{padding-left:42px}
+
+/* ---------------------------------------------------------------- avisos: torrada e caixa "Sobre" */
+.torrada{position:fixed;left:50%;bottom:54px;z-index:50;max-width:min(560px,92vw);transform:translate(-50%,20px);padding:12px 18px;border-radius:12px;background:#542424;color:#FFE8B0;font-weight:600;font-size:14px;line-height:1.4;text-align:center;box-shadow:0 5px 0 #2E1010,0 14px 24px rgba(40,0,0,.4);opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease}
+.torrada.visivel{opacity:1;transform:translate(-50%,0)}
+.dialogo{width:min(540px,92vw);padding:24px;border:1px solid #EADBA8;border-radius:16px;background:#FFFFFF;color:#2A1A18;box-shadow:0 6px 0 #7E1A1E,0 24px 40px rgba(40,0,0,.45)}
+.dialogo::backdrop{background:rgba(59,24,24,.55)}
+.dialogo h2{margin-bottom:6px;font-weight:900;font-size:22px;color:#542424}
+.dialogo p{margin-bottom:14px;font-size:13.5px;line-height:1.5;color:#5A4237}
+.dialogo dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 14px;margin:0 0 18px;font-size:13.5px}
+.dialogo dt{font-weight:800;color:#5A4237}
+.dialogo dd{margin:0;overflow-wrap:anywhere}
+.dialogo form{display:flex;justify-content:flex-end}
+
+/* ---------------------------------------------------------------- início: módulos e resumo do dia */
+.inicio{display:flex;flex-wrap:wrap;align-items:flex-start;gap:24px}
+.modulos{flex:999 1 520px;min-width:0}
+.cab-secao{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-bottom:14px}
+.cab-secao h2{font-weight:900;font-size:24px;color:#542424}
+.cab-secao span{font-size:13px;color:#5A4237}
+.grade{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.tile{position:relative;display:flex;flex-direction:column;gap:9px;min-height:168px;padding:15px 14px 14px;color:#2A1A18;text-decoration:none;transition:transform .15s ease,box-shadow .15s ease}
+a.tile:hover{transform:translateY(-3px);color:#2A1A18;box-shadow:inset 0 1px 0 #FFFFFF,0 8px 0 #EFDFA6,0 18px 28px rgba(120,70,0,.18)}
+a.tile:active{transform:translateY(3px);box-shadow:inset 0 1px 0 #FFFFFF,0 2px 0 #EFDFA6,0 6px 12px rgba(120,70,0,.16)}
+a.tile:focus-visible{outline:3px solid #1F6FD1;outline-offset:2px}
+.tile .t{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:16.5px;line-height:1.15;color:#542424}
+.tile .d{font-size:12.5px;line-height:1.4;color:#5A4237}
+.tile kbd,.tile .breve{position:absolute;right:12px;top:14px}
+.tile.em-breve{cursor:default}
+.tile.em-breve .selo{filter:grayscale(.55) opacity(.8)}
+.breve{font:800 10px Inter,system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#5A4237;background:#FFF6CC;border:1px dashed #CDB77A;border-radius:6px;padding:3px 6px}
+.selo{display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:13px}
+.selo .ic{width:24px;height:24px}
+.selo.vermelho{color:#FFFFFF;background:linear-gradient(#EF4848,#D42828);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 3px 0 #8E1A1F}
+.selo.amarelo{color:#9E1A20;border:2px solid #E43030;background:linear-gradient(#FFF98F,#FCF00C 60%,#F2DA0A);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 3px 0 #C9A400}
+.selo.verde{color:#FFFFFF;background:linear-gradient(#2BA352,#1B7F39);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 3px 0 #0E4D24}
+.selo.vinho{color:#FCF00C;background:linear-gradient(#6E2E2E,#542424);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 3px 0 #2E1010}
+.aviso{display:flex;align-items:center;gap:12px;margin-top:18px;padding:12px 16px;font-size:13px;line-height:1.45;color:#5A4237}
+.aviso .ic{width:22px;height:22px;color:#C8202A}
+.aviso b{color:#542424}
+.resumo{flex:1 1 280px;max-width:320px;display:flex;flex-direction:column;gap:10px;padding:20px}
+.resumo h2{font-weight:900;font-size:20px;color:#542424}
+.resumo .data{margin-top:-6px;font-size:12.5px;color:#5A4237}
+.linha-res{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed #E2CF95;font-size:14px;color:#5A4237}
+.linha-res b{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:18px;color:#542424}
+
+/* ---------------------------------------------------------------- caixa: venda */
+.pdv{flex:1;display:flex;flex-wrap:wrap;align-items:stretch;gap:18px 20px;padding:26px 22px 16px}
+.esq{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:14px}
+.lado{flex:1 1 320px;max-width:372px;display:flex;flex-direction:column;gap:12px}
+.busca{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px}
+.busca .produto{flex:999 1 360px;min-width:0}
+.busca .qtd{flex:0 0 120px}
+.busca .btn3d.lg{min-height:58px}
+.itens{flex:1;display:flex;flex-direction:column;min-height:300px;overflow:hidden}
+.itens-topo{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:13px 16px}
+.itens-topo h2{font-weight:900;font-size:17px;color:#542424}
+.itens-topo .cont{margin-left:auto;font-size:13px;color:#5A4237}
+.itens .tabela{font-size:14.5px}
+.itens .tabela td{padding:11px 14px}
+.nota{margin-top:auto;padding:12px 16px;font-size:12.5px;line-height:1.45;color:#5A4237;border-top:1px dashed #E2CF95}
+.total{padding:14px 20px;border:1px solid #2A0E0E;border-radius:16px;background:linear-gradient(#5E2626,#3B1818);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 5px 0 #1E0A0A,0 14px 24px rgba(40,0,0,.35);color:#FFE8B0}
+.total .r{font:700 12px Inter,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase}
+.total .v{margin-top:4px;font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:52px;line-height:1.05;color:#FCF00C;text-shadow:0 0 18px rgba(252,240,12,.35);font-variant-numeric:tabular-nums}
+.total .linhas{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 10px;margin-top:8px;font-size:12.5px}
+.cliente{display:flex;flex-direction:column;gap:10px;padding:14px 16px}
+.cliente .rotulo{margin:0 0 -4px}
+.pagamentos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.lado .btn3d.xl{min-height:62px}
+
+/* ---------------------------------------------------------------- financeiro */
+.ferramentas .periodo{flex:0 1 230px}
+.fin{display:flex;flex-wrap:wrap;align-items:flex-start;gap:20px}
+.dre{flex:999 1 480px;min-width:0;overflow:hidden}
+.cab-cartao{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;padding:11px 16px 9px}
+.cab-cartao h2{font-weight:900;font-size:17px;color:#542424}
+.cab-cartao span{font-size:13px;color:#5A4237}
+.dre .tabela th{padding:8px 16px}
+.dre .tabela td{padding:6px 16px}
+.dre .vazio{padding:10px 16px 12px}
+.fin-lado{flex:1 1 340px;max-width:400px;display:flex;flex-direction:column;gap:14px}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.kpi{padding:10px 14px}
+.kpi .r{font:800 11px Inter,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#5A4237}
+.kpi .v{margin:2px 0 1px;font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:26px;line-height:1.1;color:#542424}
+.kpi .m{font-size:12px;line-height:1.35;color:#5A4237}
+.fluxo{overflow:hidden}
+.sem-grafico{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:96px;margin:0 16px 14px;padding:8px 14px;border:2px dashed #E2CF95;border-radius:12px;background:#FFFDF6;color:#5A4237;font-size:12.5px;line-height:1.4;text-align:center}
+.sem-grafico .ic{width:26px;height:26px;color:#C8202A}
+.sem-grafico b{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:14.5px;color:#542424}
+
+/* ---------------------------------------------------------------- produtos
+   Caixas de grupo com o título na borda, como nos ERPs de mesa. */
+.ferramentas .pesquisa{flex:999 1 360px;min-width:0}
+[data-tela="produtos"] .ferramentas{margin-bottom:12px}
+[data-tela="produtos"] .abas{margin-bottom:12px}
+.form{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px 16px}
+.form .rotulo{margin-bottom:5px}
+.form .campo{font-size:14.5px;padding:9px 12px;min-height:42px}
+.form .com-icone .campo{padding-left:42px}
+.form .sel select{padding-right:36px}
+.form .check{min-height:42px}
+fieldset.grupo{min-width:0;margin:0;padding:4px 16px 12px;border:1px solid #DCC88A;border-radius:12px;background:#FFFFFF;box-shadow:0 4px 0 #EFDFA6,0 10px 18px rgba(120,70,0,.1)}
+.grupo legend{padding:0 8px;font:900 12px Nunito,Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#9E1A20}
+.linha{display:grid;gap:10px 12px}
+.linha + .linha{margin-top:10px}
+.l4{grid-template-columns:110px minmax(0,1.5fr) minmax(0,1fr) 92px}
+.l2a{grid-template-columns:minmax(0,1fr) 110px}
+.l2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grupo .tabela th{padding:7px 12px}
+.grupo .tabela td{padding:9px 12px;font-size:13px;line-height:1.4;color:#5A4237}
+.sob-tabela{display:flex;justify-content:flex-end;margin-top:8px}
+.dado{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed #E2CF95;font-size:14px;color:#5A4237}
+.dado b{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:17px;color:#542424}
+.grupo .vazio{margin-top:8px}
+.acoes{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:12px;margin-top:14px}
+.acoes .btn3d{min-height:46px;font-size:16px;padding:11px 20px}
+
+/* ---------------------------------------------------------------- capa
+   Artes novas na vitrine (logo 3D e loja se alternando), animação da mascote no telão e a
+   entrada do sistema. */
+.capa{flex:1;display:flex;flex-wrap:wrap;align-items:stretch;background:linear-gradient(#EA3939,#D42828)}
+.vitrine{flex:999 1 560px;min-width:0;min-height:420px;display:flex;justify-content:center;padding:18px 0 22px 18px;perspective:1400px;container-type:size}
+.arte{position:relative;flex:1;max-width:calc((100cqh - 12px) * 1.7768 + 12px);overflow:hidden;border:6px solid #FCF00C;border-radius:22px;background:#3B1818;box-shadow:0 0 0 2px #542424,0 6px 0 2px #7E1A1E,0 24px 34px rgba(40,0,0,.5);transition:transform .3s ease-out}
+.quadro{position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden}
+.cobre{position:absolute;left:36.6%;top:50%;height:100%;aspect-ratio:1672/941;transform:translate(-36.6%,-50%)}
+.cobre img{display:block;width:100%;height:100%;object-fit:cover}
+.anim .cobre{animation:respira 18s ease-in-out infinite alternate}
+@keyframes respira{from{transform:translate(-36.6%,-50%) scale(1)}to{transform:translate(-36.6%,-50%) scale(1.03)}}
+.q2 img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 72%}
+.q2{opacity:0}
+.anim .q2{animation:troca 26s ease-in-out infinite}
+@keyframes troca{0%,46%{opacity:0}52%,94%{opacity:1}100%{opacity:0}}
+/* brilho que passa sobre a logo 3D e beijos que saem da mascote em direção ao nome */
+.brilho-capa{position:absolute;left:10.2%;top:11%;width:48.8%;height:42.5%;border-radius:50%;overflow:hidden;pointer-events:none}
+.brilho-capa::before{content:"";position:absolute;top:-30%;bottom:-30%;left:-45%;width:24%;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.65),rgba(255,255,255,0));transform:skewX(-18deg)}
+.anim .brilho-capa::before{animation:brilho-capa 6.5s ease-in-out infinite}
+@keyframes brilho-capa{0%,55%{left:-45%}80%,100%{left:125%}}
+.beijo-capa{position:absolute;left:70.3%;top:25.3%;width:34px;height:34px;color:#FF4D6D;opacity:0;pointer-events:none}
+.beijo-capa svg{display:block;width:100%;height:100%;filter:drop-shadow(0 2px 0 #FFFFFF) drop-shadow(0 4px 6px rgba(60,0,0,.4))}
+.anim .beijo-capa{animation:beijo-capa 6.5s ease-out infinite}
+.anim .beijo-capa.b2{animation-delay:.35s}
+.anim .beijo-capa.b3{animation-delay:.7s}
+@keyframes beijo-capa{0%,50%{opacity:0;transform:translate(0,0) scale(.3)}56%{opacity:1}84%{opacity:.95;transform:translate(-150px,-58px) scale(1.15)}100%{opacity:0;transform:translate(-190px,-96px) scale(.9)}}
+/* painel da direita: o telão com a animação (9 quadros numa tira, um por segundo) e a entrada */
+.painel{flex:1 1 360px;max-width:380px;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:16px 20px}
+.telao{padding:6px;border:2px solid #9E1A20;border-radius:16px;background:linear-gradient(#FFF98F,#FCF00C 55%,#F2DA0A);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 5px 0 #7E1A1E,0 14px 22px rgba(60,0,0,.4)}
+.filme{width:100%;aspect-ratio:507/336;border:2px solid #542424;border-radius:10px;background:#542424 url(/assets/brand/capa_animacao_tira.jpg) 100% 0/900% 100% no-repeat}
+.anim .filme{animation:filme 9s steps(9) infinite}
+@keyframes filme{from{background-position:0 0}to{background-position:112.5% 0}}
+.cartao.entrada{display:flex;flex-direction:column;gap:13px;padding:20px 20px 18px;box-shadow:inset 0 1px 0 #FFFFFF,0 5px 0 #7E1A1E,0 16px 26px rgba(60,0,0,.4)}
+.entrada h2{font-weight:900;font-size:23px;color:#542424}
+.entrada .data{margin-top:-9px;font-size:13px;color:#5A4237}
+.entrada .ajuda{font-size:12.5px;line-height:1.45;color:#5A4237}
+[data-tela="capa"],[data-tela="capa"] .tela{background:#D42828}
+
+/* ---------------------------------------------------------------- telas menores e menos movimento */
+@media (max-width:1000px){
+  .grade{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .resumo,.fin-lado,.painel{max-width:none}
+  .form{grid-template-columns:minmax(0,1fr)}
+  .l4{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:reduce){
+  .anim .mascote,.anim .inclina,.anim .beijo,.anim .brilho::before,.anim .cobre,.anim .q2,.anim .brilho-capa::before,.anim .beijo-capa,.anim .filme{animation:none}
+}

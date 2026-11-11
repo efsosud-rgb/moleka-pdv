@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone, marca, pingos, chip, em_construcao %}
+{% block titulo_pagina %}Caixa{% endblock %}
+{#- O caixa ocupa a tela toda: faixa do topo compacta, sem menus nem menu lateral. -#}
+{% block moldura %}
+<header class="topo compacto">
+{{ marca() }}
+<div class="titulo">
+<h1>Caixa — Venda</h1>
+<p><span data-hoje>—</span> · Operador: — · Venda nº —</p>
+</div>
+<div class="chips">
+{{ em_construcao("Caixa: o visual está pronto, mas esta tela ainda não registra vendas. A venda entra numa próxima versão.") }}
+{{ chip("caixa", "Caixa") }}{{ chip("fiscal", "SEFAZ") }}{{ chip("impressora_cupom", "Impressora de cupom") }}
+</div>
+{{ pingos() }}
+</header>
+<main class="pdv">
+<section class="esq" aria-label="Itens da venda">
+<form class="busca" data-em-breve="Adicionar produto: entra numa próxima versão, junto com o cadastro de produtos.">
+<div class="produto">
+<label class="rotulo" for="prod">Produto (F2) — código de barras ou nome</label>
+<div class="com-icone grande">{{ icone("barras") }}<input id="prod" name="prod" class="campo lg" type="text" autocomplete="off" placeholder="Passe o leitor ou digite o nome do produto" data-atalho="F2"></div>
+</div>
+<div class="qtd">
+<label class="rotulo" for="qtd">Qtd (F3)</label>
+<input id="qtd" name="qtd" class="campo lg num" type="number" value="1" min="1" data-atalho="F3">
+</div>
+<button class="btn3d amarelo lg" type="submit">{{ icone("mais") }}Adicionar (Enter)</button>
+</form>
+<div class="cartao itens">
+<div class="itens-topo"><h2>Itens da venda</h2><span class="cont">—</span></div>
+<div class="rolagem">
+<table class="tabela">
+<thead><tr><th style="width:44px">#</th><th style="width:90px">Código</th><th>Descrição</th><th class="num" style="width:70px">Qtd</th><th class="num" style="width:150px">Unit. (R$)</th><th class="num" style="width:120px">Total (R$)</th></tr></thead>
+<tbody>
+<tr><td class="sem-linhas" colspan="6">Nenhuma venda aberta.</td></tr>
+</tbody>
+</table>
+</div>
+<p class="nota">Preço por quantidade: ao atingir a faixa de atacado do produto, o preço unitário muda sozinho e a linha ganha a etiqueta ATACADO.</p>
+</div>
+</section>
+<aside class="lado" aria-label="Pagamento">
+<div class="total">
+<span class="r">Total a pagar</span>
+<div class="v" title="nenhuma venda aberta">—</div>
+<div class="linhas"><span>Subtotal: —</span><span>Desconto (F5): —</span><span>Itens: —</span></div>
+</div>
+<div class="cartao cliente">
+<label class="rotulo" for="cli">Cliente (F4)</label>
+<input id="cli" name="cli" class="campo" type="text" value="Consumidor final" data-atalho="F4">
+<label class="check"><input type="checkbox" name="cpf">CPF na nota</label>
+</div>
+<div class="pagamentos">
+<button class="btn3d" type="button" data-em-breve="Pagamento em dinheiro: entra numa próxima versão." data-atalho="F6">{{ icone("dinheiro") }}Dinheiro (F6)</button>
+<button class="btn3d" type="button" data-em-breve="Pagamento por Pix: entra numa próxima versão." data-atalho="F7">{{ icone("pix") }}Pix (F7)</button>
+<button class="btn3d" type="button" data-em-breve="Pagamento no débito: entra numa próxima versão." data-atalho="F8">{{ icone("cartao") }}Débito (F8)</button>
+<button class="btn3d" type="button" data-em-breve="Pagamento no crédito: entra numa próxima versão." data-atalho="F9">{{ icone("cartao") }}Crédito (F9)</button>
+</div>
+<button class="btn3d verde xl bloco" type="button" data-em-breve="Finalizar e emitir NFC-e: entra numa próxima versão." data-atalho="F10">{{ icone("recibo") }}Finalizar e emitir NFC-e (F10)</button>
+<button class="btn3d vermelho bloco" type="button" data-em-breve="Cancelar venda: entra numa próxima versão." data-atalho="F12">{{ icone("x") }}Cancelar venda (F12)</button>
+</aside>
+</main>
+<footer class="rodape">
+<span class="tecla"><kbd>F2</kbd>Produto</span>
+<span class="tecla"><kbd>F3</kbd>Quantidade</span>
+<span class="tecla"><kbd>F4</kbd>Cliente</span>
+<span class="tecla"><kbd>F5</kbd>Desconto</span>
+<span class="tecla"><kbd>F6–F9</kbd>Pagamento</span>
+<span class="tecla"><kbd>F10</kbd>Finalizar</span>
+<span class="tecla"><kbd>F11</kbd>Sangria / Suprimento</span>
+<span class="tecla"><kbd>F12</kbd>Cancelar</span>
+<span class="dir"><a class="tecla" href="/inicio" data-atalho="Escape"><kbd>Esc</kbd>Voltar ao início</a></span>
+</footer>
+{% endblock %}

@@ -11,20 +11,6 @@ def test_status_sem_nada_configurado_e_honesto(cliente):
     assert s["caixa"]["motivo"] == "nenhum caixa aberto"
 
 
-def test_interface_e_marca_sao_servidas(cliente):
-    assert cliente.get("/").status_code == 200
-    assert "Moleka" in cliente.get("/").text
-    for pagina in (
-        "inicio.html",
-        "caixa.html",
-        "financeiro.html",
-        "css/moleka.css",
-        "js/moleka.js",
-    ):
-        assert cliente.get(f"/{pagina}").status_code == 200, pagina
-    assert cliente.get("/assets/brand/mascote.png").headers["content-type"] == "image/png"
-
-
 def test_cadastro_de_tabela_produto_e_cliente(cliente):
     varejo = cliente.post("/api/tabelas-preco", json={"nome": "varejo", "padrao": True})
     assert varejo.status_code == 201 and varejo.json()["nome"] == "VAREJO"

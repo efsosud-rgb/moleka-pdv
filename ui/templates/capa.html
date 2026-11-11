@@ -1,0 +1,63 @@
+{#- Capa do sistema: artes novas na vitrine (logo 3D e loja, alternando), animação da mascote
+    no telão e a entrada. O login por operador entra na Frente 1 (ver docs/PLANO.md). -#}
+{%- from "_macros.html" import coracao -%}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ app_nome }}</title>
+<link rel="icon" href="/assets/brand/moleka.ico">
+<link rel="stylesheet" href="/static/css/moleka.css?v={{ versao }}">
+<script src="/static/js/moleka.js?v={{ versao }}" defer></script>
+</head>
+<body class="anim" data-tela="capa">
+<div class="tela">
+<div class="capa">
+<div class="vitrine">
+<div class="arte">
+<div class="quadro q1">
+<div class="cobre">
+<img src="/assets/brand/capa_logo_3d.jpg" alt="Logo Moleka Sorvetes em 3D, com a mascote apontando para o nome e sorvetes no balcão">
+<div class="brilho-capa"></div>
+<span class="beijo-capa b1">{{ coracao() }}</span>
+<span class="beijo-capa b2">{{ coracao() }}</span>
+<span class="beijo-capa b3">{{ coracao() }}</span>
+</div>
+</div>
+<div class="quadro q2"><img src="/assets/brand/capa_loja.jpg" alt="Interior da loja Moleka Sorvetes"></div>
+</div>
+</div>
+<aside class="painel">
+<div class="telao"><div class="filme" role="img" aria-label="Animação: a mascote corre pela loja, mostra o picolé Moleka e convida a comprar"></div></div>
+<section class="cartao entrada" aria-labelledby="t-entrada">
+<h2 id="t-entrada">Frente de Loja</h2>
+<p class="data" data-hoje>—</p>
+<a class="btn3d amarelo lg bloco" href="/inicio" data-atalho="Enter">Entrar (Enter)</a>
+<p class="ajuda">O login por operador e senha entra na próxima versão. Por enquanto, o sistema abre direto.</p>
+</section>
+</aside>
+</div>
+<footer class="rodape">
+<span data-versao>{{ app_nome }} v{{ versao }}</span>
+<span class="status" data-status="banco" data-rotulo="Banco local"><span class="dot" aria-hidden="true"></span><span class="texto">Banco local: —</span></span>
+<span class="status" data-status="fiscal" data-rotulo="SEFAZ"><span class="dot" aria-hidden="true"></span><span class="texto">SEFAZ: —</span></span>
+<span class="dir">
+<span class="tecla"><kbd>Enter</kbd>Entrar</span>
+<button class="tecla" type="button" data-acao="sobre" data-atalho="F1"><kbd>F1</kbd>Ajuda</button>
+<button class="tecla" type="button" data-acao="sair" data-atalho="Escape"><kbd>Esc</kbd>Sair</button>
+</span>
+</footer>
+</div>
+<dialog class="dialogo" id="sobre" aria-labelledby="sobre-titulo">
+<h2 id="sobre-titulo">Sobre o {{ app_nome }}</h2>
+<p>Frente de loja da Moleka Sorvetes: caixa, estoque, financeiro e NFC-e.</p>
+<dl>
+<dt>Versão</dt><dd data-sobre="versao">—</dd>
+<dt>Banco de dados</dt><dd data-sobre="banco">—</dd>
+<dt>Fiscal</dt><dd data-sobre="fiscal">—</dd>
+</dl>
+<form method="dialog"><button class="btn3d amarelo" type="submit">Fechar (Esc)</button></form>
+</dialog>
+</body>
+</html>
