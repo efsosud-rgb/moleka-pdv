@@ -48,11 +48,23 @@ def engine() -> Engine:
 
 
 def criar_schema() -> None:
-    """Cria as tabelas que ainda não existem.
+    """Cria as tabelas que faltam e leva o banco ao formato desta versão do programa.
 
-    Migrações com Alembic entram quando o schema estabilizar.
+    No SQLite, a evolução entre versões é feita por `app/migracoes.py`, com cópia de
+    segurança antes de qualquer mudança.
     """
-    Base.metadata.create_all(engine())
+    from app import migracoes  # importado aqui para não criar ciclo de importação
+
+    url = url_banco()
+    if not url.startswith("sqlite"):
+        Base.metadata.create_all(engine())
+        return
+    em_arquivo = "memory" not in url and not os.environ.get("MOLEKA_PDV_BANCO_URL")
+    migracoes.preparar(
+        engine(),
+        arquivo=config.caminho_banco() if em_arquivo else None,
+        pasta_backups=config.pasta_dados() / "backups" if em_arquivo else None,
+    )
 
 
 def sessao() -> Iterator[Session]:
