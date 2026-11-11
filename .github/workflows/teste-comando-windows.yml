@@ -1,0 +1,90 @@
+# Confere, num Windows de verdade, o comando que o Eric cola no PowerShell para abrir uma versão
+# baixada em .zip (tools/abrir_versao_baixada.ps1), do jeito que ele usa: Windows PowerShell 5.1.
+#
+# Roda só em ramos build/** (e à mão), quando o comando ou o roteiro de abrir pelo código mudam.
+# Não abre a janela: usa MOLEKA_SO_PREPARAR=1, que extrai, prepara o ambiente e para. Depois sobe
+# o servidor a partir da pasta extraída, para provar que o código baixado funciona.
+
+name: Teste do comando de abrir pelo código (Windows)
+
+on:
+  push:
+    branches: ['build/**']
+    paths:
+      - 'tools/abrir_versao_baixada.ps1'
+      - 'tools/abrir_pelo_codigo.py'
+      - '.github/workflows/teste-comando-windows.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  comando:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Monta o .zip do mesmo jeito que ele é enviado
+        shell: pwsh
+        run: |
+          $versao = (Select-String -Path app/config.py -Pattern '^VERSAO = "(.+)"').Matches[0].Groups[1].Value
+          $baixados = Join-Path $env:USERPROFILE 'Downloads'
+          New-Item -ItemType Directory -Force $baixados | Out-Null
+          git archive --format=zip --prefix="MolekaPDV-codigo-$versao/" -o (Join-Path $baixados "MolekaPDV-codigo-$versao.zip") HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'git archive falhou' }
+          # Um zip mais antigo ao lado: o comando tem de escolher a versão mais nova.
+          Copy-Item (Join-Path $baixados "MolekaPDV-codigo-$versao.zip") (Join-Path $baixados 'MolekaPDV-codigo-0.0.1.zip')
+          "versao=$versao" >> $env:GITHUB_ENV
+          Get-ChildItem $baixados -Filter 'MolekaPDV-codigo-*.zip' | ForEach-Object { Write-Host "$($_.Name): $($_.Length) bytes" }
+
+      - name: Roda o comando no Windows PowerShell 5.1 (prepara, sem abrir a janela)
+        shell: powershell
+        run: |
+          # Como no PowerShell aberto pelo Eric: um erro não derruba a janela, o comando é que decide.
+          $ErrorActionPreference = 'Continue'
+          Write-Host "PowerShell $($PSVersionTable.PSVersion)"
+          if ($PSVersionTable.PSVersion.Major -ne 5) { throw 'este passo deveria rodar no Windows PowerShell 5.1' }
+          $env:MOLEKA_SO_PREPARAR = '1'
+          $texto = Get-Content tools\abrir_versao_baixada.ps1 -Raw
+          Invoke-Expression $texto
+          if ($LASTEXITCODE -ne 0) { throw "o roteiro de abrir pelo código terminou com o código $LASTEXITCODE" }
+          $pasta = Join-Path $env:USERPROFILE "MolekaPDV-dev\MolekaPDV-codigo-$env:versao"
+          if ((Get-Location).Path -ne $pasta) { throw "o comando deveria ter parado na pasta $pasta, e parou em $((Get-Location).Path)" }
+          foreach ($arquivo in 'main.py', 'tools\abrir_pelo_codigo.py', 'ui\templates\caixa.html') {
+            if (-not (Test-Path (Join-Path $pasta $arquivo))) { throw "faltou $arquivo na pasta extraída" }
+          }
+          if (-not (Test-Path (Join-Path $env:USERPROFILE 'MolekaPDV-dev\venv\Scripts\python.exe'))) { throw 'o ambiente do Python não foi criado ao lado do código' }
+          Write-Host 'OK: o comando achou o zip mais novo, extraiu e preparou o ambiente'
+
+      - name: Com o sistema aberto, o comando avisa e não mexe em nada
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Continue'
+          $pasta = Join-Path $env:USERPROFILE "MolekaPDV-dev\MolekaPDV-codigo-$env:versao"
+          $python = Join-Path $env:USERPROFILE 'MolekaPDV-dev\venv\Scripts\python.exe'
+          $env:MOLEKA_PDV_DADOS = Join-Path ([IO.Path]::GetTempPath()) 'moleka-teste-comando'
+          $servidor = Start-Process -FilePath $python -ArgumentList 'main.py', '--sem-janela' -WorkingDirectory $pasta -PassThru
+          try {
+            $status = $null
+            $limite = (Get-Date).AddSeconds(60)
+            while ((Get-Date) -lt $limite -and -not $status) {
+              try { $status = Invoke-RestMethod 'http://127.0.0.1:8765/api/status' -TimeoutSec 3 } catch { Start-Sleep -Milliseconds 500 }
+            }
+            if (-not $status) { throw 'o servidor da pasta extraída não respondeu em 60 s' }
+            if ($status.versao -ne $env:versao) { throw "versão inesperada: $($status.versao)" }
+            Write-Host "OK: o código extraído sobe o sistema, versão $($status.versao), banco $($status.banco.texto)"
+            $env:MOLEKA_SO_PREPARAR = '1'
+            $saida = Invoke-Expression (Get-Content tools\abrir_versao_baixada.ps1 -Raw) 6>&1 | Out-String
+            Write-Host $saida
+            if ($saida -notmatch 'ainda esta ABERTO') { throw 'com o sistema aberto, o comando deveria avisar e parar' }
+            Write-Host 'OK: com o sistema aberto, o comando avisa e para'
+          }
+          finally {
+            if (-not $servidor.HasExited) { Stop-Process -Id $servidor.Id -Force }
+          }
