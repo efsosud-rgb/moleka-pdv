@@ -1,6 +1,7 @@
 # Testa o Moleka PDV empacotado, no Windows: sobe o servidor, confere as páginas e o login, faz
-# uma venda de teste do começo ao fim (cadastro, caixa, duas formas de pagamento, fechamento), abre
-# a janela e tira um print da tela. Roda no GitHub Actions depois do PyInstaller e depois do instalador.
+# uma venda de teste do começo ao fim (cadastro, caixa, duas formas de pagamento, fechamento),
+# dá entrada numa nota fictícia por XML, confere estoque, custo, fluxo de caixa e DRE, abre a
+# janela e tira um print da tela. Roda no GitHub Actions depois do PyInstaller e depois do instalador.
 #
 # Uso:
 #   .\packaging\teste_windows.ps1                               # testa dist\MolekaPDV\MolekaPDV.exe
@@ -63,7 +64,7 @@ try {
   Write-Host "OK: servidor no ar, versão $($status.versao), banco $($status.banco.texto)"
 
   # O que abre sem login: a capa e os arquivos da interface.
-  $scripts = 'moleka', 'entrada', 'operadores', 'produtos', 'clientes', 'tabelas', 'controle_caixa', 'caixa' | ForEach-Object { "/static/js/$_.js" }
+  $scripts = 'moleka', 'entrada', 'operadores', 'produtos', 'clientes', 'tabelas', 'controle_caixa', 'caixa', 'estoque', 'entrada_nf', 'financeiro' | ForEach-Object { "/static/js/$_.js" }
   foreach ($caminho in @('/', '/static/css/moleka.css', '/assets/brand/mascote.png') + $scripts) {
     $r = Invoke-WebRequest "$base$caminho" -UseBasicParsing -TimeoutSec 10
     if ($r.StatusCode -ne 200) { throw "$caminho respondeu $($r.StatusCode)" }
@@ -84,7 +85,7 @@ try {
   $gerente = @{ nome = 'Gerente de Teste'; login = 'gerente'; senha = $senha } | ConvertTo-Json -Compress
   $r = Invoke-WebRequest "$base/api/configuracao-inicial" -Method Post -Body $gerente -ContentType 'application/json' -SessionVariable janela -UseBasicParsing -TimeoutSec 20
   if ($r.StatusCode -ne 201) { throw "a configuração inicial respondeu $($r.StatusCode)" }
-  foreach ($tela in 'inicio', 'caixa', 'controle-caixa', 'produtos', 'clientes', 'tabelas-preco', 'financeiro', 'operadores') {
+  foreach ($tela in 'inicio', 'caixa', 'controle-caixa', 'produtos', 'clientes', 'tabelas-preco', 'estoque', 'entrada-nf', 'financeiro', 'operadores') {
     $r = Invoke-WebRequest "$base/$tela" -WebSession $janela -UseBasicParsing -TimeoutSec 10
     if ($r.Content -notmatch "data-tela=`"$tela`"") { throw "a tela /$tela não abriu para o gerente logado" }
     if ($r.Content -notmatch 'Operador: Gerente de Teste') { throw "a tela /$tela não mostra o operador logado" }
@@ -111,6 +112,7 @@ try {
   #   Pix de 20,00 com 5% de desconto quita 20,00 / 0,95 = 21,05; falta 23,95
   #   dinheiro 30,00 para 23,95: troco 6,05; total pago = 45,00 - 1,05 = 43,95
   #   dinheiro esperado na gaveta = fundo 100,00 + 23,95 = 123,95
+  # Antes da venda entram 20 picolés a 2,00 (custo médio 2,00): a venda de 10 custa 20,00.
   function Pedir([string]$Metodo, [string]$Caminho, $Corpo = $null) {
     $pedido = @{ Uri = "$base$Caminho"; Method = $Metodo; WebSession = $janela; TimeoutSec = 20 }
     if ($null -ne $Corpo) {
@@ -133,6 +135,8 @@ try {
   $produto = Pedir POST '/api/produtos' @{ descricao = 'Picolé de teste'; ean = '7890000000017'; precos = $faixas }
   Conferir 'código automático do produto' $produto.codigo '1'
   Conferir 'pesquisa sem acento ("picole" acha o produto)' (Lista (Pedir GET '/api/produtos?busca=picole')).Count 1
+  $entrada = Pedir POST '/api/estoque/ajustes' @{ produto_id = $produto.id; tipo = 'entrada'; quantidade = '20'; motivo = 'entrada de teste'; custo_unitario_centavos = 200 }
+  Conferir 'estoque depois da entrada (saldo; custo médio em centavos)' "$($entrada.saldo);$($entrada.custo_centavos)" '20.000;200'
   $null = Pedir POST '/api/caixa/abrir' @{ fundo_troco_centavos = 10000 }
   $venda = (Pedir POST '/api/venda/itens' @{ codigo = '7890000000017'; quantidade = 10 }).venda
   Conferir 'preço por quantidade (10 x 4,50), em centavos' $venda.subtotal_centavos 4500
@@ -150,6 +154,63 @@ try {
   Conferir 'saldo de vendas do dia' "$($resumo.quantidade) venda, $($resumo.total_centavos) centavos" '1 venda, 4395 centavos'
   $fechado = Pedir POST '/api/caixa/fechar' @{ contado = @{ dinheiro = 12395; pix = 2000; debito = 0; credito = 0 } }
   Conferir 'diferenças no fechamento (dinheiro, Pix, débito, crédito)' (($fechado.formas | ForEach-Object { $_.diferenca_centavos }) -join ',') '0,0,0,0'
+
+  # Entrada de NF por XML, com uma nota FICTÍCIA escrita aqui mesmo (nenhuma empresa ou nota real):
+  #   2 caixas de picolé a 48,00 = 96,00 + frete 4,00 + ICMS-ST 9,60 = 109,60 de custo;
+  #   a nota diz 24 por caixa e traz o código de barras do picolé: entram 48 a 109,60 / 48 = 2,28;
+  #   estoque: 20 - 10 vendidos = 10 a 2,00; + 48 a 2,28 = 129,44 em 58 = 2,2317 -> 2,23.
+  $xml = @'
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+<NFe xmlns="http://www.portalfiscal.inf.br/nfe">
+<infNFe Id="NFe35261111222333000181550010000001231000001340" versao="4.00">
+<ide><cUF>35</cUF><natOp>VENDA DE MERCADORIA (FICTICIA)</natOp><mod>55</mod><serie>1</serie><nNF>123</nNF><dhEmi>2026-11-03T10:15:00-03:00</dhEmi><tpNF>1</tpNF></ide>
+<emit><CNPJ>11222333000181</CNPJ><xNome>FORNECEDOR FICTICIO DE TESTE LTDA</xNome></emit>
+<dest><CNPJ>11444777000161</CNPJ><xNome>LOJA FICTICIA DE TESTE</xNome></dest>
+<det nItem="1">
+<prod><cProd>PIC-24</cProd><cEAN>SEM GTIN</cEAN><xProd>PICOLE FICTICIO DE TESTE CX 24</xProd><NCM>21050010</NCM><CFOP>5102</CFOP><uCom>CX</uCom><qCom>2.0000</qCom><vUnCom>48.0000000000</vUnCom><vProd>96.00</vProd><cEANTrib>7890000000017</cEANTrib><uTrib>UN</uTrib><qTrib>48.0000</qTrib><vUnTrib>2.0000000000</vUnTrib><vFrete>4.00</vFrete><indTot>1</indTot></prod>
+<imposto><ICMS><ICMS10><orig>0</orig><CST>10</CST><vBC>96.00</vBC><vICMS>11.52</vICMS><vBCST>96.00</vBCST><vICMSST>9.60</vICMSST></ICMS10></ICMS></imposto>
+</det>
+<total><ICMSTot><vProd>96.00</vProd><vNF>109.60</vNF></ICMSTot></total>
+<cobr><fat><nFat>123</nFat></fat><dup><nDup>001</nDup><dVenc>2026-12-03</dVenc><vDup>109.60</vDup></dup></cobr>
+</infNFe>
+</NFe>
+<protNFe versao="4.00"><infProt><chNFe>35261111222333000181550010000001231000001340</chNFe><cStat>100</cStat><xMotivo>Situacao ficticia de teste</xMotivo></infProt></protNFe>
+</nfeProc>
+'@
+  $lida = Pedir POST '/api/compras/conferir' @{ xml = $xml }
+  Conferir 'nota fictícia lida (número; total em centavos; avisos)' "$($lida.numero);$($lida.total_centavos);$(@($lida.avisos).Count)" '123;10960;0'
+  Conferir 'nota: produto achado pelo código de barras, com o fator da nota' "$($lida.itens[0].sugestao_produto_id);$($lida.itens[0].sugestao_fator);$($lida.itens[0].sugestao_origem)" "$($produto.id);24.000;ean"
+  $feito = Pedir POST '/api/compras/importar' @{ xml = $xml; itens = @(@{ numero = 1; acao = 'vincular'; produto_id = $produto.id; fator = 24 }) }
+  Conferir 'nota importada (entrou; custo de cada, em centavos; contas a pagar)' "$($feito.nota.itens[0].entrou);$($feito.nota.itens[0].custo_unitario_centavos);$($feito.contas_a_pagar)" '48.000;228;1'
+  $guardado = Join-Path $env:MOLEKA_PDV_DADOS "xml\entrada\$($lida.chave).xml"
+  if (-not (Test-Path $guardado)) { throw "o XML da nota não foi guardado em $guardado" }
+  Write-Host 'OK: o XML da nota ficou guardado na pasta de dados'
+  $recusa = Codigo-Recusado { Pedir POST '/api/compras/importar' @{ xml = $xml; itens = @(@{ numero = 1; acao = 'ignorar' }) } }
+  if ($recusa -ne 409) { throw "a mesma nota importada de novo deveria responder 409 (respondeu $recusa)" }
+  Write-Host 'OK: a mesma nota não entra duas vezes (409)'
+  $estoque = Pedir GET '/api/estoque'
+  Conferir 'estoque depois da nota (saldo; custo médio; valor, em centavos)' "$($estoque.itens[0].saldo);$($estoque.itens[0].custo_centavos);$($estoque.resumo.valor_centavos)" '58.000;223;12934'
+
+  # Financeiro. Receita líquida 45,00 - 1,05 do Pix = 43,95; custo da venda 10 x 2,00 = 20,00;
+  # lucro bruto 23,95; despesa de teste 10,00 paga hoje: resultado 13,95 e saldo do dia 33,95.
+  # A data de hoje na loja, lida como texto (o PowerShell pode converter datas do JSON sozinho).
+  $bruto = (Invoke-WebRequest "$base/api/vendas/resumo-hoje" -WebSession $janela -UseBasicParsing -TimeoutSec 10).Content
+  if ($bruto -notmatch '"dia":\s*"(\d{4}-\d{2}-\d{2})"') { throw "não achei a data de hoje em /api/vendas/resumo-hoje: $bruto" }
+  $hoje = $Matches[1]
+  $categorias = Lista (Pedir GET '/api/financeiro/categorias')
+  Conferir 'categorias do plano de contas inicial' $categorias.Count 17
+  $aluguel = $categorias | Where-Object { $_.nome -eq 'Aluguel' }
+  $conta = Pedir POST '/api/financeiro/lancamentos' @{ tipo = 'despesa'; categoria_id = $aluguel.id; descricao = 'Aluguel de teste'; valor_centavos = 1000; vencimento = $hoje; pago_em = $hoje; forma = 'pix' }
+  Conferir 'despesa de teste lançada já paga' $conta.situacao 'pago'
+  $fluxo = Pedir GET "/api/financeiro/fluxo?inicio=$hoje&fim=$hoje"
+  Conferir 'fluxo de caixa de hoje (entrou; saiu; saldo, em centavos)' "$($fluxo.entradas_centavos);$($fluxo.pagamentos_centavos);$($fluxo.saldo_centavos)" '4395;1000;3395'
+  $dre = Pedir GET "/api/financeiro/dre?inicio=$hoje&fim=$hoje"
+  $linhas = @{}
+  foreach ($linha in $dre.linhas) { if ($linha.chave) { $linhas[$linha.chave] = $linha.valor_centavos } }
+  Conferir 'DRE de hoje (receita líquida; CMV; lucro bruto; resultado, em centavos)' "$($linhas.receita_liquida);$($linhas.cmv);$($linhas.lucro_bruto);$($linhas.resultado)" '4395;-2000;2395;1395'
+  $rent = Pedir GET "/api/financeiro/rentabilidade?inicio=$hoje&fim=$hoje"
+  Conferir 'rentabilidade do picolé (receita; custo; margem; %)' "$($rent.linhas[0].receita_centavos);$($rent.linhas[0].custo_centavos);$($rent.linhas[0].margem_centavos);$($rent.linhas[0].margem_percentual)" '4395;2000;2395;54,5%'
 
   # Recuperação de acesso (senha esquecida): o programa sorteia uma senha provisória e mostra numa
   # caixa de mensagem. Confere que a caixa aparece e que a senha antiga deixa de valer.
