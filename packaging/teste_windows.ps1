@@ -1,5 +1,6 @@
-# Testa o Moleka PDV empacotado, no Windows: sobe o servidor, confere as páginas e o login, abre a
-# janela e tira um print da tela. Roda no GitHub Actions depois do PyInstaller e depois do instalador.
+# Testa o Moleka PDV empacotado, no Windows: sobe o servidor, confere as páginas e o login, faz
+# uma venda de teste do começo ao fim (cadastro, caixa, duas formas de pagamento, fechamento), abre
+# a janela e tira um print da tela. Roda no GitHub Actions depois do PyInstaller e depois do instalador.
 #
 # Uso:
 #   .\packaging\teste_windows.ps1                               # testa dist\MolekaPDV\MolekaPDV.exe
@@ -62,7 +63,8 @@ try {
   Write-Host "OK: servidor no ar, versão $($status.versao), banco $($status.banco.texto)"
 
   # O que abre sem login: a capa e os arquivos da interface.
-  foreach ($caminho in '/', '/static/css/moleka.css', '/static/js/moleka.js', '/static/js/entrada.js', '/static/js/operadores.js', '/assets/brand/mascote.png') {
+  $scripts = 'moleka', 'entrada', 'operadores', 'produtos', 'clientes', 'tabelas', 'controle_caixa', 'caixa' | ForEach-Object { "/static/js/$_.js" }
+  foreach ($caminho in @('/', '/static/css/moleka.css', '/assets/brand/mascote.png') + $scripts) {
     $r = Invoke-WebRequest "$base$caminho" -UseBasicParsing -TimeoutSec 10
     if ($r.StatusCode -ne 200) { throw "$caminho respondeu $($r.StatusCode)" }
     Write-Host "OK: $caminho ($($r.RawContentLength) bytes)"
@@ -82,7 +84,7 @@ try {
   $gerente = @{ nome = 'Gerente de Teste'; login = 'gerente'; senha = $senha } | ConvertTo-Json -Compress
   $r = Invoke-WebRequest "$base/api/configuracao-inicial" -Method Post -Body $gerente -ContentType 'application/json' -SessionVariable janela -UseBasicParsing -TimeoutSec 20
   if ($r.StatusCode -ne 201) { throw "a configuração inicial respondeu $($r.StatusCode)" }
-  foreach ($tela in 'inicio', 'caixa', 'produtos', 'financeiro', 'operadores') {
+  foreach ($tela in 'inicio', 'caixa', 'controle-caixa', 'produtos', 'clientes', 'tabelas-preco', 'financeiro', 'operadores') {
     $r = Invoke-WebRequest "$base/$tela" -WebSession $janela -UseBasicParsing -TimeoutSec 10
     if ($r.Content -notmatch "data-tela=`"$tela`"") { throw "a tela /$tela não abriu para o gerente logado" }
     if ($r.Content -notmatch 'Operador: Gerente de Teste') { throw "a tela /$tela não mostra o operador logado" }
@@ -102,6 +104,52 @@ try {
   $operadores = @(Invoke-RestMethod "$base/api/operadores" -WebSession $janela -TimeoutSec 10)
   if ($operadores.Count -ne 1 -or $operadores[0].perfil -ne 'gerente') { throw "lista de operadores inesperada: $($operadores | ConvertTo-Json -Compress)" }
   Write-Host 'OK: sair, senha errada recusada (401), login com a senha certa e lista de operadores'
+
+  # Cadastros, caixa e venda dentro do programa empacotado. Os dados são de teste (fictícios) e
+  # ficam na pasta temporária. Os valores esperados foram calculados à mão:
+  #   10 picolés na faixa "a partir de 10" = 10 x 4,50 = 45,00
+  #   Pix de 20,00 com 5% de desconto quita 20,00 / 0,95 = 21,05; falta 23,95
+  #   dinheiro 30,00 para 23,95: troco 6,05; total pago = 45,00 - 1,05 = 43,95
+  #   dinheiro esperado na gaveta = fundo 100,00 + 23,95 = 123,95
+  function Pedir([string]$Metodo, [string]$Caminho, $Corpo = $null) {
+    $pedido = @{ Uri = "$base$Caminho"; Method = $Metodo; WebSession = $janela; TimeoutSec = 20 }
+    if ($null -ne $Corpo) {
+      $pedido.Body = [Text.Encoding]::UTF8.GetBytes(($Corpo | ConvertTo-Json -Compress -Depth 6))
+      $pedido.ContentType = 'application/json; charset=utf-8'
+    }
+    return Invoke-RestMethod @pedido
+  }
+  function Lista($Resposta) { return , @($Resposta | ForEach-Object { $_ }) }
+  function Conferir([string]$Nome, $Obtido, $Esperado) {
+    if ("$Obtido" -ne "$Esperado") { throw "${Nome}: esperado '$Esperado', veio '$Obtido'" }
+    Write-Host "OK: ${Nome} = $Obtido"
+  }
+  $tabelas = Lista (Pedir GET '/api/tabelas-preco')
+  $varejo = $tabelas | Where-Object { $_.padrao }
+  Conferir 'tabela padrão criada com o banco' $varejo.nome 'VAREJO'
+  Conferir 'tabelas de preço criadas com o banco' (($tabelas | ForEach-Object { $_.nome }) -join ',') 'VAREJO,ATACADO'
+  $null = Pedir PUT '/api/formas-pagamento/pix' @{ ajuste_bp = -500; ativo = $true }
+  $faixas = @(@{ tabela_id = $varejo.id; qtd_min = '1'; preco_centavos = 500 }, @{ tabela_id = $varejo.id; qtd_min = '10'; preco_centavos = 450 })
+  $produto = Pedir POST '/api/produtos' @{ descricao = 'Picolé de teste'; ean = '7890000000017'; precos = $faixas }
+  Conferir 'código automático do produto' $produto.codigo '1'
+  Conferir 'pesquisa sem acento ("picole" acha o produto)' (Lista (Pedir GET '/api/produtos?busca=picole')).Count 1
+  $null = Pedir POST '/api/caixa/abrir' @{ fundo_troco_centavos = 10000 }
+  $venda = (Pedir POST '/api/venda/itens' @{ codigo = '7890000000017'; quantidade = 10 }).venda
+  Conferir 'preço por quantidade (10 x 4,50), em centavos' $venda.subtotal_centavos 4500
+  $venda = (Pedir POST '/api/venda/pagamentos' @{ forma = 'pix'; valor_centavos = 2000 }).venda
+  Conferir 'falta depois do Pix de 20,00 com 5% de desconto, em centavos' $venda.restante_centavos 2395
+  $venda = (Pedir POST '/api/venda/pagamentos' @{ forma = 'dinheiro'; valor_centavos = 3000 }).venda
+  Conferir 'troco do dinheiro, em centavos' $venda.troco_centavos 605
+  $recusa = Codigo-Recusado { Pedir POST '/api/venda/finalizar' @{ emitir_nfce = $true } }
+  if ($recusa -ne 409) { throw "finalizar com NFC-e sem a parte fiscal configurada deveria responder 409 (respondeu $recusa)" }
+  Write-Host 'OK: finalizar com NFC-e é recusado enquanto a parte fiscal não está configurada (409)'
+  $venda = (Pedir POST '/api/venda/finalizar' @{ emitir_nfce = $false }).venda
+  Conferir 'situação da venda' $venda.status 'finalizada'
+  Conferir 'total da venda (45,00 - 1,05 do Pix), em centavos' $venda.total_centavos 4395
+  $resumo = Pedir GET '/api/vendas/resumo-hoje'
+  Conferir 'saldo de vendas do dia' "$($resumo.quantidade) venda, $($resumo.total_centavos) centavos" '1 venda, 4395 centavos'
+  $fechado = Pedir POST '/api/caixa/fechar' @{ contado = @{ dinheiro = 12395; pix = 2000; debito = 0; credito = 0 } }
+  Conferir 'diferenças no fechamento (dinheiro, Pix, débito, crédito)' (($fechado.formas | ForEach-Object { $_.diferenca_centavos }) -join ',') '0,0,0,0'
 
   # Recuperação de acesso (senha esquecida): o programa sorteia uma senha provisória e mostra numa
   # caixa de mensagem. Confere que a caixa aparece e que a senha antiga deixa de valer.
