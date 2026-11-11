@@ -46,6 +46,7 @@ def test_item_por_codigo_e_por_codigo_de_barras_com_faixa_por_quantidade(cliente
         "nfce_disponivel": False,
         "nfce_motivo": cliente.get("/api/status").json()["fiscal"]["motivo"],
         "aviso": None,
+        "depois": None,  # o que a impressora fez: só vem na resposta da finalização
     }
     venda = _item(cliente, codigo="7890000000017", quantidade=4).json()["venda"]  # pelo leitor
     assert (venda["numero"], venda["status"], venda["tabela"]) == (1, "aberta", "VAREJO")

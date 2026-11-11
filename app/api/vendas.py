@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app import acesso, db, dinheiro, documentos, tempo, vendas
+from app import acesso, db, dinheiro, documentos, impressao, tempo, vendas
 from app import caixa as regras_do_caixa
 from app.fiscal import provedor_configurado
 from app.models import Cliente, FormaPagamento, Operador, Produto, StatusVenda, Venda
@@ -84,12 +84,22 @@ class VendaOut(BaseModel):
     motivo_cancelamento: str | None
 
 
+class DepoisDaVendaOut(BaseModel):
+    """O que a impressora de cupom fez logo depois da venda finalizada."""
+
+    impressora: str  # vazio = nenhuma escolhida em Configurações
+    quando: str  # perguntar, sempre ou nunca
+    enviado: bool  # o comprovante foi para a fila sozinho
+    erro: str  # por que o comprovante (ou a gaveta) falhou; vazio = nada falhou
+
+
 class EstadoOut(BaseModel):
     caixa_aberto: bool
     venda: VendaOut | None
     nfce_disponivel: bool
     nfce_motivo: str
     aviso: str | None = None  # recado para o operador (ex.: os preços mudaram com o cliente)
+    depois: DepoisDaVendaOut | None = None  # só na resposta da finalização
 
 
 class ItemIn(BaseModel):
@@ -402,7 +412,16 @@ def finalizar(
             status=409,
         )
     vendas.finalizar(sessao, venda, operador, quer_nfce=dados.emitir_nfce)
-    return _responder(sessao, venda)
+    estado = _responder(sessao, venda)
+    # A venda já está gravada: a impressora não pode desfazer nem travar a finalização.
+    depois = impressao.depois_da_venda(sessao, venda)
+    estado.depois = DepoisDaVendaOut(
+        impressora=depois.impressora,
+        quando=depois.quando,
+        enviado=depois.enviado,
+        erro=depois.erro,
+    )
+    return estado
 
 
 @router.post("/venda/cancelar", response_model=EstadoOut)

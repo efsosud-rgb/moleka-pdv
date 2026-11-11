@@ -6,14 +6,14 @@ no tooltip. Nada aqui é estimado: ou o backend verificou, ou diz que não verif
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app import config, db, tempo
+from app import backup, config, configuracoes, db, impressoras, tempo
 from app.fiscal import provedor_configurado
 from app.models import Configuracao, SessaoCaixa
 from app.tempo import FUSO
@@ -38,7 +38,7 @@ class Status(BaseModel):
     fiscal: Indicador
     certificado: Indicador
     impressora_cupom: Indicador
-    impressora_a4: Indicador
+    backup: Indicador
     caixa: Indicador
 
 
@@ -47,14 +47,72 @@ def _config(sessao: Session, chave: str) -> str | None:
     return item.valor if item and item.valor else None
 
 
+def _impressora_de_cupom(sessao: Session) -> Indicador:
+    """Só fica "ok" depois que o gerente confirma que o teste saiu no papel."""
+    opcoes = configuracoes.ler_impressao(sessao)
+    if not opcoes.impressora:
+        return Indicador(ok=False, texto="", motivo="nenhuma impressora de cupom escolhida")
+    pode, motivo = impressoras.disponivel()
+    if not pode:
+        return Indicador(ok=False, texto="", motivo=motivo, estado="indisponível")
+    if not opcoes.confirmada:
+        return Indicador(
+            ok=False,
+            texto="",
+            estado="não testada",
+            motivo=f"{opcoes.impressora}: escolhida, mas o teste de impressão ainda não foi "
+            "confirmado em Configurações",
+        )
+    return Indicador(ok=True, texto=opcoes.impressora, motivo="teste confirmado pelo gerente")
+
+
+def _copia_de_seguranca(sessao: Session) -> Indicador:
+    """A cópia de hoje existe? E a da pasta extra (pendrive ou nuvem), quando há uma?"""
+    ultima = backup.ultima()
+    if ultima is None:
+        return Indicador(
+            ok=False, texto="", estado="nunca feita", motivo="ainda não há cópia de segurança"
+        )
+    hoje = tempo.hoje()
+    hora = f"{ultima.feita_em:%H:%M}"
+    if ultima.dia == hoje:
+        quando = f"hoje {hora}"
+    elif ultima.dia == hoje - timedelta(days=1):
+        quando = f"ontem {hora}"
+    else:
+        quando = f"{ultima.dia:%d/%m/%Y}"
+    if ultima.dia != hoje:
+        return Indicador(
+            ok=False,
+            texto="",
+            estado=f"atrasada ({quando})",
+            motivo=f"a última cópia de segurança é de {ultima.dia:%d/%m/%Y}",
+        )
+    opcoes = configuracoes.ler_backup(sessao)
+    erro = configuracoes.ler_valor(sessao, "backup.extra_erro")
+    if opcoes.pasta_extra and erro:
+        return Indicador(
+            ok=False,
+            texto="",
+            estado=f"{quando}, sem a pasta extra",
+            motivo=f"a cópia deste computador foi feita, mas a da pasta extra falhou: {erro}",
+        )
+    if not opcoes.pasta_extra:
+        motivo = (
+            "cópia só neste computador: escolha uma pasta extra (pendrive ou nuvem) em "
+            "Configurações para não perder os dados se o disco estragar"
+        )
+    else:
+        motivo = f"também copiada para {opcoes.pasta_extra}"
+    return Indicador(ok=True, texto=quando, motivo=motivo)
+
+
 @router.get("/status", response_model=Status)
 def status(sessao: Session = Depends(db.sessao)) -> Status:
     ok_banco, motivo_banco = db.banco_ok()
     fiscal = provedor_configurado().status()
 
     certificado_caminho = _config(sessao, "fiscal.certificado_caminho")
-    impressora_cupom = _config(sessao, "impressao.cupom")
-    impressora_a4 = _config(sessao, "impressao.a4")
 
     aberta = sessao.scalar(
         select(SessaoCaixa).where(SessaoCaixa.fechado_em.is_(None)).order_by(SessaoCaixa.id.desc())
@@ -81,20 +139,8 @@ def status(sessao: Session = Depends(db.sessao)) -> Status:
             if not certificado_caminho
             else certificado_caminho,
         ),
-        impressora_cupom=Indicador(
-            ok=impressora_cupom is not None,
-            texto=impressora_cupom or "",
-            motivo="nenhuma impressora de cupom configurada"
-            if not impressora_cupom
-            else "configurada (não testada)",
-        ),
-        impressora_a4=Indicador(
-            ok=impressora_a4 is not None,
-            texto=impressora_a4 or "",
-            motivo="nenhuma impressora A4 configurada"
-            if not impressora_a4
-            else "configurada (não testada)",
-        ),
+        impressora_cupom=_impressora_de_cupom(sessao),
+        backup=_copia_de_seguranca(sessao),
         caixa=Indicador(
             ok=aberta is not None,
             texto=(

@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app import acesso, db, tempo
+from app import acesso, backup, db, tempo
 from app import caixa as regras
 from app.models import FormaPagamento, Operador, SessaoCaixa, TipoMovimentoCaixa
 
@@ -157,7 +157,11 @@ def fechar(
 ) -> SessaoOut:
     fechada = regras.fechar(sessao, operador, dados.contado, dados.observacao)
     sessao.refresh(fechada)
-    return sessao_out(sessao, fechada)
+    resposta = sessao_out(sessao, fechada)
+    # O dia de vendas acabou de ser fechado: é a melhor hora para a cópia de segurança. Se ela
+    # falhar, o fechamento continua valendo (o erro vai para o log e aparece no rodapé).
+    backup.tentar(sessao, "fechamento do caixa")
+    return resposta
 
 
 @router.get("/caixa/historico", response_model=list[SessaoOut])

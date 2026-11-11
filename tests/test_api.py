@@ -4,7 +4,7 @@ def test_status_sem_nada_configurado_e_honesto(cliente):
     s = r.json()
     assert s["app"] == "Moleka PDV"
     assert s["banco"]["ok"] is True
-    for chave in ("fiscal", "certificado", "impressora_cupom", "impressora_a4", "caixa"):
+    for chave in ("fiscal", "certificado", "impressora_cupom", "backup", "caixa"):
         assert s[chave]["ok"] is False, chave
         assert s[chave]["motivo"], f"{chave} precisa dizer o motivo"
     assert "não configurado" in s["fiscal"]["motivo"]

@@ -151,3 +151,12 @@ def vender(cliente):
         return final.json()["venda"]
 
     return _vender
+
+
+@pytest.fixture()
+def impressora_de_teste(tmp_path, monkeypatch):
+    """Uma impressora de mentira: cada impressão vira um arquivo nesta pasta (ver
+    app/impressoras.py). Devolve a pasta."""
+    pasta = tmp_path / "impressora-de-teste"
+    monkeypatch.setenv("MOLEKA_PDV_IMPRESSORA_EM_ARQUIVO", str(pasta))
+    return pasta

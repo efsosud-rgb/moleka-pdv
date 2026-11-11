@@ -70,4 +70,12 @@ files = [
     "app/api/estoque.py",
     "app/api/compras.py",
     "app/api/financeiro.py",
+    "app/configuracoes.py",
+    "app/cupom.py",
+    "app/escpos.py",
+    "app/impressoras.py",
+    "app/impressao.py",
+    "app/backup.py",
+    "app/api/configuracoes.py",
+    "app/api/impressao.py",
 ]
