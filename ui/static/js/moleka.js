@@ -207,7 +207,9 @@
     torrada.textContent = texto;
     torrada.classList.add("visivel");
     clearTimeout(torradaRelogio);
-    torradaRelogio = setTimeout(function () { torrada.classList.remove("visivel"); }, 3200);
+    // Texto longo fica mais tempo na tela (cerca de 60 ms por letra, no mínimo 3,2 s).
+    const tempo = Math.min(9000, Math.max(3200, String(texto).length * 60));
+    torradaRelogio = setTimeout(function () { torrada.classList.remove("visivel"); }, tempo);
   };
 
   // ------------------------------------------------------------------ pedidos à API

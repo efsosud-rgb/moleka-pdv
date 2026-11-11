@@ -15,6 +15,7 @@
   const verInativos = document.getElementById("ver-inativos");
   const soNaEdicao = form.querySelector("[data-so-na-edicao]");
 
+  const LIMITE = 500; // o máximo que a API devolve de uma vez
   let clientes = [];
   let editando = null;
   let relogioDaBusca = 0;
@@ -25,7 +26,9 @@
   }
 
   function desenhar() {
-    contagem.textContent = clientes.length + (clientes.length === 1 ? " cliente" : " clientes");
+    contagem.textContent = clientes.length >= LIMITE
+      ? "os primeiros " + LIMITE + " (use a pesquisa para achar os outros)"
+      : clientes.length + (clientes.length === 1 ? " cliente" : " clientes");
     if (!clientes.length) {
       linhaUnica(busca.value.trim() ? "Nenhum cliente encontrado para essa pesquisa." : "Nenhum cliente cadastrado. Preencha a ficha ao lado e salve.");
       return;
@@ -41,7 +44,7 @@
   }
 
   async function carregar() {
-    const filtros = new URLSearchParams();
+    const filtros = new URLSearchParams({ limite: String(LIMITE) });
     if (busca.value.trim()) filtros.set("busca", busca.value.trim());
     if (verInativos && verInativos.checked) filtros.set("inativos", "true");
     const r = await M.api("GET", "/api/clientes?" + filtros.toString());

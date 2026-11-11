@@ -16,6 +16,7 @@
   const verInativos = document.getElementById("ver-inativos");
   const soNaEdicao = form.querySelector("[data-so-na-edicao]");
 
+  const LIMITE = 500; // o máximo que a API devolve de uma vez
   let produtos = [];
   let tabelas = [];
   let editando = null;
@@ -37,7 +38,9 @@
   }
 
   function desenhar() {
-    contagem.textContent = produtos.length + (produtos.length === 1 ? " produto" : " produtos");
+    contagem.textContent = produtos.length >= LIMITE
+      ? "os primeiros " + LIMITE + " (use a pesquisa para achar os outros)"
+      : produtos.length + (produtos.length === 1 ? " produto" : " produtos");
     if (!produtos.length) {
       linhaUnica(busca.value.trim() ? "Nenhum produto encontrado para essa pesquisa." : "Nenhum produto cadastrado. Preencha a ficha ao lado e salve.");
       return;
@@ -54,7 +57,7 @@
   }
 
   async function carregar() {
-    const filtros = new URLSearchParams();
+    const filtros = new URLSearchParams({ limite: String(LIMITE) });
     if (busca.value.trim()) filtros.set("busca", busca.value.trim());
     if (verInativos.checked) filtros.set("inativos", "true");
     const r = await M.api("GET", "/api/produtos?" + filtros.toString());
