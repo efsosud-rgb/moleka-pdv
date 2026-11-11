@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from app import acesso, config
 from app.api.cadastros import router as cadastros_router
 from app.api.caixa import router as caixa_router
+from app.api.compras import router as compras_router
 from app.api.estoque import router as estoque_router
 from app.api.financeiro import router as financeiro_router
 from app.api.login import router as login_router
@@ -66,8 +67,9 @@ def criar_app() -> FastAPI:
     app.include_router(cadastros_router, prefix="/api", dependencies=so_logado)
     app.include_router(caixa_router, prefix="/api", dependencies=so_logado)
     app.include_router(vendas_router, prefix="/api", dependencies=so_logado)
-    # Estoque e financeiro: só o gerente (a exigência está em cada módulo).
+    # Estoque, entrada de nota e financeiro: só o gerente (a exigência está em cada módulo).
     app.include_router(estoque_router, prefix="/api")
+    app.include_router(compras_router, prefix="/api")
     app.include_router(financeiro_router, prefix="/api")
     app.include_router(paginas_router)
 
