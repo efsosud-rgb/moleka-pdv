@@ -3,164 +3,242 @@
 <head>
 <meta charset="utf-8">
 <title>Moleka PDV — Início e módulos</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@700;800;900&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Nunito:wght@700;800;900&amp;display=swap">
 <style>
-body{margin:0;background:#EDE7DC;font-family:Inter,system-ui,sans-serif;color:#2B2320}
-a{color:#8C3212}a:hover{color:#5E200A}
-.menubar button{font:inherit;font-size:14px;font-weight:600;color:#3B3129;background:transparent;border:0;border-radius:8px;padding:8px 12px;cursor:pointer}
-.menubar button:hover{background:#E4DCCD}
-.btn3d{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:15px;line-height:1;padding:12px 18px;min-height:46px;border:1px solid #9C8F7B;border-radius:12px;cursor:pointer;color:#2B2320;background:linear-gradient(#FFFFFF 0%,#F2ECE1 55%,#E3DACB 100%);box-shadow:inset 0 1px 0 #FFFFFF,inset 0 -1px 0 rgba(0,0,0,.06),0 4px 0 #B3A693,0 8px 14px rgba(60,40,10,.22);transition:transform .08s ease,box-shadow .08s ease,filter .15s ease;text-decoration:none}
-.btn3d:hover{filter:brightness(1.04)}
-.btn3d:active{transform:translateY(4px);box-shadow:inset 0 1px 0 #FFFFFF,0 0 0 #B3A693,0 2px 4px rgba(60,40,10,.25)}
-.btn3d:focus-visible{outline:3px solid #2B6CB0;outline-offset:2px}
-.btn3d.green{color:#FFFFFF;border-color:#136435;background:linear-gradient(#4CCB7B 0%,#23A151 55%,#1B7F41 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(0,0,0,.1),0 4px 0 #0F5A2C,0 8px 14px rgba(20,60,30,.3)}
-.btn3d.green:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 0 0 #0F5A2C,0 2px 4px rgba(20,60,30,.3)}
-.card3d{background:#FBF8F2;border:1px solid #D9CFBE;border-radius:18px;box-shadow:inset 0 1px 0 #FFFFFF,0 6px 0 #D3C8B5,0 14px 24px rgba(60,40,10,.16)}
-.chip{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#4C4138;background:#FFF7EA;border:1px solid #E3B06A;border-radius:999px;padding:6px 12px;box-shadow:inset 0 1px 0 #FFFFFF,0 2px 0 #D89A4A}
-.dot{width:9px;height:9px;border-radius:50%;background:#B3A693;border:1px solid #8A7E6E}
-.header{background:linear-gradient(#FFC775 0%,#FFB759 55%,#F8A23F 100%);box-shadow:inset 0 -3px 0 rgba(0,0,0,.08),0 4px 10px rgba(60,40,10,.2)}
-.oval3d{display:block;width:168px;height:auto;filter:drop-shadow(0 2px 0 #C9B600) drop-shadow(0 4px 0 #A89700) drop-shadow(0 10px 8px rgba(60,20,0,.4));transform:perspective(600px) rotateX(10deg) rotateY(-8deg);transition:transform .45s ease}
-.oval-wrap{position:relative;margin-top:10px}
-.oval-wrap:hover .oval3d{transform:perspective(600px) rotateX(0deg) rotateY(0deg) scale(1.05)}
-.anim .oval-wrap{animation:glow 3.6s ease-in-out infinite}
-@keyframes glow{0%,58%,100%{filter:none}72%{filter:drop-shadow(0 0 14px #FFF27A) brightness(1.08)}}
-.mascote-wrap{position:relative;width:66px;height:110px}
-.lean{transform-origin:50% 100%}
-.mascote{display:block;height:110px;width:auto;filter:drop-shadow(0 6px 5px rgba(60,20,0,.35));transform-origin:50% 100%}
-.anim .mascote{animation:sway 4s ease-in-out infinite}
-.anim .lean{animation:point 3.6s ease-in-out infinite}
-@keyframes sway{0%,100%{transform:rotate(-1.5deg) translateY(0)}50%{transform:rotate(2deg) translateY(-3px)}}
-@keyframes point{0%,55%,100%{transform:translateX(0) rotate(0deg)}68%{transform:translateX(-7px) rotate(-5deg)}80%{transform:translateX(-3px) rotate(-3deg)}}
-.heart{position:absolute;left:-2px;top:38px;width:16px;height:16px;opacity:0;pointer-events:none}
-.anim .heart{animation:kiss 3.6s ease-out infinite}
-.anim .heart.h2{animation-delay:1.2s;left:2px;top:42px;width:12px;height:12px}
-.anim .heart.h3{animation-delay:2.4s;left:-6px;top:36px;width:11px;height:11px}
-@keyframes kiss{0%{opacity:0;transform:translate(0,0) scale(.3)}12%{opacity:1;transform:translate(-6px,-6px) scale(1)}100%{opacity:0;transform:translate(-56px,-40px) scale(1.2) rotate(-12deg)}}
-.nav button{display:flex;gap:10px;align-items:center;width:100%;box-sizing:border-box;padding:11px 12px;border:0;background:transparent;border-radius:10px;font:inherit;font-size:14px;font-weight:600;color:#3B3129;cursor:pointer;text-align:left}
-.nav button:hover{background:#E8E0D2}
-.nav button.active{background:linear-gradient(#FFE08A,#FFB759);box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #C98A2A;color:#2B2320}
-.nav svg{flex:0 0 auto}
-.tile{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:18px;min-height:136px;box-sizing:border-box;text-align:left;border-radius:16px;border:1px solid #CFC4B2;background:linear-gradient(#FFFFFF 0%,#F4EEE3 60%,#E8E0D2 100%);box-shadow:inset 0 1px 0 #FFFFFF,0 6px 0 #C9BEAB,0 12px 18px rgba(60,40,10,.18);cursor:pointer;font:inherit;color:#2B2320;transition:transform .12s ease,box-shadow .12s ease}
-.tile:hover{transform:translateY(-3px);box-shadow:inset 0 1px 0 #FFFFFF,0 9px 0 #C9BEAB,0 18px 24px rgba(60,40,10,.22)}
-.tile:active{transform:translateY(4px);box-shadow:inset 0 1px 0 #FFFFFF,0 2px 0 #C9BEAB,0 4px 6px rgba(60,40,10,.2)}
-.tile:focus-visible{outline:3px solid #2B6CB0;outline-offset:2px}
-.tile .t{font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:16px;line-height:1.15}
-.tile .d{font-size:12.5px;color:#5C5147;line-height:1.35}
-.ico{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#FFFFFF;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -2px 0 rgba(0,0,0,.18),0 3px 0 rgba(0,0,0,.25)}
-.ico.green{background:linear-gradient(#4CCB7B,#1B7F41)}
-.ico.orange{background:linear-gradient(#FFC775,#E8891F)}
-.ico.red{background:linear-gradient(#F05A5F,#C0262C)}
-.ico.wine{background:linear-gradient(#8A4A55,#51222B)}
-.ico.yellow{background:linear-gradient(#FFF27A,#E0CF00);color:#2B2320}
-.kv{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px dashed #D9CFBE}
-.kv .k{font-size:13px;color:#5C5147}
-.kv .v{font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:18px;color:#2B2320}
+/* Cores da logomarca: vermelho #E43030 (letras), amarelo #FCF00C (oval), vinho #542424 (contorno), verde #249C48 (macacão). */
+*{box-sizing:border-box}
+body{margin:0;background:#FFF9E3;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#2A1A18;font-size:14px}
+a{color:#9E1A20}a:hover{color:#542424}
+button,input,select{font:inherit}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{font-family:Nunito,Inter,sans-serif}
+.ic{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-.proto-nav{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:99;display:flex;flex-direction:column;gap:4px;align-items:center;padding:6px 3px;border-radius:12px 0 0 12px;background:rgba(43,35,32,.9);box-shadow:0 6px 18px rgba(0,0,0,.35);font:800 11px/1 Inter,system-ui,sans-serif}
-.proto-nav a{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#4A3E38;color:#FFF27A;text-decoration:none}
-.proto-nav a:hover{background:#FFB759;color:#2B2320}
-.proto-nav a.atual{background:#FFB759;color:#2B2320}
+/* barra de menus */
+.menubar{display:flex;align-items:center;flex-wrap:wrap;gap:2px;padding:3px 10px;background:linear-gradient(#7A181C,#5C1216);border-bottom:1px solid #3A0B0D}
+.menubar button{font-size:13px;font-weight:600;color:#FFF1DA;background:transparent;border:0;border-radius:6px;padding:6px 11px;cursor:pointer}
+.menubar button:hover,.menubar button:focus-visible{background:#FCF00C;color:#542424;outline:none}
+.menubar .direita{margin-left:auto;padding-right:4px;font-size:12px;color:#F6CDB0}
+
+/* faixa do topo: a parede vermelha da loja, com o escorrido das geladeiras */
+.topo{position:relative;z-index:2;display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;padding:8px 24px 10px;background:linear-gradient(#EC3C3C,#DC2B2D 50%,#C8202A)}
+.topo .titulo h1{font-weight:900;font-size:30px;line-height:1.05;color:#FFFFFF;text-shadow:0 2px 0 #9E1A20,0 5px 10px rgba(60,0,0,.35)}
+.topo .titulo p{margin-top:5px;font-size:13px;font-weight:600;color:#FFFFFF}
+.topo .chips{margin-left:auto;display:flex;flex-wrap:wrap;gap:10px}
+.pingos{position:absolute;left:0;bottom:-15px;width:100%;height:16px;pointer-events:none}
+
+/* logo com relevo 3D e brilho; mascote que balança, aponta e manda beijos */
+.marca{display:flex;align-items:flex-end}
+.oval-wrap{position:relative;perspective:700px;margin-bottom:8px}
+.oval{display:block;width:160px;height:auto;transform:rotateX(10deg) rotateY(-10deg);filter:drop-shadow(0 2px 0 #E8C300) drop-shadow(0 2px 0 #B8960A) drop-shadow(0 9px 8px rgba(60,0,0,.45));transition:transform .45s ease}
+.oval-wrap:hover .oval{transform:rotateX(0deg) rotateY(0deg) scale(1.05)}
+.brilho{position:absolute;left:3%;right:4%;top:5%;bottom:9%;border-radius:50%;overflow:hidden;pointer-events:none;transform:rotateX(10deg) rotateY(-10deg);transition:transform .45s ease}
+.oval-wrap:hover .brilho{transform:rotateX(0deg) rotateY(0deg) scale(1.05)}
+.brilho::before{content:"";position:absolute;top:-30%;bottom:-30%;left:-45%;width:28%;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.7),rgba(255,255,255,0));transform:skewX(-18deg)}
+.anim .brilho::before{animation:brilho 6s ease-in-out infinite}
+@keyframes brilho{0%,58%{left:-45%}80%,100%{left:125%}}
+.mascote-wrap{position:relative;width:62px;height:100px;margin-left:-4px}
+.inclina{position:absolute;left:0;top:0;right:0;bottom:0;transform-origin:50% 100%}
+.mascote{position:absolute;left:0;bottom:0;height:100%;width:auto;transform-origin:50% 100%;filter:drop-shadow(0 6px 5px rgba(60,0,0,.35))}
+.anim .mascote{animation:balanca 4s ease-in-out infinite}
+.anim .inclina{animation:aponta 6s ease-in-out infinite}
+@keyframes balanca{0%,100%{transform:rotate(-1.5deg) translateY(0)}50%{transform:rotate(2deg) translateY(-3px)}}
+@keyframes aponta{0%,48%,100%{transform:translateX(0) rotate(0deg)}60%{transform:translateX(-7px) rotate(-6deg)}72%{transform:translateX(-3px) rotate(-3deg)}}
+.beijo{position:absolute;left:16px;top:22px;width:15px;height:15px;color:#FFE1E8;opacity:0;pointer-events:none}
+.beijo svg{display:block;width:100%;height:100%;filter:drop-shadow(0 1px 0 #9E1A20)}
+.anim .beijo{animation:beijo 6s ease-out infinite}
+.anim .beijo.b2{animation-delay:.3s}
+.anim .beijo.b3{animation-delay:.6s}
+@keyframes beijo{0%,60%{opacity:0;transform:translate(0,0) scale(.3)}66%{opacity:1}88%{opacity:.95;transform:translate(-62px,-22px) scale(1.15)}100%{opacity:0;transform:translate(-84px,-34px) scale(.9)}}
+@media (prefers-reduced-motion:reduce){.anim .mascote,.anim .inclina,.anim .beijo,.anim .brilho::before{animation:none}}
+
+.chip{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:#542424;background:#FFFFFF;border:1px solid #F4C6C6;border-radius:999px;padding:6px 12px;box-shadow:0 2px 0 #9E1A20,0 5px 9px rgba(60,0,0,.22)}
+.dot{width:9px;height:9px;border-radius:50%;background:#B5A396;box-shadow:inset 0 -1px 0 rgba(0,0,0,.25)}
+.dot.ok{background:#249C48}
+
+/* corpo: menu lateral e conteúdo */
+.corpo{flex:1;display:flex;flex-wrap:wrap;align-items:stretch}
+.lateral{flex:1 1 236px;max-width:236px;display:flex;flex-direction:column;gap:3px;padding:24px 12px 12px;background:#FFFFFF;border-right:1px solid #EADBA8}
+.item{display:flex;align-items:center;gap:12px;width:100%;min-height:40px;padding:7px 11px;border:2px solid transparent;border-radius:10px;background:transparent;color:#542424;font-weight:600;font-size:14px;text-align:left;text-decoration:none;cursor:pointer}
+.item:hover{background:#FFF6CC;color:#542424}
+.item:focus-visible{outline:3px solid #1F6FD1;outline-offset:1px}
+.item .ic{color:#C8202A}
+.item.ativo{font-weight:800;color:#9E1A20;border-color:#E43030;background:linear-gradient(#FFF98F,#FCF00C 55%,#F2DA0A);box-shadow:0 3px 0 #C9A400,0 6px 10px rgba(120,80,0,.22)}
+.item.ativo .ic{color:#9E1A20}
+.lateral .fim{margin-top:auto}
+.conteudo{flex:999 1 560px;min-width:0;padding:28px 26px 18px}
+
+/* barra de status */
+.rodape{display:flex;align-items:center;flex-wrap:wrap;gap:6px 18px;padding:6px 14px;background:#542424;color:#FFE8B0;font-size:12.5px}
+.rodape .dir{margin-left:auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+.status{display:inline-flex;align-items:center;gap:7px}
+.tecla{display:inline-flex;align-items:center;gap:6px;color:#FFE8B0;text-decoration:none}
+a.tecla:hover{color:#FFFFFF}
+kbd{font:800 11.5px Inter,system-ui,sans-serif;color:#542424;background:linear-gradient(#FFF98F,#FCF00C);border:1px solid #C9A400;border-radius:5px;padding:3px 6px;box-shadow:0 2px 0 #9C7F00}
+
+/* botões com relevo */
+.btn3d{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:15px;line-height:1.1;padding:12px 18px;min-height:46px;border:1px solid #CDB77A;border-radius:12px;cursor:pointer;color:#542424;background:linear-gradient(#FFFFFF,#FFF8E6 60%,#F5E7C2);box-shadow:inset 0 1px 0 #FFFFFF,0 4px 0 #CDB77A,0 8px 14px rgba(110,70,0,.18);transition:transform .08s ease,box-shadow .08s ease,filter .15s ease;text-decoration:none;white-space:nowrap}
+.btn3d:hover{filter:brightness(1.03);color:#542424}
+.btn3d:active{transform:translateY(4px);box-shadow:inset 0 1px 0 #FFFFFF,0 0 0 #CDB77A,0 2px 4px rgba(110,70,0,.25)}
+.btn3d:focus-visible{outline:3px solid #1F6FD1;outline-offset:2px}
+.btn3d.verde{color:#FFFFFF;border-color:#11592A;background:linear-gradient(#2BA352,#1B7F39 55%,#166B30);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 4px 0 #0E4D24,0 8px 14px rgba(10,60,25,.3);text-shadow:0 1px 0 rgba(0,0,0,.3)}
+.btn3d.verde:hover{color:#FFFFFF}
+.btn3d.verde:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 #0E4D24,0 2px 4px rgba(10,60,25,.3)}
+.btn3d.xl{font-size:18px;min-height:60px}
+.btn3d.bloco{display:flex;width:100%}
+.btn3d .ic{width:22px;height:22px}
+
+.cartao{background:#FFFFFF;border:1px solid #EADBA8;border-radius:16px;box-shadow:inset 0 1px 0 #FFFFFF,0 5px 0 #EFDFA6,0 14px 24px rgba(120,70,0,.12)}
+
+/* início: módulos e resumo do dia */
+.inicio{display:flex;flex-wrap:wrap;align-items:flex-start;gap:24px}
+.modulos{flex:999 1 520px;min-width:0}
+.cab{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-bottom:14px}
+.cab h2{font-weight:900;font-size:24px;color:#542424}
+.cab span{font-size:13px;color:#5A4237}
+.grade{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.tile{position:relative;display:flex;flex-direction:column;gap:9px;min-height:168px;padding:15px 14px 14px;color:#2A1A18;text-decoration:none;transition:transform .15s ease,box-shadow .15s ease}
+a.tile:hover{transform:translateY(-3px);color:#2A1A18;box-shadow:inset 0 1px 0 #FFFFFF,0 8px 0 #EFDFA6,0 18px 28px rgba(120,70,0,.18)}
+a.tile:active{transform:translateY(3px);box-shadow:inset 0 1px 0 #FFFFFF,0 2px 0 #EFDFA6,0 6px 12px rgba(120,70,0,.16)}
+a.tile:focus-visible{outline:3px solid #1F6FD1;outline-offset:2px}
+.tile .t{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:16.5px;line-height:1.15;color:#542424}
+.tile .d{font-size:12.5px;line-height:1.4;color:#5A4237}
+.tile kbd{position:absolute;right:12px;top:14px}
+.selo{display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:13px}
+.selo .ic{width:24px;height:24px}
+.selo.vermelho{color:#FFFFFF;background:linear-gradient(#EF4848,#D42828);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 3px 0 #8E1A1F}
+.selo.amarelo{color:#9E1A20;border:2px solid #E43030;background:linear-gradient(#FFF98F,#FCF00C 60%,#F2DA0A);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 3px 0 #C9A400}
+.selo.verde{color:#FFFFFF;background:linear-gradient(#2BA352,#1B7F39);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 3px 0 #0E4D24}
+.selo.vinho{color:#FCF00C;background:linear-gradient(#6E2E2E,#542424);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 3px 0 #2E1010}
+.aviso{display:flex;align-items:center;gap:12px;margin-top:18px;padding:12px 16px;font-size:13px;line-height:1.45;color:#5A4237}
+.aviso .ic{width:22px;height:22px;color:#C8202A}
+.aviso b{color:#542424}
+.resumo{flex:1 1 280px;max-width:320px;display:flex;flex-direction:column;gap:10px;padding:20px}
+.resumo h2{font-weight:900;font-size:20px;color:#542424}
+.resumo .data{margin-top:-6px;font-size:12.5px;color:#5A4237}
+.linha-res{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed #E2CF95;font-size:14px;color:#5A4237}
+.linha-res b{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:18px;color:#542424}
+.vazio{font-size:12.5px;line-height:1.45;color:#5A4237}
+@media (max-width:1000px){.grade{grid-template-columns:repeat(2,minmax(0,1fr))}.resumo{max-width:none}}
+
+.proto-nav{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:99;display:flex;flex-direction:column;gap:4px;align-items:center;padding:6px 3px;border-radius:12px 0 0 12px;background:rgba(59,24,24,.92);box-shadow:0 6px 18px rgba(0,0,0,.35);font:800 11px/1 Inter,system-ui,sans-serif}
+.proto-nav a{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#6E2E2E;color:#FCF00C;text-decoration:none}
+.proto-nav a:hover,.proto-nav a.atual{background:#FCF00C;color:#542424}
 </style>
 </head>
 <body>
-<div class="anim" style="min-height:100vh;display:flex;flex-direction:column;background:#EDE7DC">
-  <nav class="menubar" aria-label="Menu principal" style="display:flex;flex-wrap:wrap;gap:2px;padding:4px 10px;background:#F3EDE2;border-bottom:1px solid #D9CFBE">
-    <button type="button">Arquivo</button>
-    <button type="button">Cadastros</button>
-    <button type="button">Caixa</button>
-    <button type="button">Estoque</button>
-    <button type="button">Financeiro</button>
-    <button type="button">Fiscal</button>
-    <button type="button">Relatórios</button>
-    <button type="button">Ajuda</button>
-  </nav>
-  <header class="header" style="display:flex;flex-wrap:wrap;align-items:center;gap:24px;padding:10px 28px 12px;min-height:124px;box-sizing:border-box">
-    <div style="display:flex;align-items:flex-end;gap:14px">
-      <div class="oval-wrap"><img class="oval3d" src="../../assets/brand/logo_oval.png" alt="Moleka Sorvetes"></div>
-      <div class="mascote-wrap">
-        <div class="lean"><img class="mascote" src="../../assets/brand/mascote.png" alt="Mascote da Moleka"></div>
-        <svg class="heart h1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.5-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.5 5.6C19 16.4 12 21 12 21z" fill="#E43238" stroke="#51222B" stroke-width="1.2"></path></svg>
-        <svg class="heart h2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.5-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.5 5.6C19 16.4 12 21 12 21z" fill="#FF6B70" stroke="#51222B" stroke-width="1.2"></path></svg>
-        <svg class="heart h3" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.5-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.5 5.6C19 16.4 12 21 12 21z" fill="#E43238" stroke="#51222B" stroke-width="1.2"></path></svg>
-      </div>
-    </div>
-    <div style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:8px">
-      <div style="font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:26px;line-height:1.1;color:#5A1A1F;text-shadow:0 1px 0 #FFD9A6,0 3px 0 rgba(90,26,31,.18)">Frente de Loja — Caixa 01</div>
-      <div style="font-size:14px;font-weight:600;color:#6B2A2F">sábado, 07/11/2026 · Operador: —</div>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end">
-      <span class="chip"><span class="dot" aria-hidden="true"></span>Caixa: —</span>
-      <span class="chip"><span class="dot" aria-hidden="true"></span>SEFAZ: —</span>
-      <span class="chip"><span class="dot" aria-hidden="true"></span>Cupom (térmica): —</span>
-      <span class="chip"><span class="dot" aria-hidden="true"></span>A4: —</span>
-    </div>
-  </header>
-  <div style="flex:1 1 auto;display:flex;flex-wrap:wrap;align-items:stretch">
-    <aside class="nav" aria-label="Módulos" style="flex:0 1 224px;min-width:0;padding:16px 12px;background:#F3EDE2;border-right:1px solid #D9CFBE;display:flex;flex-direction:column;gap:4px">
-      <button type="button" class="active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path></svg>Início</button>
-      <button type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="18" height="11" rx="2"></rect><path d="M7 9V5h10v4"></path><path d="M8 14h8"></path></svg>Caixa (PDV)</button>
-      <button type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Controle de Caixa</button>
-      <button type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12l-8 8-9-9V4h7z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg>Produtos</button>
-      <button type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="12" width="8" height="8"></rect><rect x="13" y="12" width="8" height="8"></rect><rect x="8" y="4" width="8" height="8"></rect></svg>Estoque</button>
-      <button type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6v18h12V7z"></path><path d="M14 3v4h4"></path><path d="M9 13l-2 2 2 2"></path><path d="M15 13l2 2-2 2"></path></svg>Entrada de NF (XML)</button>
-      <button type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M15.5 14a5 5 0 0 1 6 5"></path></svg>Clientes</button>
-      <button type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h7"></path><circle cx="18" cy="16" r="3"></circle></svg>Tabelas de Preço</button>
-      <button type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M3 10h18"></path><path d="M16 15h2"></path></svg>Financeiro</button>
-      <button type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21z"></path><path d="M9 8h6M9 12h6M9 16h4"></path></svg>Fiscal / NFC-e</button>
-      <div style="flex:1 1 auto"></div>
-      <button type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg>Configurações</button>
-    </aside>
-    <main style="flex:999 1 560px;min-width:0;padding:24px 28px 20px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
-      <section style="flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:14px">
-        <h1 style="margin:0;font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:22px;color:#2B2320">Módulos</h1>
-        <div style="display:grid;grid-template-columns:repeat(5, minmax(0, 1fr));gap:16px">
-          <button class="tile" type="button"><span class="ico green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="18" height="11" rx="2"></rect><path d="M7 9V5h10v4"></path><path d="M8 14h8"></path></svg></span><span class="t">Caixa (PDV)</span><span class="d">Venda rápida e cupom NFC-e</span></button>
-          <button class="tile" type="button"><span class="ico orange"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span><span class="t">Controle de Caixa</span><span class="d">Abertura, sangria, suprimento e fechamento</span></button>
-          <button class="tile" type="button"><span class="ico red"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12l-8 8-9-9V4h7z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg></span><span class="t">Produtos</span><span class="d">Cadastro, NCM/CST e códigos de barras</span></button>
-          <button class="tile" type="button"><span class="ico wine"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="12" width="8" height="8"></rect><rect x="13" y="12" width="8" height="8"></rect><rect x="8" y="4" width="8" height="8"></rect></svg></span><span class="t">Estoque</span><span class="d">Saldos, ajustes e inventário</span></button>
-          <button class="tile" type="button"><span class="ico yellow"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6v18h12V7z"></path><path d="M14 3v4h4"></path><path d="M9 13l-2 2 2 2"></path><path d="M15 13l2 2-2 2"></path></svg></span><span class="t">Entrada de NF (XML)</span><span class="d">Importa compras e atualiza estoque e custo</span></button>
-          <button class="tile" type="button"><span class="ico orange"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M15.5 14a5 5 0 0 1 6 5"></path></svg></span><span class="t">Clientes</span><span class="d">Cadastro, CPF na nota e histórico</span></button>
-          <button class="tile" type="button"><span class="ico green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h7"></path><circle cx="18" cy="16" r="3"></circle></svg></span><span class="t">Tabelas de Preço</span><span class="d">Varejo, atacado e preço por quantidade</span></button>
-          <button class="tile" type="button"><span class="ico wine"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M3 10h18"></path><path d="M16 15h2"></path></svg></span><span class="t">Financeiro</span><span class="d">Despesas, receitas e fluxo de caixa</span></button>
-          <button class="tile" type="button"><span class="ico red"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V4"></path><path d="M4 20h16"></path><path d="M8 16l3-4 3 2 5-6"></path></svg></span><span class="t">DRE e Rentabilidade</span><span class="d">Resultado do período e margem por produto</span></button>
-          <button class="tile" type="button"><span class="ico yellow"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21z"></path><path d="M9 8h6M9 12h6M9 16h4"></path></svg></span><span class="t">Fiscal / NFC-e</span><span class="d">Emissão, contingência e certificado A1</span></button>
-        </div>
-      </section>
-      <aside class="card3d" style="flex:1 1 280px;min-width:0;max-width:340px;padding:20px 22px;display:flex;flex-direction:column;gap:6px">
-        <div style="font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:18px;color:#2B2320">Resumo de hoje</div>
-        <div style="font-size:12px;color:#7D7262;margin-bottom:6px">07/11/2026 · Caixa 01</div>
-        <div class="kv"><span class="k">Vendas (R$)</span><span class="v">—</span></div>
-        <div class="kv"><span class="k">Cupons NFC-e emitidos</span><span class="v">—</span></div>
-        <div class="kv"><span class="k">Ticket médio</span><span class="v">—</span></div>
-        <div class="kv" style="border-bottom:0"><span class="k">Caixa aberto desde</span><span class="v">—</span></div>
-        <div style="font-size:12px;color:#7D7262;line-height:1.4;margin:4px 0 10px">Sem dados: os números aparecem quando o caixa registrar vendas reais.</div>
-        <button class="btn3d green" type="button">Abrir caixa (F11)</button>
-        <button class="btn3d" type="button" style="margin-top:10px">Fechamento do dia</button>
-      </aside>
-    </main>
-  </div>
-  <footer style="display:flex;flex-wrap:wrap;gap:18px;align-items:center;padding:8px 16px;background:#F3EDE2;border-top:1px solid #D9CFBE;font-size:12px;color:#5C5147">
-    <span>Banco local: —</span><span>Backup: —</span><span>Último contato SEFAZ: —</span><span style="margin-left:auto">F1 Ajuda · F2 Caixa · F5 Produtos</span>
-  </footer>
+<div class="anim" style="min-height:100vh;display:flex;flex-direction:column;background:#FFF9E3">
+<div class="menubar">
+<button type="button">Arquivo</button>
+<button type="button">Cadastros</button>
+<button type="button">Caixa</button>
+<button type="button">Estoque</button>
+<button type="button">Financeiro</button>
+<button type="button">Fiscal</button>
+<button type="button">Relatórios</button>
+<button type="button">Ajuda</button>
+<span class="direita">Moleka PDV · versão 0.1 (prévia)</span>
+</div>
+<header class="topo">
+<div class="marca">
+<div class="oval-wrap"><img class="oval" src="../../assets/brand/logo_oval_1016px.png" alt="Moleka Sorvetes"><div class="brilho"></div></div>
+<div class="mascote-wrap">
+<div class="inclina"><img class="mascote" src="../../assets/brand/mascote.png" alt=""></div>
+<span class="beijo b1"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.3 4.3 2.6.7-1.3 2.1-2.6 4.3-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg></span>
+<span class="beijo b2"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.3 4.3 2.6.7-1.3 2.1-2.6 4.3-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg></span>
+<span class="beijo b3"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.3 4.3 2.6.7-1.3 2.1-2.6 4.3-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg></span>
+</div>
+</div>
+<div class="titulo">
+<h1>Frente de Loja</h1>
+<p><span data-auto="hoje"></span> · Operador: —</p>
+</div>
+<div class="chips">
+<span class="chip"><span class="dot"></span>Caixa: —</span>
+<span class="chip"><span class="dot"></span>SEFAZ: —</span>
+<span class="chip"><span class="dot"></span>Cupom: —</span>
+<span class="chip"><span class="dot"></span>A4: —</span>
+</div>
+<svg class="pingos" aria-hidden="true"><defs><pattern id="pingo" width="160" height="20" patternUnits="userSpaceOnUse"><path fill="#C8202A" d="M0 0H160V3H136C130 3 128.5 6 128 9.5C127.4 13.8 123.6 15 121 15C118.4 15 114.6 13.8 114 9.5C113.5 6 112 3 106 3H62C57 3 56 5.5 55.6 8C55.2 10.6 52.6 11.5 51 11.5C49.4 11.5 46.8 10.6 46.4 8C46 5.5 45 3 40 3H0Z"/></pattern></defs><rect width="100%" height="16" fill="url(#pingo)"/></svg>
+</header>
+<div class="corpo">
+<nav class="lateral" aria-label="Módulos">
+<a class="item ativo" href="inicio.html" aria-current="page"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9.5 21v-6h5v6"/></svg>Início</a>
+<a class="item" href="caixa.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V5h10v6"/><path d="M9.5 8h5"/><path d="M7 15h2M11 15h2M15 15h2M8 18h8"/></svg>Caixa (PDV)</a>
+<button class="item" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Controle de Caixa</button>
+<a class="item" href="produtos.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/></svg>Produtos</a>
+<button class="item" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="12" width="8" height="8.5"/><rect x="12.5" y="12" width="8" height="8.5"/><rect x="8" y="3.5" width="8" height="8.5"/></svg>Estoque</button>
+<button class="item" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/><path d="m10 12-2 2.5 2 2.5M14 12l2 2.5-2 2.5"/></svg>Entrada de NF (XML)</button>
+<button class="item" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.8c1.7.8 2.7 2.5 3 5.2"/></svg>Clientes</button>
+<button class="item" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h9M4 18h6"/><circle cx="17.5" cy="16.5" r="3.5"/></svg>Tabelas de Preço</button>
+<a class="item" href="financeiro.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6.5" width="18" height="13.5" rx="2"/><path d="M3 11h18"/><path d="M15.5 15.5h2"/></svg>Financeiro</a>
+<button class="item" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Fiscal / NFC-e</button>
+<button class="item fim" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>Configurações</button>
+</nav>
+<main class="conteudo">
+<div class="inicio">
+<section class="modulos" aria-labelledby="t-mod">
+<div class="cab"><h2 id="t-mod">Módulos</h2><span>Clique no módulo ou use a tecla de atalho</span></div>
+<div class="grade">
+<a class="cartao tile" href="caixa.html"><kbd>F2</kbd><span class="selo vermelho"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V5h10v6"/><path d="M9.5 8h5"/><path d="M7 15h2M11 15h2M15 15h2M8 18h8"/></svg></span><span class="t">Caixa (PDV)</span><span class="d">Venda rápida e cupom NFC-e</span></a>
+<div class="cartao tile"><span class="selo amarelo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="t">Controle de Caixa</span><span class="d">Abertura, sangria, suprimento e fechamento</span></div>
+<a class="cartao tile" href="produtos.html"><kbd>F5</kbd><span class="selo verde"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/></svg></span><span class="t">Produtos</span><span class="d">Cadastro, código de barras e preços</span></a>
+<div class="cartao tile"><span class="selo vinho"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="12" width="8" height="8.5"/><rect x="12.5" y="12" width="8" height="8.5"/><rect x="8" y="3.5" width="8" height="8.5"/></svg></span><span class="t">Estoque</span><span class="d">Saldos, ajustes e inventário</span></div>
+<div class="cartao tile"><span class="selo vermelho"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/><path d="m10 12-2 2.5 2 2.5M14 12l2 2.5-2 2.5"/></svg></span><span class="t">Entrada de NF (XML)</span><span class="d">Importa a compra e atualiza estoque e custo</span></div>
+<div class="cartao tile"><span class="selo amarelo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.8c1.7.8 2.7 2.5 3 5.2"/></svg></span><span class="t">Clientes</span><span class="d">Cadastro, CPF na nota e histórico</span></div>
+<div class="cartao tile"><span class="selo verde"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h9M4 18h6"/><circle cx="17.5" cy="16.5" r="3.5"/></svg></span><span class="t">Tabelas de Preço</span><span class="d">Varejo, atacado e preço por quantidade</span></div>
+<a class="cartao tile" href="financeiro.html"><span class="selo vinho"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6.5" width="18" height="13.5" rx="2"/><path d="M3 11h18"/><path d="M15.5 15.5h2"/></svg></span><span class="t">Financeiro</span><span class="d">Despesas, receitas e fluxo de caixa</span></a>
+<a class="cartao tile" href="financeiro.html"><span class="selo vermelho"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v16h16"/><path d="m7.5 15 4-4 3 3 5-6"/></svg></span><span class="t">DRE e Rentabilidade</span><span class="d">Resultado do período e margem por produto</span></a>
+<div class="cartao tile"><span class="selo amarelo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span><span class="t">Fiscal / NFC-e</span><span class="d">Emissão, contingência e certificado A1</span></div>
+</div>
+<div class="cartao aviso">
+<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg>
+<p><b>Antes da primeira venda:</b> cadastre os operadores, os produtos e o certificado A1 (em Fiscal / NFC-e).</p>
+</div>
+</section>
+<aside class="cartao resumo" aria-labelledby="t-res">
+<h2 id="t-res">Resumo de hoje</h2>
+<p class="data"><span data-auto="hoje"></span></p>
+<div>
+<div class="linha-res"><span>Vendas (R$)</span><b>—</b></div>
+<div class="linha-res"><span>Cupons NFC-e emitidos</span><b>—</b></div>
+<div class="linha-res"><span>Ticket médio</span><b>—</b></div>
+<div class="linha-res"><span>Caixa aberto desde</span><b>—</b></div>
+</div>
+<p class="vazio">Sem dados: os números aparecem quando o caixa registrar vendas reais.</p>
+<a class="btn3d verde xl bloco" href="caixa.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V5h10v6"/><path d="M9.5 8h5"/><path d="M7 15h2M11 15h2M15 15h2M8 18h8"/></svg>Abrir caixa (F11)</a>
+<button class="btn3d bloco" type="button">Fechamento do dia</button>
+</aside>
+</div>
+</main>
+</div>
+<footer class="rodape">
+<span class="status"><span class="dot"></span>Banco local: —</span>
+<span>Backup: —</span>
+<span>Último contato com a SEFAZ: —</span>
+<span class="dir">
+<span class="tecla"><kbd>F1</kbd>Ajuda</span>
+<a class="tecla" href="caixa.html"><kbd>F2</kbd>Caixa</a>
+<a class="tecla" href="produtos.html"><kbd>F5</kbd>Produtos</a>
+</span>
+</footer>
 </div>
 
-<nav class="proto-nav" aria-label="Telas do protótipo" title="Protótipo — clique para trocar de tela"><a href="index.html" class="" title="1 · Abertura / Login">1</a><a href="inicio.html" class="atual" title="2 · Início">2</a><a href="caixa.html" class="" title="3 · Caixa (PDV)">3</a><a href="financeiro.html" class="" title="4 · Financeiro / DRE">4</a></nav>
-
+<nav class="proto-nav" aria-label="Telas do protótipo" title="Protótipo — clique para trocar de tela"><a href="index.html" class="" title="1 · Abertura / Login">1</a><a href="inicio.html" class="atual" title="2 · Início">2</a><a href="caixa.html" class="" title="3 · Caixa (PDV)">3</a><a href="financeiro.html" class="" title="4 · Financeiro / DRE">4</a><a href="produtos.html" class="" title="5 · Produtos">5</a></nav>
 <script>
 (function () {
-  var mapa = { 'Caixa (PDV)': 'caixa.html', 'Financeiro': 'financeiro.html', 'DRE e Rentabilidade': 'financeiro.html' };
-  document.querySelectorAll('.tile').forEach(function (b) {
-    var t = b.querySelector('.t'); if (!t) return; var alvo = mapa[t.textContent.trim()];
-    if (alvo) b.addEventListener('click', function () { location.href = alvo; });
-  });
-  document.querySelectorAll('.nav button').forEach(function (b) {
-    var txt = b.textContent.trim(); var alvo = mapa[txt] || (txt === 'Fiscal / NFC-e' ? null : null);
-    if (txt === 'Caixa (PDV)') alvo = 'caixa.html';
-    if (txt === 'Financeiro') alvo = 'financeiro.html';
-    if (alvo) b.addEventListener('click', function () { location.href = alvo; });
-  });
-  document.addEventListener('keydown', function (e) { if (e.key === 'F2') { e.preventDefault(); location.href = 'caixa.html'; } });
+  var d = new Date();
+  var auto = {
+    hoje: d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }),
+    mesAno: d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+  };
+  document.querySelectorAll('[data-auto]').forEach(function (el) { el.textContent = auto[el.getAttribute('data-auto')] || ''; });
 })();
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'F2') { e.preventDefault(); location.href = 'caixa.html'; }
+  if (e.key === 'F5') { e.preventDefault(); location.href = 'produtos.html'; }
+});
 </script>
 </body>
 </html>

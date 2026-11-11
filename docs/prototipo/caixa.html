@@ -2,157 +2,233 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>Moleka PDV — Caixa, tela de venda</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@700;800;900&amp;display=swap">
+<title>Moleka PDV — Caixa (venda)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Nunito:wght@700;800;900&amp;display=swap">
 <style>
-body{margin:0;background:#EDE7DC;font-family:Inter,system-ui,sans-serif;color:#2B2320}
-a{color:#8C3212}a:hover{color:#5E200A}
-.btn3d{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:15px;line-height:1;padding:12px 18px;min-height:48px;border:1px solid #9C8F7B;border-radius:12px;cursor:pointer;color:#2B2320;background:linear-gradient(#FFFFFF 0%,#F2ECE1 55%,#E3DACB 100%);box-shadow:inset 0 1px 0 #FFFFFF,inset 0 -1px 0 rgba(0,0,0,.06),0 4px 0 #B3A693,0 8px 14px rgba(60,40,10,.22);transition:transform .08s ease,box-shadow .08s ease,filter .15s ease;text-decoration:none}
-.btn3d:hover{filter:brightness(1.04)}
-.btn3d:active{transform:translateY(4px);box-shadow:inset 0 1px 0 #FFFFFF,0 0 0 #B3A693,0 2px 4px rgba(60,40,10,.25)}
-.btn3d:focus-visible{outline:3px solid #2B6CB0;outline-offset:2px}
-.btn3d.green{color:#FFFFFF;border-color:#136435;background:linear-gradient(#4CCB7B 0%,#23A151 55%,#1B7F41 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(0,0,0,.1),0 4px 0 #0F5A2C,0 8px 14px rgba(20,60,30,.3)}
-.btn3d.green:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 0 0 #0F5A2C,0 2px 4px rgba(20,60,30,.3)}
-.btn3d.red{color:#FFFFFF;border-color:#8E1A1F;background:linear-gradient(#F05A5F 0%,#E43238 55%,#C0262C 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 0 #7D1418,0 8px 14px rgba(80,10,10,.3)}
-.btn3d.red:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 0 0 #7D1418,0 2px 4px rgba(80,10,10,.3)}
-.btn3d.orange{border-color:#B9711C;background:linear-gradient(#FFD08E 0%,#FFB759 55%,#F39B2E 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 0 #B86F12,0 8px 14px rgba(120,70,10,.3)}
-.btn3d.orange:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 0 0 #B86F12,0 2px 4px rgba(120,70,10,.3)}
-.field3d{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:16px;color:#2B2320;background:#FFFDF8;border:1px solid #B2A48F;border-radius:10px;padding:13px 14px;min-height:50px;box-shadow:inset 0 3px 6px rgba(60,40,10,.16),inset 0 1px 2px rgba(60,40,10,.2),0 1px 0 #FFFFFF}
-.field3d::placeholder{color:#7D7262}
-.field3d:focus{outline:none;border-color:#E58A1F;box-shadow:inset 0 3px 6px rgba(60,40,10,.16),0 0 0 3px rgba(255,183,89,.6)}
-.label{font-weight:700;font-size:12px;color:#4C4138;letter-spacing:.06em;text-transform:uppercase}
-.card3d{background:#FBF8F2;border:1px solid #D9CFBE;border-radius:18px;box-shadow:inset 0 1px 0 #FFFFFF,0 6px 0 #D3C8B5,0 14px 24px rgba(60,40,10,.16)}
-.chip{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#4C4138;background:#FFF7EA;border:1px solid #E3B06A;border-radius:999px;padding:6px 12px;box-shadow:inset 0 1px 0 #FFFFFF,0 2px 0 #D89A4A}
-.dot{width:9px;height:9px;border-radius:50%;background:#B3A693;border:1px solid #8A7E6E}
-.badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7A1116;background:#FFE1E2;border:1px solid #E43238;border-radius:999px;padding:4px 10px}
-.header{background:linear-gradient(#FFC775 0%,#FFB759 55%,#F8A23F 100%);box-shadow:inset 0 -3px 0 rgba(0,0,0,.08),0 4px 10px rgba(60,40,10,.2)}
-.oval3d{display:block;width:118px;height:auto;filter:drop-shadow(0 2px 0 #C9B600) drop-shadow(0 3px 0 #A89700) drop-shadow(0 8px 6px rgba(60,20,0,.4));transform:perspective(500px) rotateX(10deg) rotateY(-8deg);transition:transform .45s ease}
-.oval-wrap{position:relative;margin-top:8px}
-.oval-wrap:hover .oval3d{transform:perspective(500px) rotateX(0deg) rotateY(0deg) scale(1.05)}
-.anim .oval-wrap{animation:glow 3.6s ease-in-out infinite}
-@keyframes glow{0%,58%,100%{filter:none}72%{filter:drop-shadow(0 0 12px #FFF27A) brightness(1.08)}}
-.mascote-wrap{position:relative;width:44px;height:74px}
-.lean{transform-origin:50% 100%}
-.mascote{display:block;height:74px;width:auto;filter:drop-shadow(0 4px 4px rgba(60,20,0,.35));transform-origin:50% 100%}
-.anim .mascote{animation:sway 4s ease-in-out infinite}
-.anim .lean{animation:point 3.6s ease-in-out infinite}
-@keyframes sway{0%,100%{transform:rotate(-1.5deg) translateY(0)}50%{transform:rotate(2deg) translateY(-2px)}}
-@keyframes point{0%,55%,100%{transform:translateX(0) rotate(0deg)}68%{transform:translateX(-5px) rotate(-5deg)}80%{transform:translateX(-2px) rotate(-3deg)}}
-.heart{position:absolute;left:-2px;top:25px;width:12px;height:12px;opacity:0;pointer-events:none}
-.anim .heart{animation:kiss 3.6s ease-out infinite}
-.anim .heart.h2{animation-delay:1.2s;left:1px;top:28px;width:9px;height:9px}
-@keyframes kiss{0%{opacity:0;transform:translate(0,0) scale(.3)}12%{opacity:1;transform:translate(-4px,-4px) scale(1)}100%{opacity:0;transform:translate(-40px,-28px) scale(1.2) rotate(-12deg)}}
-.grid{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
-.grid th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5C5147;padding:10px 12px;background:#F3EDE2;border-bottom:1px solid #D9CFBE}
-.grid td{padding:12px;border-bottom:1px solid #EAE2D4;vertical-align:middle}
-.grid tr.sel td{background:#FFF6B0}
+/* Cores da logomarca: vermelho #E43030 (letras), amarelo #FCF00C (oval), vinho #542424 (contorno), verde #249C48 (macacão). */
+*{box-sizing:border-box}
+body{margin:0;background:#FFF9E3;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#2A1A18;font-size:14px}
+a{color:#9E1A20}a:hover{color:#542424}
+button,input,select{font:inherit}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{font-family:Nunito,Inter,sans-serif}
+.ic{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .num{text-align:right;font-variant-numeric:tabular-nums}
-.total{background:linear-gradient(#3A2F2A,#2B2320);border-radius:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 8px 0 #1A1512,0 16px 26px rgba(0,0,0,.35);color:#FFF27A;padding:18px 22px}
-.key{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#3B3129;white-space:nowrap}
-.key b{font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:11px;padding:4px 8px;border-radius:6px;background:linear-gradient(#FFFFFF,#E8E0D2);border:1px solid #B3A693;box-shadow:0 2px 0 #B3A693;color:#2B2320}
-.icbtn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid #D9CFBE;background:linear-gradient(#FFFFFF,#F2ECE1);box-shadow:0 2px 0 #D3C8B5;cursor:pointer;color:#8C3212}
 
-.proto-nav{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:99;display:flex;flex-direction:column;gap:4px;align-items:center;padding:6px 3px;border-radius:12px 0 0 12px;background:rgba(43,35,32,.9);box-shadow:0 6px 18px rgba(0,0,0,.35);font:800 11px/1 Inter,system-ui,sans-serif}
-.proto-nav a{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#4A3E38;color:#FFF27A;text-decoration:none}
-.proto-nav a:hover{background:#FFB759;color:#2B2320}
-.proto-nav a.atual{background:#FFB759;color:#2B2320}
+/* faixa do topo (compacta no caixa): a parede vermelha da loja, com o escorrido das geladeiras */
+.topo{position:relative;z-index:2;display:flex;align-items:center;flex-wrap:wrap;gap:6px 18px;padding:6px 22px 8px;background:linear-gradient(#EC3C3C,#DC2B2D 50%,#C8202A)}
+.topo .titulo h1{font-weight:900;font-size:25px;line-height:1.05;color:#FFFFFF;text-shadow:0 2px 0 #9E1A20,0 5px 10px rgba(60,0,0,.35)}
+.topo .titulo p{margin-top:4px;font-size:13px;font-weight:600;color:#FFFFFF}
+.topo .chips{margin-left:auto;display:flex;flex-wrap:wrap;gap:10px}
+.pingos{position:absolute;left:0;bottom:-15px;width:100%;height:16px;pointer-events:none}
+
+/* logo com relevo 3D e brilho; mascote que balança, aponta e manda beijos */
+.marca{display:flex;align-items:flex-end}
+.oval-wrap{position:relative;perspective:700px;margin-bottom:6px}
+.oval{display:block;width:124px;height:auto;transform:rotateX(10deg) rotateY(-10deg);filter:drop-shadow(0 2px 0 #E8C300) drop-shadow(0 2px 0 #B8960A) drop-shadow(0 8px 7px rgba(60,0,0,.45));transition:transform .45s ease}
+.oval-wrap:hover .oval{transform:rotateX(0deg) rotateY(0deg) scale(1.05)}
+.brilho{position:absolute;left:3%;right:4%;top:5%;bottom:9%;border-radius:50%;overflow:hidden;pointer-events:none;transform:rotateX(10deg) rotateY(-10deg);transition:transform .45s ease}
+.oval-wrap:hover .brilho{transform:rotateX(0deg) rotateY(0deg) scale(1.05)}
+.brilho::before{content:"";position:absolute;top:-30%;bottom:-30%;left:-45%;width:28%;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.7),rgba(255,255,255,0));transform:skewX(-18deg)}
+.anim .brilho::before{animation:brilho 6s ease-in-out infinite}
+@keyframes brilho{0%,58%{left:-45%}80%,100%{left:125%}}
+.mascote-wrap{position:relative;width:48px;height:78px;margin-left:-3px}
+.inclina{position:absolute;left:0;top:0;right:0;bottom:0;transform-origin:50% 100%}
+.mascote{position:absolute;left:0;bottom:0;height:100%;width:auto;transform-origin:50% 100%;filter:drop-shadow(0 5px 4px rgba(60,0,0,.35))}
+.anim .mascote{animation:balanca 4s ease-in-out infinite}
+.anim .inclina{animation:aponta 6s ease-in-out infinite}
+@keyframes balanca{0%,100%{transform:rotate(-1.5deg) translateY(0)}50%{transform:rotate(2deg) translateY(-2px)}}
+@keyframes aponta{0%,48%,100%{transform:translateX(0) rotate(0deg)}60%{transform:translateX(-6px) rotate(-6deg)}72%{transform:translateX(-3px) rotate(-3deg)}}
+.beijo{position:absolute;left:12px;top:17px;width:12px;height:12px;color:#FFE1E8;opacity:0;pointer-events:none}
+.beijo svg{display:block;width:100%;height:100%;filter:drop-shadow(0 1px 0 #9E1A20)}
+.anim .beijo{animation:beijo 6s ease-out infinite}
+.anim .beijo.b2{animation-delay:.3s}
+.anim .beijo.b3{animation-delay:.6s}
+@keyframes beijo{0%,60%{opacity:0;transform:translate(0,0) scale(.3)}66%{opacity:1}88%{opacity:.95;transform:translate(-50px,-18px) scale(1.15)}100%{opacity:0;transform:translate(-68px,-28px) scale(.9)}}
+@media (prefers-reduced-motion:reduce){.anim .mascote,.anim .inclina,.anim .beijo,.anim .brilho::before{animation:none}}
+
+.chip{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:#542424;background:#FFFFFF;border:1px solid #F4C6C6;border-radius:999px;padding:6px 12px;box-shadow:0 2px 0 #9E1A20,0 5px 9px rgba(60,0,0,.22)}
+.dot{width:9px;height:9px;border-radius:50%;background:#B5A396;box-shadow:inset 0 -1px 0 rgba(0,0,0,.25)}
+.dot.ok{background:#249C48}
+
+/* barra de teclas */
+.rodape{display:flex;align-items:center;flex-wrap:wrap;gap:6px 16px;padding:6px 14px;background:#542424;color:#FFE8B0;font-size:12.5px}
+.rodape .dir{margin-left:auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+.tecla{display:inline-flex;align-items:center;gap:6px;color:#FFE8B0;text-decoration:none}
+a.tecla:hover{color:#FFFFFF}
+kbd{font:800 11.5px Inter,system-ui,sans-serif;color:#542424;background:linear-gradient(#FFF98F,#FCF00C);border:1px solid #C9A400;border-radius:5px;padding:3px 6px;box-shadow:0 2px 0 #9C7F00}
+
+/* botões com relevo */
+.btn3d{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:15px;line-height:1.1;padding:12px 18px;min-height:46px;border:1px solid #CDB77A;border-radius:12px;cursor:pointer;color:#542424;background:linear-gradient(#FFFFFF,#FFF8E6 60%,#F5E7C2);box-shadow:inset 0 1px 0 #FFFFFF,0 4px 0 #CDB77A,0 8px 14px rgba(110,70,0,.18);transition:transform .08s ease,box-shadow .08s ease,filter .15s ease;text-decoration:none;white-space:nowrap}
+.btn3d:hover{filter:brightness(1.03);color:#542424}
+.btn3d:active{transform:translateY(4px);box-shadow:inset 0 1px 0 #FFFFFF,0 0 0 #CDB77A,0 2px 4px rgba(110,70,0,.25)}
+.btn3d:focus-visible{outline:3px solid #1F6FD1;outline-offset:2px}
+.btn3d.amarelo{color:#9E1A20;border:2px solid #E43030;background:linear-gradient(#FFF98F,#FCF00C 55%,#F2DA0A);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 4px 0 #C9A400,0 8px 14px rgba(120,80,0,.28)}
+.btn3d.amarelo:hover{color:#9E1A20}
+.btn3d.amarelo:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 0 0 #C9A400,0 2px 4px rgba(120,80,0,.3)}
+.btn3d.verde{color:#FFFFFF;border-color:#11592A;background:linear-gradient(#2BA352,#1B7F39 55%,#166B30);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 4px 0 #0E4D24,0 8px 14px rgba(10,60,25,.3);text-shadow:0 1px 0 rgba(0,0,0,.3)}
+.btn3d.verde:hover{color:#FFFFFF}
+.btn3d.verde:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 #0E4D24,0 2px 4px rgba(10,60,25,.3)}
+.btn3d.vermelho{color:#FFFFFF;border-color:#7E1A1E;background:linear-gradient(#E83A3A,#D42828 55%,#B81E22);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 4px 0 #7E1A1E,0 8px 14px rgba(90,10,10,.3);text-shadow:0 1px 0 rgba(0,0,0,.3)}
+.btn3d.vermelho:hover{color:#FFFFFF}
+.btn3d.vermelho:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 0 #7E1A1E,0 2px 4px rgba(90,10,10,.3)}
+.btn3d.lg{font-size:17px;min-height:58px}
+.btn3d.xl{font-size:18px;min-height:62px}
+.btn3d.bloco{display:flex;width:100%}
+.btn3d .ic{width:22px;height:22px}
+
+/* campos com profundidade */
+.rotulo{display:block;font-weight:800;font-size:11.5px;color:#5A4237;letter-spacing:.06em;text-transform:uppercase;margin:0 0 6px}
+.campo{display:block;width:100%;font-size:15px;color:#2A1A18;background:#FFFFFF;border:1px solid #CDB77A;border-radius:10px;padding:11px 13px;min-height:46px;box-shadow:inset 0 3px 6px rgba(110,70,0,.13),inset 0 1px 2px rgba(110,70,0,.18),0 1px 0 #FFFFFF}
+.campo::placeholder{color:#76604F}
+.campo:focus{outline:none;border-color:#E43030;box-shadow:inset 0 3px 6px rgba(110,70,0,.13),0 0 0 2px #E43030,0 0 0 6px rgba(252,240,12,.8)}
+.campo.lg{font-size:19px;min-height:58px;padding:13px 16px}
+.com-icone{position:relative}
+.com-icone .ic{position:absolute;left:16px;top:50%;width:24px;height:24px;transform:translateY(-50%);color:#9E1A20;pointer-events:none}
+.com-icone .campo{padding-left:52px}
+.check{display:flex;align-items:center;gap:10px;font-size:14px;color:#5A4237;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:#1B7F39}
+
+.cartao{background:#FFFFFF;border:1px solid #EADBA8;border-radius:16px;box-shadow:inset 0 1px 0 #FFFFFF,0 5px 0 #EFDFA6,0 14px 24px rgba(120,70,0,.12)}
+.tag{display:inline-flex;align-items:center;font:800 10.5px Inter,system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase;padding:3px 7px;border-radius:6px;white-space:nowrap}
+.tag.atacado{color:#FFFFFF;background:#1B7F39}
+.tag.exemplo{color:#9E1A20;background:#FFF6CC;border:1px dashed #D42828}
+.tag.exemplo.escuro{color:#FCF00C;background:transparent;border-color:#FCF00C}
+
+/* tabela */
+.tabela{width:100%;border-collapse:separate;border-spacing:0;font-size:14.5px}
+.tabela th{font:800 11.5px Inter,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#5A4237;text-align:left;padding:9px 14px;background:#FFF4CC;border-top:1px solid #EADBA8;border-bottom:1px solid #EADBA8;white-space:nowrap}
+.tabela td{padding:11px 14px;border-bottom:1px solid #F3E8C4;color:#2A1A18;vertical-align:middle}
+.tabela th.num,.tabela td.num{text-align:right}
+.tabela tr.sel td{background:#FFF8C7}
+.riscado{margin-right:8px;font-size:12.5px;color:#76604F}
+
+/* caixa: venda */
+.pdv{flex:1;display:flex;flex-wrap:wrap;align-items:stretch;gap:18px 20px;padding:26px 22px 16px}
+.esq{flex:999 1 600px;min-width:0;display:flex;flex-direction:column;gap:14px}
+.lado{flex:1 1 320px;max-width:372px;display:flex;flex-direction:column;gap:12px}
+.busca{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px}
+.itens{flex:1;display:flex;flex-direction:column;min-height:300px;overflow:hidden}
+.itens-topo{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:13px 16px}
+.itens-topo h2{font-weight:900;font-size:17px;color:#542424}
+.itens-topo .cont{margin-left:auto;font-size:13px;color:#5A4237}
+.rolagem{overflow-x:auto}
+.nota{margin-top:auto;padding:12px 16px;font-size:12.5px;line-height:1.45;color:#5A4237;border-top:1px dashed #E2CF95}
+.total{padding:14px 20px 14px;border:1px solid #2A0E0E;border-radius:16px;background:linear-gradient(#5E2626,#3B1818);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 5px 0 #1E0A0A,0 14px 24px rgba(40,0,0,.35);color:#FFE8B0}
+.total .cima{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.total .r{font:700 12px Inter,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase}
+.total .v{margin-top:4px;font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:52px;line-height:1.05;color:#FCF00C;text-shadow:0 0 18px rgba(252,240,12,.35);font-variant-numeric:tabular-nums}
+.total .linhas{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 10px;margin-top:8px;font-size:12.5px}
+.cliente{display:flex;flex-direction:column;gap:10px;padding:14px 16px}
+.cliente .rotulo{margin:0 0 -4px}
+.pagamentos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+
+.proto-nav{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:99;display:flex;flex-direction:column;gap:4px;align-items:center;padding:6px 3px;border-radius:12px 0 0 12px;background:rgba(59,24,24,.92);box-shadow:0 6px 18px rgba(0,0,0,.35);font:800 11px/1 Inter,system-ui,sans-serif}
+.proto-nav a{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#6E2E2E;color:#FCF00C;text-decoration:none}
+.proto-nav a:hover,.proto-nav a.atual{background:#FCF00C;color:#542424}
 </style>
 </head>
 <body>
-<div class="anim" style="min-height:100vh;display:flex;flex-direction:column;background:#EDE7DC">
-  <header class="header" style="display:flex;flex-wrap:wrap;align-items:center;gap:20px;padding:6px 24px 8px;min-height:86px;box-sizing:border-box">
-    <div style="display:flex;align-items:flex-end;gap:10px">
-      <div class="oval-wrap"><img class="oval3d" src="../../assets/brand/logo_oval.png" alt="Moleka Sorvetes"></div>
-      <div class="mascote-wrap">
-        <div class="lean"><img class="mascote" src="../../assets/brand/mascote.png" alt="Mascote da Moleka"></div>
-        <svg class="heart h1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.5-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.5 5.6C19 16.4 12 21 12 21z" fill="#E43238" stroke="#51222B" stroke-width="1.2"></path></svg>
-        <svg class="heart h2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.5-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.5 5.6C19 16.4 12 21 12 21z" fill="#FF6B70" stroke="#51222B" stroke-width="1.2"></path></svg>
-      </div>
-    </div>
-    <div style="flex:1 1 260px;min-width:0;display:flex;flex-direction:column;gap:4px">
-      <div style="font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:24px;line-height:1.1;color:#5A1A1F;text-shadow:0 1px 0 #FFD9A6,0 3px 0 rgba(90,26,31,.18)">Caixa 01 — Venda</div>
-      <div style="font-size:13px;font-weight:600;color:#6B2A2F">sábado, 07/11/2026 · Operador: — · Venda nº —</div>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end">
-      <span class="chip">Tabela: Varejo</span>
-      <span class="chip"><span class="dot" aria-hidden="true"></span>SEFAZ: —</span>
-      <span class="chip"><span class="dot" aria-hidden="true"></span>Impressora cupom: —</span>
-    </div>
-  </header>
-  <main style="flex:1 1 auto;display:flex;flex-wrap:wrap;gap:20px;padding:18px 24px;align-items:stretch">
-    <section style="flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:14px">
-      <form style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end" action="#" method="get">
-        <div style="flex:999 1 320px;min-width:0;display:flex;flex-direction:column;gap:6px">
-          <label class="label" for="busca">Produto (F2) — código de barras ou nome</label>
-          <div style="position:relative">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7D7262" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="position:absolute;left:14px;top:50%;transform:translateY(-50%)"><path d="M4 6v12M8 6v12M11 6v12M15 6v12M18 6v12M21 6v12"></path></svg>
-            <input class="field3d" id="busca" name="busca" type="text" placeholder="Passe o leitor ou digite o nome do produto" style="padding-left:46px;font-size:18px;min-height:56px">
-          </div>
-        </div>
-        <div style="flex:0 1 130px;min-width:0;display:flex;flex-direction:column;gap:6px">
-          <label class="label" for="qtd">Qtd (F3)</label>
-          <input class="field3d num" id="qtd" name="qtd" type="number" value="1" min="1" style="font-size:18px;min-height:56px">
-        </div>
-        <button class="btn3d orange" type="submit" style="min-height:56px">Adicionar (Enter)</button>
-      </form>
-      <div class="card3d" style="flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden">
-        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #D9CFBE">
-          <div style="font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:16px">Itens da venda</div>
-          <span class="badge">Exemplo — itens fictícios</span>
-          <span style="margin-left:auto;font-size:13px;color:#5C5147">3 itens</span>
-        </div>
-        <div style="overflow-x:auto">
-          <table class="grid">
-            <thead>
-              <tr><th style="width:36px">#</th><th style="width:130px">Código</th><th>Descrição</th><th class="num" style="width:70px">Qtd</th><th class="num" style="width:100px">Unit. (R$)</th><th class="num" style="width:110px">Total (R$)</th><th style="width:48px"></th></tr>
-            </thead>
-            <tbody>
-              <tr><td>1</td><td>7891000001</td><td>Sorvete de massa 2 L — Napolitano</td><td class="num">1</td><td class="num">25,00</td><td class="num">25,00</td><td><button class="icbtn" type="button" aria-label="Remover item 1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></td></tr>
-              <tr><td>2</td><td>7891000002</td><td>Picolé de fruta — Manga</td><td class="num">3</td><td class="num">5,00</td><td class="num">15,00</td><td><button class="icbtn" type="button" aria-label="Remover item 2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></td></tr>
-              <tr class="sel"><td>3</td><td>7891000003</td><td>Casquinha simples</td><td class="num">2</td><td class="num">7,00</td><td class="num">14,00</td><td><button class="icbtn" type="button" aria-label="Remover item 3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div style="flex:1 1 auto;min-height:60px;display:flex;align-items:flex-end;padding:12px 16px;font-size:12px;color:#7D7262">Preço por quantidade: ao atingir a faixa de atacado cadastrada, o unitário muda sozinho e a linha fica marcada.</div>
-      </div>
-    </section>
-    <aside style="flex:1 1 340px;min-width:0;max-width:420px;display:flex;flex-direction:column;gap:14px">
-      <div class="total">
-        <div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#D9C9A0">Total a pagar</div>
-        <div style="font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:52px;line-height:1.05;text-shadow:0 0 18px rgba(255,242,122,.45)">R$ 54,00</div>
-        <div style="display:flex;justify-content:space-between;gap:12px;margin-top:10px;font-size:13px;color:#EADFBD"><span>Subtotal: 54,00</span><span>Desconto (F5): 0,00</span><span>Itens: 3</span></div>
-      </div>
-      <div class="card3d" style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">
-        <label class="label" for="cliente">Cliente (F4)</label>
-        <input class="field3d" id="cliente" name="cliente" type="text" value="Consumidor final">
-        <label style="display:flex;align-items:center;gap:10px;font-size:14px;color:#4C4138;cursor:pointer;margin-top:4px">
-          <input type="checkbox" name="cpf" style="width:18px;height:18px;accent-color:#23A151">
-          CPF na nota
-        </label>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px">
-        <button class="btn3d" type="button">Dinheiro (F6)</button>
-        <button class="btn3d" type="button">Pix (F7)</button>
-        <button class="btn3d" type="button">Débito (F8)</button>
-        <button class="btn3d" type="button">Crédito (F9)</button>
-      </div>
-      <button class="btn3d green" type="button" style="font-size:18px;min-height:64px">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21z"></path><path d="M9 9h6M9 13h4"></path></svg>
-        Finalizar e emitir NFC-e (F10)
-      </button>
-      <button class="btn3d red" type="button">Cancelar venda (F12)</button>
-    </aside>
-  </main>
-  <footer style="display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center;padding:10px 20px;background:#F3EDE2;border-top:1px solid #D9CFBE">
-    <span class="key"><b>F2</b>Produto</span><span class="key"><b>F3</b>Quantidade</span><span class="key"><b>F4</b>Cliente</span><span class="key"><b>F5</b>Desconto</span><span class="key"><b>F6–F9</b>Pagamento</span><span class="key"><b>F10</b>Finalizar</span><span class="key"><b>F11</b>Sangria / Suprimento</span><span class="key"><b>F12</b>Cancelar</span><span class="key" style="margin-left:auto"><b>Esc</b>Voltar ao início</span>
-  </footer>
+<div class="anim" style="min-height:100vh;display:flex;flex-direction:column;background:#FFF9E3">
+<header class="topo">
+<div class="marca">
+<div class="oval-wrap"><img class="oval" src="../../assets/brand/logo_oval_1016px.png" alt="Moleka Sorvetes"><div class="brilho"></div></div>
+<div class="mascote-wrap">
+<div class="inclina"><img class="mascote" src="../../assets/brand/mascote.png" alt=""></div>
+<span class="beijo b1"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.3 4.3 2.6.7-1.3 2.1-2.6 4.3-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg></span>
+<span class="beijo b2"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.3 4.3 2.6.7-1.3 2.1-2.6 4.3-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg></span>
+<span class="beijo b3"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.3 4.3 2.6.7-1.3 2.1-2.6 4.3-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg></span>
+</div>
+</div>
+<div class="titulo">
+<h1>Caixa — Venda</h1>
+<p><span data-auto="hoje"></span> · Operador: — · Venda nº —</p>
+</div>
+<div class="chips">
+<span class="chip"><span class="dot ok"></span>Tabela: Varejo</span>
+<span class="chip"><span class="dot"></span>SEFAZ: —</span>
+<span class="chip"><span class="dot"></span>Impressora de cupom: —</span>
+</div>
+<svg class="pingos" aria-hidden="true"><defs><pattern id="pingo" width="160" height="20" patternUnits="userSpaceOnUse"><path fill="#C8202A" d="M0 0H160V3H136C130 3 128.5 6 128 9.5C127.4 13.8 123.6 15 121 15C118.4 15 114.6 13.8 114 9.5C113.5 6 112 3 106 3H62C57 3 56 5.5 55.6 8C55.2 10.6 52.6 11.5 51 11.5C49.4 11.5 46.8 10.6 46.4 8C46 5.5 45 3 40 3H0Z"/></pattern></defs><rect width="100%" height="16" fill="url(#pingo)"/></svg>
+</header>
+<main class="pdv">
+<section class="esq" aria-label="Itens da venda">
+<div class="busca">
+<div style="flex:999 1 360px;min-width:0">
+<label class="rotulo" for="prod">Produto (F2) — código de barras ou nome</label>
+<div class="com-icone">
+<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5v14M7.5 5v14M10 5v14M13.5 5v14M16 5v14M20 5v14"/></svg>
+<input id="prod" name="prod" class="campo lg" type="text" placeholder="Passe o leitor ou digite o nome do produto">
+</div>
+</div>
+<div style="flex:0 0 120px">
+<label class="rotulo" for="qtd">Qtd (F3)</label>
+<input id="qtd" name="qtd" class="campo lg num" type="number" value="1" min="1">
+</div>
+<button class="btn3d amarelo lg" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Adicionar (Enter)</button>
+</div>
+<div class="cartao itens">
+<div class="itens-topo"><h2>Itens da venda</h2><span class="tag exemplo">Exemplo · valores fictícios</span><span class="cont">4 itens · 15 un.</span></div>
+<div class="rolagem">
+<table class="tabela">
+<thead><tr><th style="width:44px">#</th><th style="width:90px">Código</th><th>Descrição</th><th class="num" style="width:70px">Qtd</th><th class="num" style="width:150px">Unit. (R$)</th><th class="num" style="width:120px">Total (R$)</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>001</td><td>Picolé de morango</td><td class="num">1</td><td class="num">5,00</td><td class="num">5,00</td></tr>
+<tr><td>2</td><td>014</td><td>Sorvete de massa — 2 bolas</td><td class="num">1</td><td class="num">14,00</td><td class="num">14,00</td></tr>
+<tr><td>3</td><td>031</td><td>Açaí 500 ml</td><td class="num">1</td><td class="num">22,00</td><td class="num">22,00</td></tr>
+<tr class="sel"><td>4</td><td>002</td><td>Picolé de chocolate <span class="tag atacado">Atacado</span></td><td class="num">12</td><td class="num"><s class="riscado" title="Preço de varejo">5,00</s>4,00</td><td class="num">48,00</td></tr>
+</tbody>
+</table>
+</div>
+<p class="nota">Preço por quantidade: ao atingir a faixa de atacado do produto (no exemplo, a partir de 10 un.), o preço unitário muda sozinho e a linha ganha a etiqueta ATACADO.</p>
+</div>
+</section>
+<aside class="lado" aria-label="Pagamento">
+<div class="total">
+<div class="cima"><span class="r">Total a pagar</span><span class="tag exemplo escuro">Exemplo</span></div>
+<div class="v">R$ 89,00</div>
+<div class="linhas"><span>Subtotal: 89,00</span><span>Desconto (F5): 0,00</span><span>Itens: 4</span></div>
+</div>
+<div class="cartao cliente">
+<label class="rotulo" for="cli">Cliente (F4)</label>
+<input id="cli" name="cli" class="campo" type="text" value="Consumidor final">
+<label class="check"><input type="checkbox" name="cpf">CPF na nota</label>
+</div>
+<div class="pagamentos">
+<button class="btn3d" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 10v4M18 10v4"/></svg>Dinheiro (F6)</button>
+<button class="btn3d" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 9-9 9-9-9z"/><path d="M8.5 12 12 8.5l3.5 3.5-3.5 3.5z"/></svg>Pix (F7)</button>
+<button class="btn3d" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19"/><path d="M6 15h4"/></svg>Débito (F8)</button>
+<button class="btn3d" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19"/><path d="M6 15h4"/></svg>Crédito (F9)</button>
+</div>
+<button class="btn3d verde xl bloco" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Finalizar e emitir NFC-e (F10)</button>
+<button class="btn3d vermelho bloco" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>Cancelar venda (F12)</button>
+</aside>
+</main>
+<footer class="rodape">
+<span class="tecla"><kbd>F2</kbd>Produto</span>
+<span class="tecla"><kbd>F3</kbd>Quantidade</span>
+<span class="tecla"><kbd>F4</kbd>Cliente</span>
+<span class="tecla"><kbd>F5</kbd>Desconto</span>
+<span class="tecla"><kbd>F6–F9</kbd>Pagamento</span>
+<span class="tecla"><kbd>F10</kbd>Finalizar</span>
+<span class="tecla"><kbd>F11</kbd>Sangria / Suprimento</span>
+<span class="tecla"><kbd>F12</kbd>Cancelar</span>
+<span class="dir"><a class="tecla" href="inicio.html"><kbd>Esc</kbd>Voltar ao início</a></span>
+</footer>
 </div>
 
-<nav class="proto-nav" aria-label="Telas do protótipo" title="Protótipo — clique para trocar de tela"><a href="index.html" class="" title="1 · Abertura / Login">1</a><a href="inicio.html" class="" title="2 · Início">2</a><a href="caixa.html" class="atual" title="3 · Caixa (PDV)">3</a><a href="financeiro.html" class="" title="4 · Financeiro / DRE">4</a></nav>
-
+<nav class="proto-nav" aria-label="Telas do protótipo" title="Protótipo — clique para trocar de tela"><a href="index.html" class="" title="1 · Abertura / Login">1</a><a href="inicio.html" class="" title="2 · Início">2</a><a href="caixa.html" class="atual" title="3 · Caixa (PDV)">3</a><a href="financeiro.html" class="" title="4 · Financeiro / DRE">4</a><a href="produtos.html" class="" title="5 · Produtos">5</a></nav>
 <script>
+(function () {
+  var d = new Date();
+  var auto = {
+    hoje: d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }),
+    mesAno: d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+  };
+  document.querySelectorAll('[data-auto]').forEach(function (el) { el.textContent = auto[el.getAttribute('data-auto')] || ''; });
+})();
+
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape') location.href = 'inicio.html'; });
-document.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); });
 </script>
 </body>
 </html>

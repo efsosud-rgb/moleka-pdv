@@ -2,173 +2,277 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>Moleka PDV — Financeiro, DRE e fluxo de caixa</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Nunito:wght@700;800;900&amp;display=swap">
+<title>Moleka PDV — Financeiro (DRE e fluxo de caixa)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Nunito:wght@700;800;900&amp;display=swap">
 <style>
-body{margin:0;background:#EDE7DC;font-family:Inter,system-ui,sans-serif;color:#2B2320}
-a{color:#8C3212}a:hover{color:#5E200A}
-.btn3d{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:14px;line-height:1;padding:11px 16px;min-height:46px;border:1px solid #9C8F7B;border-radius:12px;cursor:pointer;color:#2B2320;background:linear-gradient(#FFFFFF 0%,#F2ECE1 55%,#E3DACB 100%);box-shadow:inset 0 1px 0 #FFFFFF,inset 0 -1px 0 rgba(0,0,0,.06),0 4px 0 #B3A693,0 8px 14px rgba(60,40,10,.22);transition:transform .08s ease,box-shadow .08s ease,filter .15s ease;text-decoration:none;white-space:nowrap}
-.btn3d:hover{filter:brightness(1.04)}
-.btn3d:active{transform:translateY(4px);box-shadow:inset 0 1px 0 #FFFFFF,0 0 0 #B3A693,0 2px 4px rgba(60,40,10,.25)}
-.btn3d:focus-visible{outline:3px solid #2B6CB0;outline-offset:2px}
-.btn3d.green{color:#FFFFFF;border-color:#136435;background:linear-gradient(#4CCB7B 0%,#23A151 55%,#1B7F41 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(0,0,0,.1),0 4px 0 #0F5A2C,0 8px 14px rgba(20,60,30,.3)}
-.btn3d.green:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 0 0 #0F5A2C,0 2px 4px rgba(20,60,30,.3)}
-.btn3d.orange{border-color:#B9711C;background:linear-gradient(#FFD08E 0%,#FFB759 55%,#F39B2E 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 0 #B86F12,0 8px 14px rgba(120,70,10,.3)}
-.btn3d.orange:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 0 0 #B86F12,0 2px 4px rgba(120,70,10,.3)}
-.btn3d.red{color:#FFFFFF;border-color:#8E1A1F;background:linear-gradient(#F05A5F 0%,#E43238 55%,#C0262C 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 0 #7D1418,0 8px 14px rgba(80,10,10,.3)}
-.btn3d.red:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 0 0 #7D1418,0 2px 4px rgba(80,10,10,.3)}
-.field3d{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:15px;color:#2B2320;background:#FFFDF8;border:1px solid #B2A48F;border-radius:10px;padding:11px 12px;min-height:46px;box-shadow:inset 0 3px 6px rgba(60,40,10,.16),inset 0 1px 2px rgba(60,40,10,.2),0 1px 0 #FFFFFF}
-.field3d:focus{outline:none;border-color:#E58A1F;box-shadow:inset 0 3px 6px rgba(60,40,10,.16),0 0 0 3px rgba(255,183,89,.6)}
-.label{font-weight:700;font-size:11px;color:#4C4138;letter-spacing:.06em;text-transform:uppercase}
-.card3d{background:#FBF8F2;border:1px solid #D9CFBE;border-radius:18px;box-shadow:inset 0 1px 0 #FFFFFF,0 6px 0 #D3C8B5,0 14px 24px rgba(60,40,10,.16)}
-.chip{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#4C4138;background:#FFF7EA;border:1px solid #E3B06A;border-radius:999px;padding:6px 12px;box-shadow:inset 0 1px 0 #FFFFFF,0 2px 0 #D89A4A}
-.dot{width:9px;height:9px;border-radius:50%;background:#B3A693;border:1px solid #8A7E6E}
-.header{background:linear-gradient(#FFC775 0%,#FFB759 55%,#F8A23F 100%);box-shadow:inset 0 -3px 0 rgba(0,0,0,.08),0 4px 10px rgba(60,40,10,.2)}
-.oval3d{display:block;width:118px;height:auto;filter:drop-shadow(0 2px 0 #C9B600) drop-shadow(0 3px 0 #A89700) drop-shadow(0 8px 6px rgba(60,20,0,.4));transform:perspective(500px) rotateX(10deg) rotateY(-8deg);transition:transform .45s ease}
-.oval-wrap{position:relative;margin-top:8px}
-.oval-wrap:hover .oval3d{transform:perspective(500px) rotateX(0deg) rotateY(0deg) scale(1.05)}
-.anim .oval-wrap{animation:glow 3.6s ease-in-out infinite}
-@keyframes glow{0%,58%,100%{filter:none}72%{filter:drop-shadow(0 0 12px #FFF27A) brightness(1.08)}}
-.mascote-wrap{position:relative;width:44px;height:74px}
-.lean{transform-origin:50% 100%}
-.mascote{display:block;height:74px;width:auto;filter:drop-shadow(0 4px 4px rgba(60,20,0,.35));transform-origin:50% 100%}
-.anim .mascote{animation:sway 4s ease-in-out infinite}
-.anim .lean{animation:point 3.6s ease-in-out infinite}
-@keyframes sway{0%,100%{transform:rotate(-1.5deg) translateY(0)}50%{transform:rotate(2deg) translateY(-2px)}}
-@keyframes point{0%,55%,100%{transform:translateX(0) rotate(0deg)}68%{transform:translateX(-5px) rotate(-5deg)}80%{transform:translateX(-2px) rotate(-3deg)}}
-.heart{position:absolute;left:-2px;top:25px;width:12px;height:12px;opacity:0;pointer-events:none}
-.anim .heart{animation:kiss 3.6s ease-out infinite}
-.anim .heart.h2{animation-delay:1.2s;left:1px;top:28px;width:9px;height:9px}
-@keyframes kiss{0%{opacity:0;transform:translate(0,0) scale(.3)}12%{opacity:1;transform:translate(-4px,-4px) scale(1)}100%{opacity:0;transform:translate(-40px,-28px) scale(1.2) rotate(-12deg)}}
-.tab{font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:14px;padding:11px 20px;border:1px solid #CFC4B2;border-bottom:0;border-radius:12px 12px 0 0;background:linear-gradient(#F4EEE3,#E3DACB);color:#5C5147;cursor:pointer;box-shadow:inset 0 1px 0 #FFFFFF}
-.tab.active{background:linear-gradient(#FFFFFF,#FBF8F2);color:#2B2320;box-shadow:inset 0 3px 0 #FFB759;position:relative;top:1px}
-.dre{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
-.dre th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5C5147;padding:8px 14px;background:#F3EDE2;border-bottom:1px solid #D9CFBE}
-.dre td{padding:6px 14px;border-bottom:1px solid #EAE2D4}
-.dre tr.sub td{padding-left:34px;color:#5C5147}
-.dre tr.tot td{font-weight:800;font-family:Nunito,Inter,sans-serif;background:#FFF6B0;border-top:1px solid #E0CF00;border-bottom:1px solid #E0CF00}
-.dre tr.res td{font-weight:900;font-family:Nunito,Inter,sans-serif;font-size:15px;background:linear-gradient(#FFE08A,#FFB759);border-bottom:0}
-.btn3d.mini{font-size:13px;padding:8px 14px;min-height:38px;border-radius:10px;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #B3A693,0 6px 10px rgba(60,40,10,.2)}
-.btn3d.mini:active{transform:translateY(3px);box-shadow:inset 0 1px 0 #FFFFFF,0 0 0 #B3A693,0 2px 4px rgba(60,40,10,.25)}
+/* Cores da logomarca: vermelho #E43030 (letras), amarelo #FCF00C (oval), vinho #542424 (contorno), verde #249C48 (macacão). */
+*{box-sizing:border-box}
+body{margin:0;background:#FFF9E3;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#2A1A18;font-size:14px}
+a{color:#9E1A20}a:hover{color:#542424}
+button,input,select{font:inherit}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{font-family:Nunito,Inter,sans-serif}
+.ic{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .num{text-align:right;font-variant-numeric:tabular-nums}
-.kv{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 0;border-bottom:1px dashed #D9CFBE;font-size:13px}
-.kv .v{font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:15px}
 
-.proto-nav{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:99;display:flex;flex-direction:column;gap:4px;align-items:center;padding:6px 3px;border-radius:12px 0 0 12px;background:rgba(43,35,32,.9);box-shadow:0 6px 18px rgba(0,0,0,.35);font:800 11px/1 Inter,system-ui,sans-serif}
-.proto-nav a{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#4A3E38;color:#FFF27A;text-decoration:none}
-.proto-nav a:hover{background:#FFB759;color:#2B2320}
-.proto-nav a.atual{background:#FFB759;color:#2B2320}
+/* barra de menus */
+.menubar{display:flex;align-items:center;flex-wrap:wrap;gap:2px;padding:3px 10px;background:linear-gradient(#7A181C,#5C1216);border-bottom:1px solid #3A0B0D}
+.menubar button{font-size:13px;font-weight:600;color:#FFF1DA;background:transparent;border:0;border-radius:6px;padding:6px 11px;cursor:pointer}
+.menubar button:hover,.menubar button:focus-visible{background:#FCF00C;color:#542424;outline:none}
+.menubar .direita{margin-left:auto;padding-right:4px;font-size:12px;color:#F6CDB0}
+
+/* faixa do topo: a parede vermelha da loja, com o escorrido das geladeiras */
+.topo{position:relative;z-index:2;display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;padding:8px 24px 10px;background:linear-gradient(#EC3C3C,#DC2B2D 50%,#C8202A)}
+.topo .titulo h1{font-weight:900;font-size:30px;line-height:1.05;color:#FFFFFF;text-shadow:0 2px 0 #9E1A20,0 5px 10px rgba(60,0,0,.35)}
+.topo .titulo p{margin-top:5px;font-size:13px;font-weight:600;color:#FFFFFF}
+.topo .chips{margin-left:auto;display:flex;flex-wrap:wrap;gap:10px}
+.pingos{position:absolute;left:0;bottom:-15px;width:100%;height:16px;pointer-events:none}
+
+/* logo com relevo 3D e brilho; mascote que balança, aponta e manda beijos */
+.marca{display:flex;align-items:flex-end}
+.oval-wrap{position:relative;perspective:700px;margin-bottom:8px}
+.oval{display:block;width:160px;height:auto;transform:rotateX(10deg) rotateY(-10deg);filter:drop-shadow(0 2px 0 #E8C300) drop-shadow(0 2px 0 #B8960A) drop-shadow(0 9px 8px rgba(60,0,0,.45));transition:transform .45s ease}
+.oval-wrap:hover .oval{transform:rotateX(0deg) rotateY(0deg) scale(1.05)}
+.brilho{position:absolute;left:3%;right:4%;top:5%;bottom:9%;border-radius:50%;overflow:hidden;pointer-events:none;transform:rotateX(10deg) rotateY(-10deg);transition:transform .45s ease}
+.oval-wrap:hover .brilho{transform:rotateX(0deg) rotateY(0deg) scale(1.05)}
+.brilho::before{content:"";position:absolute;top:-30%;bottom:-30%;left:-45%;width:28%;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.7),rgba(255,255,255,0));transform:skewX(-18deg)}
+.anim .brilho::before{animation:brilho 6s ease-in-out infinite}
+@keyframes brilho{0%,58%{left:-45%}80%,100%{left:125%}}
+.mascote-wrap{position:relative;width:62px;height:100px;margin-left:-4px}
+.inclina{position:absolute;left:0;top:0;right:0;bottom:0;transform-origin:50% 100%}
+.mascote{position:absolute;left:0;bottom:0;height:100%;width:auto;transform-origin:50% 100%;filter:drop-shadow(0 6px 5px rgba(60,0,0,.35))}
+.anim .mascote{animation:balanca 4s ease-in-out infinite}
+.anim .inclina{animation:aponta 6s ease-in-out infinite}
+@keyframes balanca{0%,100%{transform:rotate(-1.5deg) translateY(0)}50%{transform:rotate(2deg) translateY(-3px)}}
+@keyframes aponta{0%,48%,100%{transform:translateX(0) rotate(0deg)}60%{transform:translateX(-7px) rotate(-6deg)}72%{transform:translateX(-3px) rotate(-3deg)}}
+.beijo{position:absolute;left:16px;top:22px;width:15px;height:15px;color:#FFE1E8;opacity:0;pointer-events:none}
+.beijo svg{display:block;width:100%;height:100%;filter:drop-shadow(0 1px 0 #9E1A20)}
+.anim .beijo{animation:beijo 6s ease-out infinite}
+.anim .beijo.b2{animation-delay:.3s}
+.anim .beijo.b3{animation-delay:.6s}
+@keyframes beijo{0%,60%{opacity:0;transform:translate(0,0) scale(.3)}66%{opacity:1}88%{opacity:.95;transform:translate(-62px,-22px) scale(1.15)}100%{opacity:0;transform:translate(-84px,-34px) scale(.9)}}
+@media (prefers-reduced-motion:reduce){.anim .mascote,.anim .inclina,.anim .beijo,.anim .brilho::before{animation:none}}
+
+.chip{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:#542424;background:#FFFFFF;border:1px solid #F4C6C6;border-radius:999px;padding:6px 12px;box-shadow:0 2px 0 #9E1A20,0 5px 9px rgba(60,0,0,.22)}
+.dot{width:9px;height:9px;border-radius:50%;background:#B5A396;box-shadow:inset 0 -1px 0 rgba(0,0,0,.25)}
+
+/* corpo: menu lateral e conteúdo */
+.corpo{flex:1;display:flex;flex-wrap:wrap;align-items:stretch}
+.lateral{flex:1 1 236px;max-width:236px;display:flex;flex-direction:column;gap:3px;padding:24px 12px 12px;background:#FFFFFF;border-right:1px solid #EADBA8}
+.item{display:flex;align-items:center;gap:12px;width:100%;min-height:40px;padding:7px 11px;border:2px solid transparent;border-radius:10px;background:transparent;color:#542424;font-weight:600;font-size:14px;text-align:left;text-decoration:none;cursor:pointer}
+.item:hover{background:#FFF6CC;color:#542424}
+.item:focus-visible{outline:3px solid #1F6FD1;outline-offset:1px}
+.item .ic{color:#C8202A}
+.item.ativo{font-weight:800;color:#9E1A20;border-color:#E43030;background:linear-gradient(#FFF98F,#FCF00C 55%,#F2DA0A);box-shadow:0 3px 0 #C9A400,0 6px 10px rgba(120,80,0,.22)}
+.item.ativo .ic{color:#9E1A20}
+.lateral .fim{margin-top:auto}
+.conteudo{flex:999 1 560px;min-width:0;padding:24px 26px 14px}
+
+/* barra de status */
+.rodape{display:flex;align-items:center;flex-wrap:wrap;gap:6px 18px;padding:6px 14px;background:#542424;color:#FFE8B0;font-size:12.5px}
+.rodape .dir{margin-left:auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+.status{display:inline-flex;align-items:center;gap:7px}
+.tecla{display:inline-flex;align-items:center;gap:6px;color:#FFE8B0;text-decoration:none}
+a.tecla:hover{color:#FFFFFF}
+kbd{font:800 11.5px Inter,system-ui,sans-serif;color:#542424;background:linear-gradient(#FFF98F,#FCF00C);border:1px solid #C9A400;border-radius:5px;padding:3px 6px;box-shadow:0 2px 0 #9C7F00}
+
+/* botões com relevo */
+.btn3d{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:14.5px;line-height:1.1;padding:10px 15px;min-height:44px;border:1px solid #CDB77A;border-radius:12px;cursor:pointer;color:#542424;background:linear-gradient(#FFFFFF,#FFF8E6 60%,#F5E7C2);box-shadow:inset 0 1px 0 #FFFFFF,0 4px 0 #CDB77A,0 8px 14px rgba(110,70,0,.18);transition:transform .08s ease,box-shadow .08s ease,filter .15s ease;text-decoration:none;white-space:nowrap}
+.btn3d:hover{filter:brightness(1.03);color:#542424}
+.btn3d:active{transform:translateY(4px);box-shadow:inset 0 1px 0 #FFFFFF,0 0 0 #CDB77A,0 2px 4px rgba(110,70,0,.25)}
+.btn3d:focus-visible{outline:3px solid #1F6FD1;outline-offset:2px}
+.btn3d.verde{color:#FFFFFF;border-color:#11592A;background:linear-gradient(#2BA352,#1B7F39 55%,#166B30);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 4px 0 #0E4D24,0 8px 14px rgba(10,60,25,.3);text-shadow:0 1px 0 rgba(0,0,0,.3)}
+.btn3d.verde:hover{color:#FFFFFF}
+.btn3d.verde:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 #0E4D24,0 2px 4px rgba(10,60,25,.3)}
+.btn3d.vermelho{color:#FFFFFF;border-color:#7E1A1E;background:linear-gradient(#E83A3A,#D42828 55%,#B81E22);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 4px 0 #7E1A1E,0 8px 14px rgba(90,10,10,.3);text-shadow:0 1px 0 rgba(0,0,0,.3)}
+.btn3d.vermelho:hover{color:#FFFFFF}
+.btn3d.vermelho:active{box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 0 #7E1A1E,0 2px 4px rgba(90,10,10,.3)}
+
+/* campos com profundidade */
+.rotulo{display:block;font-weight:800;font-size:11.5px;color:#5A4237;letter-spacing:.06em;text-transform:uppercase;margin:0 0 6px}
+.campo{display:block;width:100%;font-size:14.5px;color:#2A1A18;background:#FFFFFF;border:1px solid #CDB77A;border-radius:10px;padding:10px 12px;min-height:44px;box-shadow:inset 0 3px 6px rgba(110,70,0,.13),inset 0 1px 2px rgba(110,70,0,.18),0 1px 0 #FFFFFF}
+.campo:focus{outline:none;border-color:#E43030;box-shadow:inset 0 3px 6px rgba(110,70,0,.13),0 0 0 2px #E43030,0 0 0 6px rgba(252,240,12,.8)}
+.sel{position:relative}
+.sel select{appearance:none;padding-right:38px}
+.sel .seta{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#9E1A20;pointer-events:none}
+
+.cartao{background:#FFFFFF;border:1px solid #EADBA8;border-radius:16px;box-shadow:inset 0 1px 0 #FFFFFF,0 5px 0 #EFDFA6,0 14px 24px rgba(120,70,0,.12)}
+
+/* abas */
+.abas{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px;border-bottom:3px solid #D42828}
+.aba{font-family:Nunito,Inter,sans-serif;font-weight:800;font-size:14px;color:#542424;background:linear-gradient(#FFFDF4,#FFF1BF);border:1px solid #E2CF95;border-bottom:0;border-radius:10px 10px 0 0;padding:9px 16px;min-height:40px;cursor:pointer}
+.aba:hover{background:#FFF6CC}
+.aba:focus-visible{outline:3px solid #1F6FD1;outline-offset:1px}
+.aba.ativa{color:#FFFFFF;background:linear-gradient(#EA3F3F,#D42828);border-color:#B81E22;text-shadow:0 1px 0 rgba(0,0,0,.25)}
+
+/* tabela */
+.tabela{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
+.tabela th{font:800 11.5px Inter,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#5A4237;text-align:left;padding:8px 16px;background:#FFF4CC;border-top:1px solid #EADBA8;border-bottom:1px solid #EADBA8;white-space:nowrap}
+.tabela td{padding:6px 16px;border-bottom:1px solid #F3E8C4;color:#2A1A18}
+.tabela th.num,.tabela td.num{text-align:right}
+.tabela tr.forte td{font-weight:800;color:#542424;background:#FFFBEA}
+.tabela tr.final td{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:15.5px;color:#9E1A20;background:#FFF4CC;border-bottom:0}
+
+/* financeiro */
+.ferramentas{display:flex;align-items:flex-end;flex-wrap:wrap;gap:10px 12px;margin-bottom:14px}
+.ferramentas .periodo{flex:0 1 230px}
+.ferramentas .espaco{flex:1}
+.fin{display:flex;flex-wrap:wrap;align-items:flex-start;gap:20px}
+.dre{flex:999 1 480px;min-width:0;overflow:hidden}
+.cab{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;padding:11px 16px 9px}
+.cab h2{font-weight:900;font-size:17px;color:#542424}
+.cab span{font-size:13px;color:#5A4237}
+.rolagem{overflow-x:auto}
+.vazio{padding:10px 16px 12px;font-size:12.5px;line-height:1.45;color:#5A4237}
+.fin-lado{flex:1 1 340px;max-width:400px;display:flex;flex-direction:column;gap:14px}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.kpi{padding:10px 14px 10px}
+.kpi .r{font:800 11px Inter,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#5A4237}
+.kpi .v{margin:2px 0 1px;font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:26px;line-height:1.1;color:#542424}
+.kpi .m{font-size:12px;line-height:1.35;color:#5A4237}
+.fluxo{overflow:hidden}
+.sem-grafico{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:96px;margin:0 16px 14px;padding:8px 14px;border:2px dashed #E2CF95;border-radius:12px;background:#FFFDF6;color:#5A4237;font-size:12.5px;line-height:1.4;text-align:center}
+.sem-grafico .ic{width:26px;height:26px;color:#C8202A}
+.sem-grafico b{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:14.5px;color:#542424}
+@media (max-width:1000px){.fin-lado{max-width:none}}
+
+.proto-nav{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:99;display:flex;flex-direction:column;gap:4px;align-items:center;padding:6px 3px;border-radius:12px 0 0 12px;background:rgba(59,24,24,.92);box-shadow:0 6px 18px rgba(0,0,0,.35);font:800 11px/1 Inter,system-ui,sans-serif}
+.proto-nav a{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#6E2E2E;color:#FCF00C;text-decoration:none}
+.proto-nav a:hover,.proto-nav a.atual{background:#FCF00C;color:#542424}
 </style>
 </head>
 <body>
-<div class="anim" style="min-height:100vh;display:flex;flex-direction:column;background:#EDE7DC">
-  <header class="header" style="display:flex;flex-wrap:wrap;align-items:center;gap:20px;padding:6px 24px 8px;min-height:86px;box-sizing:border-box">
-    <div style="display:flex;align-items:flex-end;gap:10px">
-      <div class="oval-wrap"><img class="oval3d" src="../../assets/brand/logo_oval.png" alt="Moleka Sorvetes"></div>
-      <div class="mascote-wrap">
-        <div class="lean"><img class="mascote" src="../../assets/brand/mascote.png" alt="Mascote da Moleka"></div>
-        <svg class="heart h1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.5-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.5 5.6C19 16.4 12 21 12 21z" fill="#E43238" stroke="#51222B" stroke-width="1.2"></path></svg>
-        <svg class="heart h2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.6-9.5-9A5.3 5.3 0 0 1 12 6.4a5.3 5.3 0 0 1 9.5 5.6C19 16.4 12 21 12 21z" fill="#FF6B70" stroke="#51222B" stroke-width="1.2"></path></svg>
-      </div>
-    </div>
-    <div style="flex:1 1 260px;min-width:0;display:flex;flex-direction:column;gap:4px">
-      <div style="font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:24px;line-height:1.1;color:#5A1A1F;text-shadow:0 1px 0 #FFD9A6,0 3px 0 rgba(90,26,31,.18)">Financeiro</div>
-      <div style="font-size:13px;font-weight:600;color:#6B2A2F">Lançamentos · Fluxo de caixa · DRE · Rentabilidade</div>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end">
-      <span class="chip"><span class="dot" aria-hidden="true"></span>Última venda importada: —</span>
-      <span class="chip"><span class="dot" aria-hidden="true"></span>Impressora A4: —</span>
-    </div>
-  </header>
-  <main style="flex:1 1 auto;display:flex;flex-direction:column;gap:0;padding:18px 24px 14px">
-    <div style="display:flex;flex-wrap:wrap;gap:4px;padding-left:12px">
-      <button class="tab" type="button">Lançamentos</button>
-      <button class="tab" type="button">Fluxo de Caixa</button>
-      <button class="tab active" type="button">DRE</button>
-      <button class="tab" type="button">Rentabilidade</button>
-    </div>
-    <div class="card3d" style="border-top-left-radius:0;padding:16px 18px;display:flex;flex-direction:column;gap:16px">
-      <form style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end" action="#" method="get">
-        <div style="flex:0 1 160px;min-width:0;display:flex;flex-direction:column;gap:6px">
-          <label class="label" for="de">Período — de</label>
-          <input class="field3d" id="de" name="de" type="date" value="2026-11-01">
-        </div>
-        <div style="flex:0 1 160px;min-width:0;display:flex;flex-direction:column;gap:6px">
-          <label class="label" for="ate">até</label>
-          <input class="field3d" id="ate" name="ate" type="date" value="2026-11-07">
-        </div>
-        <div style="flex:0 1 200px;min-width:0;display:flex;flex-direction:column;gap:6px">
-          <label class="label" for="comparar">Comparar com</label>
-          <select class="field3d" id="comparar" name="comparar"><option>Mês anterior</option><option>Mesmo período do ano anterior</option><option>Sem comparação</option></select>
-        </div>
-        <button class="btn3d orange" type="submit">Atualizar (F5)</button>
-        <div style="flex:1 1 auto"></div>
-        <button class="btn3d green" type="button">+ Receita (F8)</button>
-        <button class="btn3d red" type="button">+ Despesa (F7)</button>
-      </form>
-      <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
-        <section style="flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:10px">
-          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px">
-            <h1 style="margin:0;font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:18px">DRE — Demonstração do Resultado</h1>
-            <span style="font-size:12px;color:#7D7262">01/11/2026 a 07/11/2026 · regime de competência</span>
-            <div style="margin-left:auto;display:flex;gap:8px">
-              <button class="btn3d mini" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"></path><rect x="3" y="9" width="18" height="8" rx="2"></rect><path d="M6 15h12v6H6z"></path></svg>Imprimir A4</button>
-              <button class="btn3d mini" type="button">Exportar Excel</button>
-            </div>
-          </div>
-          <div style="overflow-x:auto;border:1px solid #D9CFBE;border-radius:12px;background:#FFFFFF">
-            <table class="dre">
-              <thead><tr><th>Conta</th><th class="num" style="width:150px">Valor (R$)</th><th class="num" style="width:120px">% s/ receita</th><th class="num" style="width:150px">Mês anterior</th></tr></thead>
-              <tbody>
-                <tr><td>Receita bruta de vendas (NFC-e)</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
-                <tr><td>(−) Deduções: impostos sobre vendas</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
-                <tr><td>(−) Cancelamentos e devoluções</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
-                <tr class="tot"><td>= Receita líquida</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
-                <tr><td>(−) CMV — custo das mercadorias vendidas</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
-                <tr class="tot"><td>= Lucro bruto</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
-                <tr><td>(−) Despesas operacionais</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
-                <tr class="sub"><td>Pessoal e encargos</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
-                <tr class="sub"><td>Aluguel, energia, água</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
-                <tr class="sub"><td>Marketing</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
-                <tr class="sub"><td>Outras despesas</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
-                <tr class="tot"><td>= Resultado operacional</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
-                <tr><td>(+) Outras receitas / (−) outras despesas</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
-                <tr class="res"><td>= Resultado líquido do período</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div style="font-size:12px;color:#7D7262;line-height:1.4">Sem dados: os valores aparecem após vendas registradas (NFC-e), lançamentos de despesas e receitas e entradas de XML de compra — nunca estimativas.</div>
-        </section>
-        <aside style="flex:1 1 280px;min-width:0;max-width:360px;display:flex;flex-direction:column;gap:14px">
-          <div class="card3d" style="padding:16px 18px;display:flex;flex-direction:column">
-            <div style="font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:16px;margin-bottom:4px">Rentabilidade por produto</div>
-            <div style="font-size:12px;color:#7D7262;margin-bottom:6px">Margem = preço − custo (último XML)</div>
-            <div class="kv"><span>Maior margem</span><span class="v">—</span></div>
-            <div class="kv"><span>Menor margem</span><span class="v">—</span></div>
-            <div class="kv"><span>Margem média</span><span class="v">—</span></div>
-            <div class="kv" style="border-bottom:0"><span>Produtos sem custo cadastrado</span><span class="v">—</span></div>
-          </div>
-          <div class="card3d" style="padding:16px 18px;display:flex;flex-direction:column">
-            <div style="font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:16px;margin-bottom:4px">Fluxo de caixa — próximos 7 dias</div>
-            <div class="kv"><span>Saldo atual</span><span class="v">—</span></div>
-            <div class="kv"><span>A receber (cartão / Pix)</span><span class="v">—</span></div>
-            <div class="kv"><span>A pagar</span><span class="v">—</span></div>
-            <div class="kv" style="border-bottom:0"><span>Saldo projetado</span><span class="v">—</span></div>
-          </div>
-        </aside>
-      </div>
-    </div>
-  </main>
-  <footer style="display:flex;flex-wrap:wrap;gap:18px;align-items:center;padding:8px 16px;background:#F3EDE2;border-top:1px solid #D9CFBE;font-size:12px;color:#5C5147">
-    <span>Banco local: —</span><span>Fechamento de caixa mais recente: —</span><span style="margin-left:auto">F1 Ajuda · Esc Voltar</span>
-  </footer>
+<div class="anim" style="min-height:100vh;display:flex;flex-direction:column;background:#FFF9E3">
+<div class="menubar">
+<button type="button">Arquivo</button>
+<button type="button">Cadastros</button>
+<button type="button">Caixa</button>
+<button type="button">Estoque</button>
+<button type="button">Financeiro</button>
+<button type="button">Fiscal</button>
+<button type="button">Relatórios</button>
+<button type="button">Ajuda</button>
+<span class="direita">Moleka PDV · versão 0.1 (prévia)</span>
+</div>
+<header class="topo">
+<div class="marca">
+<div class="oval-wrap"><img class="oval" src="../../assets/brand/logo_oval_1016px.png" alt="Moleka Sorvetes"><div class="brilho"></div></div>
+<div class="mascote-wrap">
+<div class="inclina"><img class="mascote" src="../../assets/brand/mascote.png" alt=""></div>
+<span class="beijo b1"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.3 4.3 2.6.7-1.3 2.1-2.6 4.3-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg></span>
+<span class="beijo b2"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.3 4.3 2.6.7-1.3 2.1-2.6 4.3-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg></span>
+<span class="beijo b3"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.2 0 3.6 1.3 4.3 2.6.7-1.3 2.1-2.6 4.3-2.6 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg></span>
+</div>
+</div>
+<div class="titulo">
+<h1>Financeiro</h1>
+<p><span data-auto="hoje"></span> · Operador: —</p>
+</div>
+<div class="chips">
+<span class="chip"><span class="dot"></span>Caixa: —</span>
+<span class="chip"><span class="dot"></span>SEFAZ: —</span>
+</div>
+<svg class="pingos" aria-hidden="true"><defs><pattern id="pingo" width="160" height="20" patternUnits="userSpaceOnUse"><path fill="#C8202A" d="M0 0H160V3H136C130 3 128.5 6 128 9.5C127.4 13.8 123.6 15 121 15C118.4 15 114.6 13.8 114 9.5C113.5 6 112 3 106 3H62C57 3 56 5.5 55.6 8C55.2 10.6 52.6 11.5 51 11.5C49.4 11.5 46.8 10.6 46.4 8C46 5.5 45 3 40 3H0Z"/></pattern></defs><rect width="100%" height="16" fill="url(#pingo)"/></svg>
+</header>
+<div class="corpo">
+<nav class="lateral" aria-label="Módulos">
+<a class="item" href="inicio.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9.5 21v-6h5v6"/></svg>Início</a>
+<a class="item" href="caixa.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V5h10v6"/><path d="M9.5 8h5"/><path d="M7 15h2M11 15h2M15 15h2M8 18h8"/></svg>Caixa (PDV)</a>
+<button class="item" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Controle de Caixa</button>
+<a class="item" href="produtos.html"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/></svg>Produtos</a>
+<button class="item" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="12" width="8" height="8.5"/><rect x="12.5" y="12" width="8" height="8.5"/><rect x="8" y="3.5" width="8" height="8.5"/></svg>Estoque</button>
+<button class="item" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/><path d="m10 12-2 2.5 2 2.5M14 12l2 2.5-2 2.5"/></svg>Entrada de NF (XML)</button>
+<button class="item" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.8c1.7.8 2.7 2.5 3 5.2"/></svg>Clientes</button>
+<button class="item" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h9M4 18h6"/><circle cx="17.5" cy="16.5" r="3.5"/></svg>Tabelas de Preço</button>
+<a class="item ativo" href="financeiro.html" aria-current="page"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6.5" width="18" height="13.5" rx="2"/><path d="M3 11h18"/><path d="M15.5 15.5h2"/></svg>Financeiro</a>
+<button class="item" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Fiscal / NFC-e</button>
+<button class="item fim" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>Configurações</button>
+</nav>
+<main class="conteudo">
+<div class="abas" role="tablist" aria-label="Visões do financeiro">
+<button class="aba ativa" type="button" role="tab" aria-selected="true">DRE</button>
+<button class="aba" type="button" role="tab" aria-selected="false">Fluxo de caixa</button>
+<button class="aba" type="button" role="tab" aria-selected="false">Rentabilidade</button>
+<button class="aba" type="button" role="tab" aria-selected="false">Lançamentos</button>
+</div>
+<div class="ferramentas">
+<div class="periodo">
+<label class="rotulo" for="periodo">Período</label>
+<div class="sel">
+<select id="periodo" name="periodo" class="campo"><option>Este mês</option><option>Mês passado</option><option>Últimos 7 dias</option><option>Hoje</option><option>Escolher datas…</option></select>
+<svg class="ic seta" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+</div>
+</div>
+<button class="btn3d" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>Atualizar</button>
+<span class="espaco"></span>
+<button class="btn3d vermelho" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Lançar despesa</button>
+<button class="btn3d verde" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Lançar receita</button>
+<button class="btn3d" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>Exportar PDF</button>
+</div>
+<div class="fin">
+<section class="cartao dre" aria-labelledby="t-dre">
+<div class="cab"><h2 id="t-dre">Demonstração do resultado</h2><span><span data-auto="mesAno"></span></span></div>
+<div class="rolagem">
+<table class="tabela">
+<thead><tr><th>Conta</th><th class="num" style="width:150px">Valor (R$)</th><th class="num" style="width:130px">% da receita</th></tr></thead>
+<tbody>
+<tr><td>Receita bruta de vendas</td><td class="num">—</td><td class="num">—</td></tr>
+<tr><td>(−) Impostos sobre vendas</td><td class="num">—</td><td class="num">—</td></tr>
+<tr><td>(−) Devoluções e cancelamentos</td><td class="num">—</td><td class="num">—</td></tr>
+<tr class="forte"><td>= Receita líquida</td><td class="num">—</td><td class="num">—</td></tr>
+<tr><td>(−) Custo das mercadorias vendidas</td><td class="num">—</td><td class="num">—</td></tr>
+<tr class="forte"><td>= Lucro bruto</td><td class="num">—</td><td class="num">—</td></tr>
+<tr><td>(−) Despesas operacionais</td><td class="num">—</td><td class="num">—</td></tr>
+<tr><td>(±) Outras receitas e despesas</td><td class="num">—</td><td class="num">—</td></tr>
+<tr class="final"><td>= Resultado do período</td><td class="num">—</td><td class="num">—</td></tr>
+</tbody>
+</table>
+</div>
+<p class="vazio">Sem vendas no período: os valores aparecem quando houver vendas e lançamentos registrados.</p>
+</section>
+<div class="fin-lado">
+<div class="kpis">
+<div class="cartao kpi"><p class="r">Faturamento</p><p class="v">—</p><p class="m">sem vendas no período</p></div>
+<div class="cartao kpi"><p class="r">Margem bruta</p><p class="v">—</p><p class="m">sem notas de entrada</p></div>
+<div class="cartao kpi"><p class="r">Ticket médio</p><p class="v">—</p><p class="m">sem vendas no período</p></div>
+<div class="cartao kpi"><p class="r">Saldo em caixa</p><p class="v">—</p><p class="m">caixa ainda não aberto</p></div>
+</div>
+<section class="cartao fluxo" aria-labelledby="t-fluxo">
+<div class="cab"><h2 id="t-fluxo">Fluxo de caixa diário</h2><span>entradas e saídas</span></div>
+<div class="sem-grafico">
+<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v16h16"/><path d="m7.5 15 4-4 3 3 5-6"/></svg>
+<b>Sem lançamentos no período</b>
+<span>O gráfico aparece quando houver entradas e saídas registradas.</span>
+</div>
+</section>
+</div>
+</div>
+</main>
+</div>
+<footer class="rodape">
+<span class="status"><span class="dot"></span>Banco local: —</span>
+<span>Backup: —</span>
+<span>Último contato com a SEFAZ: —</span>
+<span class="dir">
+<span class="tecla"><kbd>F1</kbd>Ajuda</span>
+<a class="tecla" href="caixa.html"><kbd>F2</kbd>Caixa</a>
+<a class="tecla" href="inicio.html"><kbd>Esc</kbd>Início</a>
+</span>
+</footer>
 </div>
 
-<nav class="proto-nav" aria-label="Telas do protótipo" title="Protótipo — clique para trocar de tela"><a href="index.html" class="" title="1 · Abertura / Login">1</a><a href="inicio.html" class="" title="2 · Início">2</a><a href="caixa.html" class="" title="3 · Caixa (PDV)">3</a><a href="financeiro.html" class="atual" title="4 · Financeiro / DRE">4</a></nav>
-
+<nav class="proto-nav" aria-label="Telas do protótipo" title="Protótipo — clique para trocar de tela"><a href="index.html" class="" title="1 · Abertura / Login">1</a><a href="inicio.html" class="" title="2 · Início">2</a><a href="caixa.html" class="" title="3 · Caixa (PDV)">3</a><a href="financeiro.html" class="atual" title="4 · Financeiro / DRE">4</a><a href="produtos.html" class="" title="5 · Produtos">5</a></nav>
 <script>
+(function () {
+  var d = new Date();
+  var auto = {
+    hoje: d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }),
+    mesAno: d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+  };
+  document.querySelectorAll('[data-auto]').forEach(function (el) { el.textContent = auto[el.getAttribute('data-auto')] || ''; });
+})();
+
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape') location.href = 'inicio.html'; });
-document.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); });
 </script>
 </body>
 </html>
