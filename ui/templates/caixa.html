@@ -7,7 +7,7 @@
 {{ marca() }}
 <div class="titulo">
 <h1>Caixa — Venda</h1>
-<p><span data-hoje>—</span> · Operador: — · Venda nº —</p>
+<p><span data-hoje>—</span> · Operador: {{ operador.nome if operador else "—" }} · Venda nº —</p>
 </div>
 <div class="chips">
 {{ em_construcao("Caixa: o visual está pronto, mas esta tela ainda não registra vendas. A venda entra numa próxima versão.") }}

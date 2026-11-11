@@ -9,7 +9,9 @@
 <div class="cab-secao"><h2 id="t-mod">Módulos</h2><span>Clique no módulo ou use a tecla de atalho</span></div>
 <div class="grade">
 {% for m in modulos %}
-{% if m.url %}
+{% if m.url and m.so_gerente and not gerente %}
+<div class="cartao tile em-breve" data-aviso="{{ m.rotulo }}: só o gerente abre este módulo."><span class="breve">só gerente</span><span class="selo {{ m.cor }}">{{ icone("cadeado") }}</span><span class="t">{{ m.rotulo }}</span><span class="d">{{ m.descricao }}</span></div>
+{% elif m.url %}
 <a class="cartao tile" href="{{ m.url }}">{% if m.atalho %}<kbd>{{ m.atalho }}</kbd>{% endif %}<span class="selo {{ m.cor }}">{{ icone(m.icone) }}</span><span class="t">{{ m.rotulo }}</span><span class="d">{{ m.descricao }}</span></a>
 {% else %}
 <div class="cartao tile em-breve" data-em-breve="{{ m.rotulo }}: este módulo entra numa próxima versão."><span class="breve">em breve</span><span class="selo {{ m.cor }}">{{ icone(m.icone) }}</span><span class="t">{{ m.rotulo }}</span><span class="d">{{ m.descricao }}</span></div>
@@ -18,7 +20,7 @@
 </div>
 <div class="cartao aviso">
 {{ icone("alerta") }}
-<p><b>Versão {{ versao }}, de teste.</b> Já funcionam a capa, a navegação entre as telas e os indicadores reais do sistema. As funções de cada módulo entram nas próximas versões.</p>
+<p><b>Versão {{ versao }}, de teste.</b> Já funcionam a entrada com usuário e senha e o cadastro de operadores (menu Cadastros). As funções dos outros módulos entram nas próximas versões.</p>
 </div>
 </section>
 <aside class="cartao resumo" aria-labelledby="t-res">

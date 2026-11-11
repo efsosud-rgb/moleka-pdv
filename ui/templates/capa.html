@@ -1,6 +1,9 @@
 {#- Capa do sistema: artes novas na vitrine (logo 3D e loja, alternando), animação da mascote
-    no telão e a entrada. O login por operador entra na Frente 1 (ver docs/PLANO.md). -#}
-{%- from "_macros.html" import coracao -%}
+    no telão e a entrada. O cartão da entrada tem três estados:
+    1. primeiro acesso (nenhum operador cadastrado): cria o gerente;
+    2. login: escolhe o operador e digita a senha;
+    3. já entrou: continua ou troca de operador. -#}
+{%- from "_macros.html" import coracao, icone -%}
 <!doctype html>
 <html lang="pt-BR">
 <head>
@@ -10,6 +13,7 @@
 <link rel="icon" href="/assets/brand/moleka.ico">
 <link rel="stylesheet" href="/static/css/moleka.css?v={{ versao }}">
 <script src="/static/js/moleka.js?v={{ versao }}" defer></script>
+<script src="/static/js/entrada.js?v={{ versao }}" defer></script>
 </head>
 <body class="anim" data-tela="capa">
 <div class="tela">
@@ -31,10 +35,41 @@
 <aside class="painel">
 <div class="telao"><div class="filme" role="img" aria-label="Animação: a mascote corre pela loja, mostra o picolé Moleka e convida a comprar"></div></div>
 <section class="cartao entrada" aria-labelledby="t-entrada">
+{% if operador %}
 <h2 id="t-entrada">Frente de Loja</h2>
 <p class="data" data-hoje>—</p>
-<a class="btn3d amarelo lg bloco" href="/inicio" data-atalho="Enter">Entrar (Enter)</a>
-<p class="ajuda">O login por operador e senha entra na próxima versão. Por enquanto, o sistema abre direto.</p>
+<p class="quem">{{ icone("pessoa") }}<span>Operador: <b>{{ operador.nome }}</b>{% if gerente %} (gerente){% endif %}</span></p>
+<a class="btn3d amarelo lg bloco" href="/inicio" data-atalho="Enter">Continuar (Enter)</a>
+<button class="btn3d bloco" type="button" data-acao="trocar-operador">Trocar de operador</button>
+{% elif not configurado %}
+<h2 id="t-entrada">Primeiro acesso</h2>
+<p class="ajuda">Crie o usuário do <b>gerente</b>. Depois, é ele quem cadastra os outros operadores.</p>
+<form id="form-inicial" class="form-entrada" autocomplete="off" novalidate>
+<div class="par">
+<div><label class="rotulo" for="ci-nome">Seu nome</label><input id="ci-nome" name="nome" class="campo" type="text" maxlength="80" autocomplete="off" autofocus></div>
+<div><label class="rotulo" for="ci-login">Usuário</label><input id="ci-login" name="login" class="campo" type="text" maxlength="30" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
+</div>
+<div class="par">
+<div><label class="rotulo" for="ci-senha">Senha</label><input id="ci-senha" name="senha" class="campo" type="password" maxlength="128" autocomplete="new-password"></div>
+<div><label class="rotulo" for="ci-senha2">Repita a senha</label><input id="ci-senha2" name="senha2" class="campo" type="password" maxlength="128" autocomplete="new-password"></div>
+</div>
+<p class="msg-form" role="alert" hidden></p>
+<button class="btn3d amarelo lg bloco" type="submit">Criar gerente e entrar</button>
+</form>
+{% elif not operadores %}
+<h2 id="t-entrada">Frente de Loja</h2>
+<p class="data" data-hoje>—</p>
+<p class="msg-form">Nenhum operador ativo. Use a recuperação de acesso: feche o sistema e abra o programa com a opção <b>--redefinir-senha</b>.</p>
+{% else %}
+<h2 id="t-entrada">Frente de Loja</h2>
+<p class="data" data-hoje>—</p>
+<form id="form-login" class="form-entrada" autocomplete="off" novalidate>
+<div><label class="rotulo" for="lg-operador">Operador</label><div class="sel"><select id="lg-operador" name="login" class="campo">{% for o in operadores %}<option value="{{ o.login }}">{{ o.nome }}</option>{% endfor %}</select>{{ icone("seta", "seta") }}</div></div>
+<div><label class="rotulo" for="lg-senha">Senha</label><input id="lg-senha" name="senha" class="campo" type="password" maxlength="128" autocomplete="off" autofocus></div>
+<p class="msg-form" role="alert" hidden></p>
+<button class="btn3d amarelo lg bloco" type="submit">Entrar (Enter)</button>
+</form>
+{% endif %}
 </section>
 </aside>
 </div>
@@ -43,7 +78,7 @@
 <span class="status" data-status="banco" data-rotulo="Banco local"><span class="dot" aria-hidden="true"></span><span class="texto">Banco local: —</span></span>
 <span class="status" data-status="fiscal" data-rotulo="SEFAZ"><span class="dot" aria-hidden="true"></span><span class="texto">SEFAZ: —</span></span>
 <span class="dir">
-<span class="tecla"><kbd>Enter</kbd>Entrar</span>
+<span class="tecla"><kbd>Enter</kbd>{{ "Continuar" if operador else "Entrar" }}</span>
 <button class="tecla" type="button" data-acao="sobre" data-atalho="F1"><kbd>F1</kbd>Ajuda</button>
 <button class="tecla" type="button" data-acao="sair" data-atalho="Escape"><kbd>Esc</kbd>Sair</button>
 </span>

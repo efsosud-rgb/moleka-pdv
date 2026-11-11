@@ -1,5 +1,8 @@
 {#- Moldura das telas: barra de menus, faixa do topo, menu lateral e barra de status.
-    Cada tela estende este arquivo e preenche só os blocos que mudam. -#}
+    Cada tela estende este arquivo e preenche só os blocos que mudam.
+    Só chega aqui quem fez login (ver app/web.py): `operador` é quem está usando o sistema e
+    `gerente` diz se ele tem o perfil de gerente. O que é só do gerente aparece trancado
+    para o operador comum. -#}
 {%- from "_macros.html" import icone, marca, pingos, chip -%}
 <!doctype html>
 <html lang="pt-BR">
@@ -20,7 +23,9 @@
 <button class="menu-botao" type="button" aria-haspopup="true" aria-expanded="false">{{ titulo }}</button>
 <div class="submenu">
 {% for item in itens %}
-{% if item.url %}
+{% if item.so_gerente and not gerente %}
+<span class="em-breve" data-aviso="{{ item.rotulo }}: só o gerente abre esta tela.">{{ item.rotulo }}<small>só gerente</small></span>
+{% elif item.url %}
 <a href="{{ item.url }}">{{ item.rotulo }}{% if item.atalho %}<kbd>{{ item.atalho }}</kbd>{% endif %}</a>
 {% elif item.acao %}
 <button type="button" data-acao="{{ item.acao }}">{{ item.rotulo }}{% if item.atalho %}<kbd>{{ item.atalho }}</kbd>{% endif %}</button>
@@ -37,7 +42,7 @@
 {{ marca() }}
 <div class="titulo">
 <h1>{% block titulo %}{% endblock %}</h1>
-<p><span data-hoje>—</span> · Operador: —</p>
+<p><span data-hoje>—</span> · Operador: {{ operador.nome if operador else "—" }}{% if gerente %} (gerente){% endif %}</p>
 </div>
 <div class="chips">{% block chips %}{{ chip("caixa", "Caixa") }}{{ chip("fiscal", "SEFAZ") }}{% endblock %}</div>
 {{ pingos() }}
@@ -46,7 +51,9 @@
 <nav class="lateral" aria-label="Módulos">
 <a class="item{{ ' ativo' if tela == 'inicio' }}" href="/inicio"{% if tela == 'inicio' %} aria-current="page"{% endif %}>{{ icone("casa") }}Início</a>
 {% for m in modulos if m.no_menu_lateral %}
-{% if m.url %}
+{% if m.url and m.so_gerente and not gerente %}
+<button class="item em-breve" type="button" data-aviso="{{ m.rotulo }}: só o gerente abre este módulo.">{{ icone(m.icone) }}{{ m.rotulo }}{{ icone("cadeado", "cadeado") }}</button>
+{% elif m.url %}
 <a class="item{{ ' ativo' if tela == m.id }}" href="{{ m.url }}"{% if tela == m.id %} aria-current="page"{% endif %}>{{ icone(m.icone) }}{{ m.rotulo }}</a>
 {% else %}
 <button class="item em-breve" type="button" data-em-breve="{{ m.rotulo }}: este módulo entra numa próxima versão.">{{ icone(m.icone) }}{{ m.rotulo }}</button>
@@ -66,7 +73,7 @@
 {% block teclas %}
 <button class="tecla" type="button" data-acao="sobre" data-atalho="F1"><kbd>F1</kbd>Ajuda</button>
 <a class="tecla" href="/caixa" data-atalho="F2"><kbd>F2</kbd>Caixa</a>
-<a class="tecla" href="/produtos" data-atalho="F5"><kbd>F5</kbd>Produtos</a>
+{% if gerente %}<a class="tecla" href="/produtos" data-atalho="F5"><kbd>F5</kbd>Produtos</a>{% endif %}
 {% endblock %}
 </span>
 </footer>
@@ -82,6 +89,24 @@
 </dl>
 <form method="dialog"><button class="btn3d amarelo" type="submit">Fechar (Esc)</button></form>
 </dialog>
+{% if operador %}
+<dialog class="dialogo" id="minha-senha" aria-labelledby="ms-titulo">
+<h2 id="ms-titulo">Minha senha</h2>
+<p>Operador: <b>{{ operador.nome }}</b>. Para trocar, digite a senha atual e a senha nova.</p>
+<form id="form-minha-senha" class="form-entrada" autocomplete="off" novalidate>
+<div><label class="rotulo" for="ms-atual">Senha atual</label><input id="ms-atual" name="senha_atual" class="campo" type="password" maxlength="128" autocomplete="off"></div>
+<div class="par">
+<div><label class="rotulo" for="ms-nova">Senha nova</label><input id="ms-nova" name="senha_nova" class="campo" type="password" maxlength="128" autocomplete="new-password"></div>
+<div><label class="rotulo" for="ms-nova2">Repita a senha nova</label><input id="ms-nova2" name="senha_nova2" class="campo" type="password" maxlength="128" autocomplete="new-password"></div>
+</div>
+<p class="msg-form" role="alert" hidden></p>
+<div class="botoes">
+<button class="btn3d" type="button" data-fechar-dialogo>Cancelar (Esc)</button>
+<button class="btn3d verde" type="submit">{{ icone("salvar") }}Salvar senha</button>
+</div>
+</form>
+</dialog>
+{% endif %}
 {% block scripts %}{% endblock %}
 </body>
 </html>

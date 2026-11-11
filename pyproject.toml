@@ -46,4 +46,12 @@ addopts = "-q"
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["app/dinheiro.py", "app/precos.py", "app/fiscal"]
+files = [
+    "app/dinheiro.py",
+    "app/precos.py",
+    "app/fiscal",
+    "app/seguranca.py",
+    "app/acesso.py",
+    "app/operadores.py",
+    "app/api/login.py",
+]

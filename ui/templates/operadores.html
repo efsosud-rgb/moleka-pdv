@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone, chip %}
+{% block titulo_pagina %}Operadores{% endblock %}
+{% block titulo %}Operadores{% endblock %}
+{% block conteudo %}
+<div class="ops">
+<section class="cartao lista" aria-labelledby="t-lista">
+<div class="cab-cartao">
+<h2 id="t-lista">Quem entra no sistema</h2>
+<span data-contagem>—</span>
+<button class="btn3d amarelo mini" type="button" data-novo-operador data-atalho="F3">{{ icone("mais") }}Novo operador (F3)</button>
+</div>
+<div class="rolagem">
+<table class="tabela" id="tabela-operadores" data-eu="{{ operador.id }}">
+<thead><tr><th>Nome</th><th>Usuário</th><th style="width:120px">Perfil</th><th style="width:110px">Situação</th><th style="width:110px"><span class="so-leitor">Ações</span></th></tr></thead>
+<tbody>
+<tr><td class="sem-linhas" colspan="5">Carregando os operadores…</td></tr>
+</tbody>
+</table>
+</div>
+<p class="nota"><b>Operador</b>: vende, opera o caixa e cadastra clientes. <b>Gerente</b>: além disso, cuida de produtos, preços, financeiro, fiscal e operadores.<br>Operador não é apagado: quando ele deixa a loja, marque como <b>inativo</b> e ele não entra mais. As vendas e os caixas que ele fez continuam guardados.</p>
+</section>
+<aside class="cartao ficha" aria-labelledby="t-ficha">
+<h2 id="t-ficha">Novo operador</h2>
+<form id="form-operador" class="form-entrada" autocomplete="off" novalidate>
+<div><label class="rotulo" for="op-nome">Nome</label><input id="op-nome" name="nome" class="campo" type="text" maxlength="80" autocomplete="off"></div>
+<div class="par">
+<div><label class="rotulo" for="op-login">Usuário</label><input id="op-login" name="login" class="campo" type="text" maxlength="30" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
+<div><label class="rotulo" for="op-perfil">Perfil</label><div class="sel"><select id="op-perfil" name="perfil" class="campo"><option value="operador">Operador</option><option value="gerente">Gerente</option></select>{{ icone("seta", "seta") }}</div></div>
+</div>
+<div class="par">
+<div><label class="rotulo" for="op-senha">Senha</label><input id="op-senha" name="senha" class="campo" type="password" maxlength="128" autocomplete="new-password"></div>
+<div><label class="rotulo" for="op-senha2">Repita a senha</label><input id="op-senha2" name="senha2" class="campo" type="password" maxlength="128" autocomplete="new-password"></div>
+</div>
+<label class="check" data-so-na-edicao hidden><input type="checkbox" name="ativo" checked>Ativo (pode entrar no sistema)</label>
+<p class="dica-form" data-dica-senha hidden>Deixe a senha em branco para não mudar.</p>
+<p class="msg-form" role="alert" hidden></p>
+<div class="botoes">
+<button class="btn3d" type="button" data-cancelar-operador>Limpar</button>
+<button class="btn3d verde" type="submit" data-atalho="F10">{{ icone("salvar") }}Salvar (F10)</button>
+</div>
+</form>
+</aside>
+</div>
+{% endblock %}
+{% block teclas %}
+<button class="tecla" type="button" data-acao="sobre" data-atalho="F1"><kbd>F1</kbd>Ajuda</button>
+<span class="tecla"><kbd>F3</kbd>Novo</span>
+<span class="tecla"><kbd>F10</kbd>Salvar</span>
+<a class="tecla" href="/inicio" data-atalho="Escape"><kbd>Esc</kbd>Início</a>
+{% endblock %}
+{% block scripts %}<script src="/static/js/operadores.js?v={{ versao }}" defer></script>{% endblock %}

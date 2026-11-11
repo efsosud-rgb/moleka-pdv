@@ -1,15 +1,19 @@
-"""As páginas da interface: existem, apontam para lugares que existem e não inventam dados."""
+"""As páginas da interface: existem, apontam para lugares que existem e não inventam dados.
+
+A fixture `cliente` é a janela com o gerente logado; o que acontece sem login e com o operador
+comum está em test_acesso.py.
+"""
 
 import re
 
 import pytest
 
-PAGINAS = ["/", "/inicio", "/caixa", "/produtos", "/financeiro"]
+PAGINAS = ["/", "/inicio", "/caixa", "/produtos", "/financeiro", "/operadores"]
 
 
 @pytest.mark.parametrize("caminho", PAGINAS)
 def test_pagina_abre(cliente, caminho):
-    resposta = cliente.get(caminho)
+    resposta = cliente.get(caminho, follow_redirects=False)
     assert resposta.status_code == 200
     assert "Moleka" in resposta.text
     assert resposta.headers["content-type"].startswith("text/html")
@@ -35,7 +39,8 @@ def test_arquivos_da_interface_e_da_marca(cliente):
         if caminho.startswith("../"):
             caminho = "/static/" + caminho[3:]
         assert cliente.get(caminho).status_code == 200, caminho
-    assert cliente.get("/static/js/moleka.js").status_code == 200
+    for script in ("moleka.js", "entrada.js", "operadores.js"):
+        assert cliente.get(f"/static/js/{script}").status_code == 200, script
     assert cliente.get("/assets/brand/mascote.png").headers["content-type"] == "image/png"
 
 

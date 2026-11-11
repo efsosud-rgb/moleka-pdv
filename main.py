@@ -6,6 +6,7 @@ Uso:
     python main.py --tela-cheia  # tela cheia, sem barra de título (modo caixa)
     python main.py --janela      # janela de 1366x768, para desenvolvimento
     python main.py --sem-janela  # só o servidor, para desenvolvimento/testes (abra no navegador)
+    python main.py --redefinir-senha [USUARIO]  # recuperação de acesso: gera uma senha provisória
 """
 
 from __future__ import annotations
@@ -22,7 +23,7 @@ from pathlib import Path
 
 import uvicorn
 
-from app import config, db
+from app import config, db, operadores
 from app.api import criar_app
 
 log = logging.getLogger("moleka")
@@ -56,6 +57,39 @@ def avisar(titulo: str, texto: str, *, com_janela: bool) -> None:
         ctypes.windll.user32.MessageBoxW(None, texto, titulo, 0x10)  # 0x10 = ícone de erro
     else:
         print(f"{titulo}: {texto}", file=sys.stderr)
+
+
+def informar(titulo: str, texto: str) -> None:
+    """Mostra um recado que não é erro: caixa de mensagem no Windows, terminal nos demais."""
+    if os.name == "nt":
+        import ctypes
+
+        ctypes.windll.user32.MessageBoxW(None, texto, titulo, 0x40)  # 0x40 = ícone de informação
+    else:
+        print(f"{titulo}: {texto}")
+
+
+def redefinir_senha(usuario: str) -> int:
+    """Recuperação de acesso: sorteia uma senha provisória para um operador e mostra na tela.
+
+    Não precisa do sistema aberto nem de login: quem usa este computador já tem acesso ao
+    arquivo do banco. Por isso cada uso fica registrado no log (sem a senha).
+    """
+    db.criar_schema()
+    try:
+        with db.nova_sessao() as sessao:
+            operador, provisoria = operadores.redefinir_senha(sessao, usuario or None)
+    except operadores.RegraError as erro:
+        avisar(f"{config.APP_NOME} — recuperação de acesso", str(erro), com_janela=True)
+        return 4
+    informar(
+        f"{config.APP_NOME} — recuperação de acesso",
+        f"Senha provisória de {operador.nome} (usuário {operador.login}):\n\n"
+        f"        {provisoria}\n\n"
+        "Anote agora: ela não aparece de novo. Abra o sistema, entre com ela e troque em "
+        "Arquivo → Minha senha.",
+    )
+    return 0
 
 
 def webview2_instalado() -> bool:
@@ -160,10 +194,29 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--porta", type=int, default=config.porta())
     parser.add_argument("--tela-cheia", action="store_true", help="tela cheia (modo caixa)")
     parser.add_argument("--janela", action="store_true", help="janela de 1366x768")
+    parser.add_argument(
+        "--redefinir-senha",
+        nargs="?",
+        const="",
+        default=None,
+        metavar="USUARIO",
+        help="recuperação de acesso: gera uma senha provisória (sem USUARIO, a do gerente)",
+    )
     args = parser.parse_args(argv)
     com_janela = not args.sem_janela
 
     arquivo_log = configurar_logs()
+    if args.redefinir_senha is not None:
+        try:
+            return redefinir_senha(args.redefinir_senha)
+        except Exception as erro:  # sem terminal no programa empacotado: o motivo vai para a tela
+            log.exception("falha na recuperação de acesso")
+            avisar(
+                config.APP_NOME,
+                f"Não foi possível redefinir a senha.\n\n{erro}\n\nDetalhes em:\n{arquivo_log}",
+                com_janela=True,
+            )
+            return 1
     log.info("%s %s iniciando; dados em %s", config.APP_NOME, config.VERSAO, config.pasta_dados())
 
     porta = args.porta

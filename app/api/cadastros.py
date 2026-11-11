@@ -1,6 +1,9 @@
 """Cadastros básicos: produtos, clientes e tabelas de preço (listar e criar).
 
 Edição, inativação e importação entram nas próximas frentes. Preços entram em centavos.
+
+Permissões: todas as rotas exigem login (ver `criar_app`). Produtos e tabelas de preço só o
+gerente cria; clientes, qualquer operador (o caixa cadastra o cliente na hora da venda).
 """
 
 from __future__ import annotations
@@ -12,8 +15,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app import db
-from app.models import Cliente, PrecoProduto, Produto, TabelaPreco
+from app import acesso, db
+from app.models import Cliente, Operador, PrecoProduto, Produto, TabelaPreco
 
 router = APIRouter(tags=["cadastros"])
 
@@ -39,7 +42,11 @@ def listar_tabelas(sessao: Session = Depends(db.sessao)) -> list[TabelaPreco]:
 
 
 @router.post("/tabelas-preco", response_model=TabelaPrecoOut, status_code=201)
-def criar_tabela(dados: TabelaPrecoIn, sessao: Session = Depends(db.sessao)) -> TabelaPreco:
+def criar_tabela(
+    dados: TabelaPrecoIn,
+    sessao: Session = Depends(db.sessao),
+    _gerente: Operador = Depends(acesso.exigir_gerente),
+) -> TabelaPreco:
     nome = dados.nome.strip().upper()
     if sessao.scalar(select(TabelaPreco).where(TabelaPreco.nome == nome)):
         raise HTTPException(409, f"já existe a tabela {nome}")
@@ -111,7 +118,11 @@ def listar_produtos(
 
 
 @router.post("/produtos", response_model=ProdutoOut, status_code=201)
-def criar_produto(dados: ProdutoIn, sessao: Session = Depends(db.sessao)) -> Produto:
+def criar_produto(
+    dados: ProdutoIn,
+    sessao: Session = Depends(db.sessao),
+    _gerente: Operador = Depends(acesso.exigir_gerente),
+) -> Produto:
     codigo = dados.codigo.strip()
     if sessao.scalar(select(Produto).where(Produto.codigo == codigo)):
         raise HTTPException(409, f"já existe produto com o código {codigo}")

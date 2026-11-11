@@ -3,17 +3,22 @@
 A moldura (menus, faixa do topo, menu lateral e barra de status) fica num só lugar
 (`ui/templates/base.html`); cada tela só descreve o seu miolo. Os dados chegam depois,
 pelo JavaScript, a partir da API (`/api/...`): a página em si não carrega número nenhum.
+
+Só a capa abre sem login. As outras telas mandam quem não entrou de volta para a capa, e as
+telas marcadas como "só gerente" mandam o operador comum de volta para o Início.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
 
-from app import config
+from app import acesso, config, db, operadores
+from app.models import Operador
 
 router = APIRouter(include_in_schema=False)
 _templates: Jinja2Templates | None = None
@@ -31,6 +36,7 @@ class Modulo:
     url: str | None = None  # None = ainda não construído ("em breve")
     atalho: str | None = None
     no_menu_lateral: bool = True
+    so_gerente: bool = False  # o operador comum vê o módulo trancado
 
 
 MODULOS: tuple[Modulo, ...] = (
@@ -52,14 +58,18 @@ MODULOS: tuple[Modulo, ...] = (
         "verde",
         "/produtos",
         "F5",
+        so_gerente=True,
     ),
-    Modulo("estoque", "Estoque", "Saldos, ajustes e inventário", "caixas", "vinho"),
+    Modulo(
+        "estoque", "Estoque", "Saldos, ajustes e inventário", "caixas", "vinho", so_gerente=True
+    ),
     Modulo(
         "entrada-nf",
         "Entrada de NF (XML)",
         "Importa a compra e atualiza estoque e custo",
         "xml",
         "vermelho",
+        so_gerente=True,
     ),
     Modulo("clientes", "Clientes", "Cadastro, CPF na nota e histórico", "pessoas", "amarelo"),
     Modulo(
@@ -68,6 +78,7 @@ MODULOS: tuple[Modulo, ...] = (
         "Varejo, atacado e preço por quantidade",
         "lista",
         "verde",
+        so_gerente=True,
     ),
     Modulo(
         "financeiro",
@@ -76,6 +87,7 @@ MODULOS: tuple[Modulo, ...] = (
         "carteira",
         "vinho",
         "/financeiro",
+        so_gerente=True,
     ),
     Modulo(
         "dre",
@@ -85,9 +97,15 @@ MODULOS: tuple[Modulo, ...] = (
         "vermelho",
         "/financeiro",
         no_menu_lateral=False,
+        so_gerente=True,
     ),
     Modulo(
-        "fiscal", "Fiscal / NFC-e", "Emissão, contingência e certificado A1", "recibo", "amarelo"
+        "fiscal",
+        "Fiscal / NFC-e",
+        "Emissão, contingência e certificado A1",
+        "recibo",
+        "amarelo",
+        so_gerente=True,
     ),
 )
 
@@ -98,8 +116,9 @@ class ItemMenu:
 
     rotulo: str
     url: str | None = None
-    acao: str | None = None  # tratada em moleka.js: "sair", "tela-cheia" ou "sobre"
+    acao: str | None = None  # tratada em moleka.js: "sair", "tela-cheia", "sobre"...
     atalho: str | None = None
+    so_gerente: bool = False
 
 
 MENUS: tuple[tuple[str, tuple[ItemMenu, ...]], ...] = (
@@ -108,6 +127,8 @@ MENUS: tuple[tuple[str, tuple[ItemMenu, ...]], ...] = (
         (
             ItemMenu("Início", url="/inicio"),
             ItemMenu("Capa do sistema", url="/"),
+            ItemMenu("Minha senha", acao="minha-senha"),
+            ItemMenu("Trocar de operador", acao="trocar-operador"),
             ItemMenu("Tela cheia", acao="tela-cheia"),
             ItemMenu("Sair", acao="sair", atalho="Alt+F4"),
         ),
@@ -115,15 +136,21 @@ MENUS: tuple[tuple[str, tuple[ItemMenu, ...]], ...] = (
     (
         "Cadastros",
         (
-            ItemMenu("Produtos", url="/produtos", atalho="F5"),
+            ItemMenu("Produtos", url="/produtos", atalho="F5", so_gerente=True),
             ItemMenu("Clientes"),
             ItemMenu("Tabelas de preço"),
-            ItemMenu("Operadores"),
+            ItemMenu("Operadores", url="/operadores", so_gerente=True),
         ),
     ),
     ("Caixa", (ItemMenu("Venda (PDV)", url="/caixa", atalho="F2"), ItemMenu("Controle de caixa"))),
     ("Estoque", (ItemMenu("Saldos e ajustes"), ItemMenu("Entrada de NF (XML)"))),
-    ("Financeiro", (ItemMenu("DRE e fluxo de caixa", url="/financeiro"), ItemMenu("Lançamentos"))),
+    (
+        "Financeiro",
+        (
+            ItemMenu("DRE e fluxo de caixa", url="/financeiro", so_gerente=True),
+            ItemMenu("Lançamentos"),
+        ),
+    ),
     ("Fiscal", (ItemMenu("NFC-e emitidas"), ItemMenu("Certificado A1"))),
     ("Relatórios", (ItemMenu("Vendas por período"), ItemMenu("Rentabilidade por produto"))),
     ("Ajuda", (ItemMenu("Sobre o Moleka PDV", acao="sobre"),)),
@@ -182,6 +209,11 @@ ICONES: dict[str, str] = {
     "alerta": '<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',
     "seta": '<path d="m6 9 6 6 6-6"/>',
     "obra": '<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',
+    "cadeado": (
+        '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/>'
+    ),
+    "pessoa": '<circle cx="12" cy="8" r="4"/><path d="M4 21c.7-4.2 3.8-6.5 8-6.5s7.3 2.3 8 6.5"/>',
+    "lapis": '<path d="M4 20h4L19.5 8.5l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
 }
 
 
@@ -199,30 +231,78 @@ def templates() -> Jinja2Templates:
     return _templates
 
 
-def _pagina(request: Request, nome: str, tela: str) -> HTMLResponse:
-    return templates().TemplateResponse(request, nome, {"tela": tela})
+def _pagina(
+    request: Request, nome: str, tela: str, operador: Operador | None, **contexto: object
+) -> HTMLResponse:
+    resposta = templates().TemplateResponse(
+        request,
+        nome,
+        {"tela": tela, "operador": operador, "gerente": acesso.e_gerente(operador), **contexto},
+    )
+    # A janela não guarda cópia das telas: depois de "Trocar de operador", voltar não mostra
+    # a tela do operador anterior.
+    resposta.headers["Cache-Control"] = "no-store"
+    return resposta
+
+
+def _tela(
+    request: Request, nome: str, tela: str, operador: Operador | None, *, so_gerente: bool = False
+) -> Response:
+    """Uma tela interna: exige login e, quando marcado, o perfil de gerente."""
+    if operador is None:
+        return RedirectResponse("/", status_code=303)
+    if so_gerente and not acesso.e_gerente(operador):
+        return RedirectResponse("/inicio?aviso=gerente", status_code=303)
+    return _pagina(request, nome, tela, operador)
 
 
 @router.get("/", response_class=HTMLResponse)
-def capa(request: Request) -> HTMLResponse:
-    return _pagina(request, "capa.html", "capa")
+def capa(
+    request: Request,
+    operador: Operador | None = Depends(acesso.operador_opcional),
+    sessao: Session = Depends(db.sessao),
+) -> HTMLResponse:
+    """Capa: primeiro acesso (cria o gerente), login, ou "continuar" para quem já entrou."""
+    return _pagina(
+        request,
+        "capa.html",
+        "capa",
+        operador,
+        configurado=operadores.existe_algum(sessao),
+        operadores=operadores.listar(sessao, so_ativos=True),
+    )
 
 
 @router.get("/inicio", response_class=HTMLResponse)
-def inicio(request: Request) -> HTMLResponse:
-    return _pagina(request, "inicio.html", "inicio")
+def inicio(
+    request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
+) -> Response:
+    return _tela(request, "inicio.html", "inicio", operador)
 
 
 @router.get("/caixa", response_class=HTMLResponse)
-def caixa(request: Request) -> HTMLResponse:
-    return _pagina(request, "caixa.html", "caixa")
+def caixa(
+    request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
+) -> Response:
+    return _tela(request, "caixa.html", "caixa", operador)
 
 
 @router.get("/produtos", response_class=HTMLResponse)
-def produtos(request: Request) -> HTMLResponse:
-    return _pagina(request, "produtos.html", "produtos")
+def produtos(
+    request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
+) -> Response:
+    return _tela(request, "produtos.html", "produtos", operador, so_gerente=True)
 
 
 @router.get("/financeiro", response_class=HTMLResponse)
-def financeiro(request: Request) -> HTMLResponse:
-    return _pagina(request, "financeiro.html", "financeiro")
+def financeiro(
+    request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
+) -> Response:
+    return _tela(request, "financeiro.html", "financeiro", operador, so_gerente=True)
+
+
+@router.get("/operadores", response_class=HTMLResponse)
+def tela_operadores(
+    request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
+) -> Response:
+    return _tela(request, "operadores.html", "operadores", operador, so_gerente=True)

@@ -75,6 +75,13 @@ def sessao() -> Iterator[Session]:
         yield s
 
 
+def nova_sessao() -> Session:
+    """Sessão avulsa, para usar fora de uma requisição: `with db.nova_sessao() as sessao:`."""
+    engine()
+    assert _fabrica is not None
+    return _fabrica()
+
+
 def banco_ok() -> tuple[bool, str]:
     try:
         with engine().connect() as c:
