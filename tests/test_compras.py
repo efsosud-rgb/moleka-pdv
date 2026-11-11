@@ -298,6 +298,10 @@ def test_importar_da_entrada_no_estoque_faz_o_custo_e_as_contas(cliente, loja, t
     assert config.pasta_dados() == tmp_path
     guardado = tmp_path / "xml" / "entrada" / f"{nota['chave']}.xml"
     assert guardado.read_text(encoding="utf-8") == xml
+    with db.nova_sessao() as sessao:
+        caminho = sessao.scalar(select(NotaEntrada.xml_caminho))
+    assert caminho == f"xml/entrada/{nota['chave']}.xml"  # igual no Windows e fora dele
+    assert (tmp_path / caminho).is_file()
 
     # A mesma nota não entra duas vezes.
     de_novo = _importar(cliente, xml, _decisoes(loja))

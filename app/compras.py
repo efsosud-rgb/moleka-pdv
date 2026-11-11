@@ -28,7 +28,6 @@ import logging
 from dataclasses import dataclass, replace
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
-from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -176,11 +175,12 @@ def _criar_produto(sessao: Session, item: nfe_xml.ItemNota, fator: Decimal) -> P
 
 
 def _guardar_xml(chave: str, texto: str) -> str:
-    """Guarda o arquivo da nota na pasta de dados. Devolve o caminho relativo a ela."""
+    """Guarda o arquivo da nota na pasta de dados. Devolve o caminho relativo a ela, sempre com
+    barras normais: o que fica gravado no banco é igual no Windows e fora dele."""
     pasta = config.pasta_dados() / "xml" / "entrada"
     pasta.mkdir(parents=True, exist_ok=True)
     (pasta / f"{chave}.xml").write_text(texto, encoding="utf-8")
-    return str(Path("xml") / "entrada" / f"{chave}.xml")
+    return f"xml/entrada/{chave}.xml"
 
 
 def importar(
