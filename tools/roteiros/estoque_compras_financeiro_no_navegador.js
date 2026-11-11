@@ -431,7 +431,7 @@ const LARGURA = 1366, ALTURA = Number(process.argv[4] || 697);
     ['= Resultado do período', /^= Resultado do período parcial -1\.726,35 -1679,3%$/],
   ];
   for (const [contem, regex] of dre) await esperaLinha('#tabela-dre', contem, regex, 'DRE: ' + contem);
-  await espera('[data-dre-avisos]', /1 item\(ns\) vendido\(s\), somando R\$ 6,00, estavam sem custo cadastrado \(Água de teste\)/, 'DRE: avisa o que foi vendido sem custo');
+  await espera('[data-dre-avisos]', /1 item\(ns\) vendido\(s\), somando R\$ 6,00, estão sem custo gravado \(Água de teste\)/, 'DRE: avisa o que foi vendido sem custo');
   await espera('[data-dk="receita_liquida"]', /^R\$ 102,80$/, 'DRE: cartão da receita líquida');
   await espera('[data-dk="lucro_bruto_m"]', /^32,7% da receita líquida \(parcial\)$/, 'DRE: cartão do lucro bruto diz que é parcial');
   await espera('[data-dk="resultado"]', /^-R\$ 1\.726,35$/, 'DRE: cartão do resultado');
@@ -447,7 +447,7 @@ const LARGURA = 1366, ALTURA = Number(process.argv[4] || 697);
   await esperaLinha('#tabela-rentabilidade', 'Picolé de teste', /^1 Picolé de teste 16 UN 70,23 36,48 33,75 48,1%$/, 'Rentabilidade: picolé');
   await esperaLinha('#tabela-rentabilidade', 'Sorvete de teste', /^2 Sorvete de teste por quilo 0,500 KG 26,57 7,67 18,90 71,1%$/, 'Rentabilidade: sorvete');
   await esperaLinha('#tabela-rentabilidade', 'Água de teste', /^3 Água de teste 2 UN 6,00 — — —$/, 'Rentabilidade: água sem custo não ganha margem inventada');
-  await esperaLinha('#tabela-rentabilidade', 'Sem custo cadastrado', /^Sem custo cadastrado \(1 produto\): fora da margem 6,00 — — —$/, 'Rentabilidade: o que ficou fora da margem');
+  await esperaLinha('#tabela-rentabilidade', 'Sem custo gravado na venda', /^Sem custo gravado na venda \(1 produto\): fora da margem 6,00 — — —$/, 'Rentabilidade: o que ficou fora da margem');
   await esperaLinha('#tabela-rentabilidade', 'Total dos produtos com custo', /^Total dos produtos com custo 96,80 44,15 52,65 54,4%$/, 'Rentabilidade: total só de quem tem custo');
   await espera('[data-rent-nota]', /^Total vendido no período: R\$ 102,80\./, 'Rentabilidade: o total vendido fecha com o fluxo de caixa');
   await medir('financeiro-rentabilidade');

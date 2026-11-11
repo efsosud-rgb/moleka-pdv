@@ -5,7 +5,7 @@ De onde vêm os números:
 - vendas: as finalizadas no período (canceladas ficam de fora), pela hora em que foram
   finalizadas, no horário de Brasília;
 - custo das mercadorias vendidas (CMV): o custo médio que cada item tinha quando a venda foi
-  finalizada (gravado na venda). Item vendido sem custo cadastrado NÃO entra no CMV, e o
+  finalizada (gravado na venda). Item vendido sem custo gravado NÃO entra no CMV, e o
   relatório avisa quantos são: o lucro não é inventado;
 - despesas e receitas: os lançamentos, pela data de competência (DRE) ou pelo dia em que foram
   pagos (fluxo de caixa). Lançamento cancelado não entra em nada.
@@ -418,7 +418,6 @@ class Dre:
     vendas_quantidade: int = 0
     itens_vendidos: int = 0  # soma dos itens ao preço da tabela (subtotal)
     acrescimos_de_forma: int = 0
-    outras_vendas: int = 0  # receitas lançadas no grupo "receita de vendas"
     descontos_do_gerente: int = 0
     descontos_de_forma: int = 0
     cmv_das_vendas: int = 0

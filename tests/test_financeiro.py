@@ -568,7 +568,7 @@ def test_dre_sem_custo_nao_inventa_lucro(cliente, loja, vender):
     dre = cliente.get("/api/financeiro/dre", params=_periodo(hoje, hoje)).json()
     linhas = {linha["rotulo"]: linha for linha in dre["linhas"]}
     assert linhas["= Receita líquida"]["valor_centavos"] == 600
-    sem_custo = "as vendas do período não têm custo cadastrado nem lançado"
+    sem_custo = "as vendas do período não têm custo gravado nem lançado"
     for rotulo in (
         "(−) Custo das mercadorias vendidas (CMV)",
         "= Lucro bruto",
@@ -577,7 +577,8 @@ def test_dre_sem_custo_nao_inventa_lucro(cliente, loja, vender):
         assert (linhas[rotulo]["valor_centavos"], linhas[rotulo]["motivo"]) == (None, sem_custo)
     assert len(dre["avisos"]) == 1
     assert dre["avisos"][0].startswith(
-        "1 item(ns) vendido(s), somando R$ 6,00, estavam sem custo cadastrado (Água de teste). "
+        "1 item(ns) vendido(s), somando R$ 6,00, estão sem custo gravado (Água de teste): o "
+        "produto estava sem custo na hora da venda, ou a venda é de antes da versão 0.4.0. "
         "Sem custo nenhum, o lucro bruto e o resultado não podem ser calculados."
     )
 
@@ -586,7 +587,7 @@ def test_dre_sem_custo_nao_inventa_lucro(cliente, loja, vender):
     _lancado(cliente, "despesa", cat["Matéria-prima e insumos"], "Leite e açúcar", 200, hoje)
     dre = cliente.get("/api/financeiro/dre", params=_periodo(hoje, hoje)).json()
     linhas = {linha["rotulo"]: linha for linha in dre["linhas"]}
-    parcial = "parcial: 1 item(ns) vendido(s) sem custo cadastrado"
+    parcial = "parcial: 1 item(ns) vendido(s) sem custo gravado"
     assert (
         linhas["(−) Custo das mercadorias vendidas (CMV)"]["valor_centavos"],
         linhas["(−) Custo das mercadorias vendidas (CMV)"]["motivo"],
@@ -641,7 +642,7 @@ def test_rentabilidade_por_produto(cliente, loja, vender):
     )
     assert (quadro["receita_com_custo_centavos"], quadro["receita_sem_custo_centavos"]) == (9680, 0)
 
-    vender([(loja["agua"], 2)])  # sem custo cadastrado: receita sim, margem não
+    vender([(loja["agua"], 2)])  # sem custo: receita sim, margem não
     quadro = cliente.get("/api/financeiro/rentabilidade", params=_periodo(hoje, hoje)).json()
     agua = quadro["linhas"][-1]
     assert (agua["descricao"], agua["receita_centavos"]) == ("Água de teste", 600)
@@ -650,7 +651,7 @@ def test_rentabilidade_por_produto(cliente, loja, vender):
         None,
         None,
     )
-    assert agua["motivo"] == "vendido sem custo cadastrado"
+    assert agua["motivo"] == "vendido sem custo gravado na venda"
     assert (quadro["receita_centavos"], quadro["custo_centavos"], quadro["margem_centavos"]) == (
         10280,
         4450,
@@ -662,7 +663,30 @@ def test_rentabilidade_por_produto(cliente, loja, vender):
         9680,
         600,
     )
-    assert quadro["motivo"] == "o custo e a margem somam só os produtos com custo cadastrado"
+    assert (
+        quadro["motivo"] == "o custo e a margem somam só os produtos com o custo gravado nas vendas"
+    )
+
+
+def test_rentabilidade_sem_custo_nenhum_nao_mostra_margem(cliente, loja, vender):
+    """Só o produto sem custo foi vendido: há receita, e o custo e a margem ficam sem número."""
+    hoje = tempo.hoje()
+    vender([(loja["agua"], 2)])  # 2 x 3,00
+    quadro = cliente.get("/api/financeiro/rentabilidade", params=_periodo(hoje, hoje)).json()
+    assert [(linha["descricao"], linha["receita_centavos"]) for linha in quadro["linhas"]] == [
+        ("Água de teste", 600)
+    ]
+    assert (quadro["receita_centavos"], quadro["receita_sem_custo_centavos"]) == (600, 600)
+    assert (
+        quadro["receita_com_custo_centavos"],
+        quadro["custo_centavos"],
+        quadro["margem_centavos"],
+        quadro["margem_percentual"],
+    ) == (None, None, None, None)
+    assert (quadro["produtos_sem_custo"], quadro["motivo"]) == (
+        1,
+        "nenhuma venda do período tem o custo gravado",
+    )
 
 
 # ---------------------------------------------------------------- permissão

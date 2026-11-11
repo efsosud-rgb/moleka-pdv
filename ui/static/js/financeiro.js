@@ -456,7 +456,7 @@
     raiz.querySelector("[data-rent-periodo]").textContent = textoDoPeriodo(d.inicio, d.fim);
     const nota = raiz.querySelector("[data-rent-nota]");
     nota.textContent = d.linhas.length
-      ? "Total vendido no período: " + dinheiro(d.receita_centavos) + "." + (d.motivo ? " Produto vendido sem custo cadastrado aparece com “—”: cadastre o custo em Produtos ou dê entrada pela nota (vale para as vendas feitas depois)." : "")
+      ? "Total vendido no período: " + dinheiro(d.receita_centavos) + "." + (d.motivo ? " Produto vendido sem custo gravado aparece com “—”: cadastre o custo em Produtos ou dê entrada pela nota (vale para as vendas feitas depois)." : "")
       : "";
     nota.hidden = !nota.textContent;
     if (!d.linhas.length) { linhaUnica(corpoRent, 7, "Sem dados: " + d.motivo + " (" + textoDoPeriodo(d.inicio, d.fim) + ")."); return; }
@@ -474,7 +474,7 @@
     // Com produto sem custo, a margem é só de quem tem custo: os totais vêm separados.
     if (d.produtos_sem_custo) {
       linhas.push(M.el("tr", { class: "forte" },
-        M.el("td", { colSpan: 3, text: "Sem custo cadastrado (" + (d.produtos_sem_custo === 1 ? "1 produto" : d.produtos_sem_custo + " produtos") + "): fora da margem" }),
+        M.el("td", { colSpan: 3, text: "Sem custo gravado na venda (" + (d.produtos_sem_custo === 1 ? "1 produto" : d.produtos_sem_custo + " produtos") + "): fora da margem" }),
         M.el("td", { class: "num", text: M.reais(d.receita_sem_custo_centavos) }),
         M.el("td", { class: "num", text: "—" }), M.el("td", { class: "num", text: "—" }), M.el("td", { class: "num", text: "—" })));
     }

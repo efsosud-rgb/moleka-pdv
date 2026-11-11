@@ -439,7 +439,7 @@ class DreOut(BaseModel):
 
 
 SEM_MOVIMENTO = "sem vendas nem lançamentos de resultado no período"
-SEM_CUSTO = "as vendas do período não têm custo cadastrado nem lançado"
+SEM_CUSTO = "as vendas do período não têm custo gravado nem lançado"
 
 
 def _linhas_do_dre(d: financeiro.Dre) -> list[LinhaDre]:
@@ -447,7 +447,7 @@ def _linhas_do_dre(d: financeiro.Dre) -> list[LinhaDre]:
     liquida = d.receita_liquida
     conhecido = d.custo_conhecido
     parcial = (
-        f"parcial: {d.itens_sem_custo} item(ns) vendido(s) sem custo cadastrado"
+        f"parcial: {d.itens_sem_custo} item(ns) vendido(s) sem custo gravado"
         if conhecido and d.itens_sem_custo
         else ""
     )
@@ -541,9 +541,10 @@ def _avisos_do_dre(sessao: Session, d: financeiro.Dre) -> list[str]:
         efeito = "Sem custo nenhum, o lucro bruto e o resultado não podem ser calculados."
     return [
         f"{d.itens_sem_custo} item(ns) vendido(s), somando "
-        f"{dinheiro.formatar(d.venda_sem_custo)}, estavam sem custo cadastrado "
-        f"({nomes}{mais}). {efeito} Cadastre o custo em Produtos ou dê entrada pela nota: "
-        "ele vale para as vendas feitas depois."
+        f"{dinheiro.formatar(d.venda_sem_custo)}, estão sem custo gravado ({nomes}{mais}): o "
+        "produto estava sem custo na hora da venda, ou a venda é de antes da versão 0.4.0. "
+        f"{efeito} Cadastre o custo em Produtos ou dê entrada pela nota: ele vale para as "
+        "vendas feitas depois."
     ]
 
 
@@ -620,7 +621,7 @@ class RentabilidadeOut(BaseModel):
     margem_centavos: int | None
     margem_percentual: str | None
     produtos_sem_custo: int
-    receita_sem_custo_centavos: int  # vendido sem custo cadastrado (fora da margem)
+    receita_sem_custo_centavos: int  # vendido sem custo gravado (fora da margem)
     motivo: str
 
 
@@ -646,7 +647,7 @@ def rentabilidade(
                 margem_percentual=_percentual(margem, linha.receita)
                 if margem is not None
                 else None,
-                motivo="" if linha.custo_completo else "vendido sem custo cadastrado",
+                motivo="" if linha.custo_completo else "vendido sem custo gravado na venda",
             )
         )
     completas = [linha for linha in dados if linha.custo_completo]
@@ -657,9 +658,9 @@ def rentabilidade(
     if not dados:
         motivo = "sem vendas no período"
     elif not completas:
-        motivo = "nenhum produto vendido tinha custo cadastrado"
+        motivo = "nenhuma venda do período tem o custo gravado"
     elif len(completas) < len(dados):
-        motivo = "o custo e a margem somam só os produtos com custo cadastrado"
+        motivo = "o custo e a margem somam só os produtos com o custo gravado nas vendas"
     else:
         motivo = ""
     return RentabilidadeOut(
