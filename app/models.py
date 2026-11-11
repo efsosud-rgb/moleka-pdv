@@ -439,9 +439,11 @@ class GrupoDRE(enum.StrEnum):
     DESPESA_OPERACIONAL = "despesa_operacional"
     OUTRAS_RECEITAS = "outras_receitas"
     OUTRAS_DESPESAS = "outras_despesas"
-    # Entra no fluxo de caixa, mas não no resultado: compra de mercadoria para revenda (o custo
-    # vai para o CMV quando o produto é vendido), retirada dos sócios, empréstimos.
+    # Entram no fluxo de caixa, mas não no resultado. Saídas: compra de mercadoria para revenda
+    # (o custo vai para o CMV quando o produto é vendido), retirada dos sócios, parcela de
+    # empréstimo. Entradas: aporte dos sócios, empréstimo recebido.
     FORA_DO_DRE = "fora_do_dre"
+    ENTRADA_FORA_DO_DRE = "entrada_fora_do_dre"
 
 
 class CategoriaFinanceira(Base):

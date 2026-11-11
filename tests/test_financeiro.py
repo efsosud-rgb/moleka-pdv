@@ -69,16 +69,19 @@ def test_plano_de_contas_inicial_e_so_de_nomes(cliente):
     db.semear_padroes()
     db.semear_padroes()  # chamar de novo não duplica nada
     categorias = cliente.get("/api/financeiro/categorias").json()
-    assert len(categorias) == 16 == len(financeiro.CATEGORIAS_INICIAIS)
+    assert len(categorias) == 17 == len(financeiro.CATEGORIAS_INICIAIS)
     nomes = [c["nome"] for c in categorias]
-    assert nomes[:3] == ["Água", "Aluguel", "Compra de mercadorias para revenda"]  # alfabética
+    assert nomes[:3] == ["Água", "Aluguel", "Aporte dos sócios e empréstimos"]  # alfabética
     por_nome = {c["nome"]: c for c in categorias}
     assert por_nome["Aluguel"]["grupo"] == "despesa_operacional"
     assert por_nome["Aluguel"]["grupo_rotulo"] == "Despesas operacionais"
     assert por_nome["Aluguel"]["serve_para"] == ["despesa"]
     assert por_nome["Outras receitas"]["serve_para"] == ["receita"]
-    # "Fora do resultado" serve para os dois lados (compra de mercadoria, aporte, retirada).
-    assert por_nome["Retirada dos sócios"]["serve_para"] == ["receita", "despesa"]
+    # Fora do resultado: as saídas (compra de mercadoria, retirada) só servem para despesa, e
+    # as entradas (aporte, empréstimo) só para receita.
+    assert por_nome["Retirada dos sócios"]["serve_para"] == ["despesa"]
+    assert por_nome["Compra de mercadorias para revenda"]["serve_para"] == ["despesa"]
+    assert por_nome["Aporte dos sócios e empréstimos"]["serve_para"] == ["receita"]
     with db.nova_sessao() as sessao:  # são só nomes: nenhum lançamento nasce junto
         assert sessao.scalar(select(func.count(Lancamento.id))) == 0
     grupos = cliente.get("/api/financeiro/grupos").json()
@@ -90,6 +93,7 @@ def test_plano_de_contas_inicial_e_so_de_nomes(cliente):
         "outras_receitas",
         "outras_despesas",
         "fora_do_dre",
+        "entrada_fora_do_dre",
     ]
 
 
@@ -361,6 +365,7 @@ def test_fluxo_de_caixa_por_dia(cliente, loja, vender):
         (amanha.isoformat(), 0, 0, 0, 0, 3300, 500, 7000),
     ]
     assert (fluxo["vendas_centavos"], fluxo["recebimentos_centavos"]) == (1300, 5000)
+    assert fluxo["entradas_centavos"] == 6300  # 13,00 de vendas + 50,00 recebidos
     assert (fluxo["pagamentos_centavos"], fluxo["saldo_centavos"]) == (3000, 3300)
     assert (fluxo["a_receber_centavos"], fluxo["a_pagar_centavos"]) == (500, 7000)
     # A internet atrasada venceu antes do período: não está nos dias, mas está nos vencidos.
@@ -392,6 +397,7 @@ def test_fluxo_sem_movimento_mostra_o_motivo_e_recusa_periodo_errado(cliente):
     vazio = cliente.get("/api/financeiro/fluxo", params=_periodo(hoje, hoje)).json()
     assert vazio["dias"] == []
     assert (vazio["vendas_centavos"], vazio["saldo_centavos"]) == (None, None)  # a tela mostra "—"
+    assert vazio["entradas_centavos"] is None
     assert vazio["motivo"] == "sem vendas nem pagamentos no período"
     padrao = cliente.get("/api/financeiro/fluxo").json()  # sem datas: o mês corrente inteiro
     assert padrao["inicio"] == hoje.replace(day=1).isoformat()
@@ -455,9 +461,10 @@ def test_dre_do_periodo(cliente, loja, vender):
     _lancado(cliente, "receita", cat["Outras receitas"], "Reembolso", 400, hoje)
     _lancado(cliente, "despesa", cat["Outras despesas"], "Multa", 100, hoje)
     _lancado(cliente, "receita", cat["Outras vendas (fora do caixa)"], "Encomenda", 2000, hoje)
-    # O que NÃO entra: compra de mercadoria (fora do resultado), competência de outro mês e
-    # lançamento cancelado.
+    # O que NÃO entra: compra de mercadoria e aporte dos sócios (fora do resultado),
+    # competência de outro mês e lançamento cancelado.
     _lancado(cliente, "despesa", cat["Compra de mercadorias para revenda"], "Boleto", 9999, hoje)
+    _lancado(cliente, "receita", cat["Aporte dos sócios e empréstimos"], "Aporte", 8888, hoje)
     _lancado(
         cliente,
         "despesa",
@@ -519,6 +526,18 @@ def test_dre_do_periodo(cliente, loja, vender):
         "= Resultado do período": "19,7%",  # 21,80 / 110,80 = 19,675
     }
     assert all(linha["motivo"] == "" for linha in dre["linhas"])
+    # As linhas principais têm uma chave fixa, para a tela achar sem depender do texto.
+    chaves = {linha["chave"]: linha["valor_centavos"] for linha in dre["linhas"] if linha["chave"]}
+    assert chaves == {
+        "receita_bruta": 12525,
+        "descontos": -845,
+        "deducoes": -600,
+        "receita_liquida": 11080,
+        "cmv": -4700,
+        "lucro_bruto": 6380,
+        "despesas": -4500,
+        "resultado": 2180,
+    }
 
     # O total das vendas do fluxo de caixa fecha com o DRE: 20,00 + 66,50 + 10,30 = 96,80,
     # que é a receita bruta do caixa (104,95 + 0,30) menos os descontos (8,45).
@@ -577,7 +596,7 @@ def test_dre_sem_custo_nao_inventa_lucro(cliente, loja, vender):
         parcial,
     )
     assert linhas["= Resultado do período"]["valor_centavos"] == 400
-    assert "só está neste demonstrativo se foi lançado como despesa" in dre["avisos"][0]
+    assert "só está neste demonstrativo se foi lançado como despesa de custo" in dre["avisos"][0]
 
 
 def test_rentabilidade_por_produto(cliente, loja, vender):
@@ -588,6 +607,7 @@ def test_rentabilidade_por_produto(cliente, loja, vender):
         None,
         "sem vendas no período",
     )
+    assert (vazia["receita_com_custo_centavos"], vazia["margem_centavos"]) == (None, None)
 
     _cenario_de_vendas(cliente, loja, vender)
     quadro = cliente.get("/api/financeiro/rentabilidade", params=_periodo(hoje, hoje)).json()
@@ -619,6 +639,7 @@ def test_rentabilidade_por_produto(cliente, loja, vender):
         0,
         "",
     )
+    assert (quadro["receita_com_custo_centavos"], quadro["receita_sem_custo_centavos"]) == (9680, 0)
 
     vender([(loja["agua"], 2)])  # sem custo cadastrado: receita sim, margem não
     quadro = cliente.get("/api/financeiro/rentabilidade", params=_periodo(hoje, hoje)).json()
@@ -636,6 +657,11 @@ def test_rentabilidade_por_produto(cliente, loja, vender):
         5230,  # só dos produtos com custo: 96,80 - 44,50
     )
     assert (quadro["margem_percentual"], quadro["produtos_sem_custo"]) == ("54,0%", 1)
+    # A margem é sobre a receita de quem tem custo (96,80); os 6,00 da água ficam à parte.
+    assert (quadro["receita_com_custo_centavos"], quadro["receita_sem_custo_centavos"]) == (
+        9680,
+        600,
+    )
     assert quadro["motivo"] == "o custo e a margem somam só os produtos com custo cadastrado"
 
 

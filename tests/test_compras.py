@@ -194,7 +194,15 @@ def test_conferir_sugere_o_produto_e_nao_grava_nada(cliente, loja, tmp_path):
     picole, sorvete, copo = nota["itens"]
     # O picolé é achado pelo código de barras da unidade; a nota diz que a caixa tem 24.
     assert (picole["sugestao_produto_id"], picole["sugestao_origem"]) == (loja["picole"], "ean")
-    assert picole["sugestao_descricao"] == "Picolé de teste"
+    assert (
+        picole["sugestao_codigo"],
+        picole["sugestao_descricao"],
+        picole["sugestao_unidade"],
+    ) == (
+        "1",
+        "Picolé de teste",
+        "UN",
+    )
     assert (float(picole["sugestao_fator"]), picole["custo_total_centavos"]) == (24.0, 10960)
     # Sem código de barras conhecido não há sugestão de produto: o gerente escolhe.
     assert (sorvete["sugestao_produto_id"], sorvete["sugestao_origem"]) == (None, None)
@@ -219,10 +227,13 @@ def test_importar_da_entrada_no_estoque_faz_o_custo_e_as_contas(cliente, loja, t
     assert nota["estornada_em"] is None and nota["total_centavos"] == 58060
     # Entrou: 2 CX x 24 = 48 picolés; 3 BD x 10 = 30 kg; 5 pacotes.
     # Custo de cada unidade: 109,60 / 48 = 2,283 -> 2,28; 441,00 / 30 = 14,70; 30,00 / 5 = 6,00.
-    assert [(float(i["entrou"]), i["custo_unitario_centavos"]) for i in nota["itens"]] == [
-        (48.0, 228),
-        (30.0, 1470),
-        (5.0, 600),
+    assert [
+        (float(i["entrou"]), i["produto_unidade"], i["custo_unitario_centavos"])
+        for i in nota["itens"]
+    ] == [
+        (48.0, "UN", 228),
+        (30.0, "KG", 1470),
+        (5.0, "PCT", 600),
     ]
     assert feito["contas_a_pagar"] == 2
     assert [(p["codigo"], p["descricao"]) for p in feito["produtos_criados"]] == [

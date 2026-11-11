@@ -362,6 +362,7 @@ class FluxoOut(BaseModel):
     dias: list[DiaOut]
     vendas_centavos: int | None
     recebimentos_centavos: int | None
+    entradas_centavos: int | None  # vendas + recebimentos
     pagamentos_centavos: int | None
     saldo_centavos: int | None  # entrou - saiu, no período
     a_receber_centavos: int
@@ -401,6 +402,9 @@ def fluxo(
         dias=dias,
         vendas_centavos=dados.total("vendas") if movimentou else None,
         recebimentos_centavos=dados.total("recebimentos") if movimentou else None,
+        entradas_centavos=dados.total("vendas") + dados.total("recebimentos")
+        if movimentou
+        else None,
         pagamentos_centavos=dados.total("pagamentos") if movimentou else None,
         saldo_centavos=dados.total("saldo") if movimentou else None,
         a_receber_centavos=dados.total("a_receber"),
@@ -416,6 +420,7 @@ def fluxo(
 
 
 class LinhaDre(BaseModel):
+    chave: str = ""  # receita_bruta, receita_liquida, cmv, lucro_bruto, resultado... ("" = detalhe)
     rotulo: str
     valor_centavos: int | None  # None = não dá para dizer (ver `motivo`)
     nivel: str  # total, linha ou detalhe
@@ -449,16 +454,24 @@ def _linhas_do_dre(d: financeiro.Dre) -> list[LinhaDre]:
     linhas: list[LinhaDre] = []
 
     def por(
-        nivel: str, rotulo: str, valor: int | None, *, pct: bool = False, motivo: str = ""
+        nivel: str,
+        rotulo: str,
+        valor: int | None,
+        *,
+        chave: str = "",
+        pct: bool = False,
+        motivo: str = "",
     ) -> None:
+        percentual = None
+        if pct and valor is not None:
+            percentual = _percentual(abs(valor) if nivel == "linha" else valor, liquida)
         linhas.append(
             LinhaDre(
+                chave=chave,
                 rotulo=rotulo,
                 valor_centavos=valor,
                 nivel=nivel,
-                percentual=_percentual(abs(valor) if nivel == "linha" else valor, liquida)
-                if pct and valor is not None
-                else None,
+                percentual=percentual,
                 motivo=motivo,
             )
         )
@@ -467,35 +480,36 @@ def _linhas_do_dre(d: financeiro.Dre) -> list[LinhaDre]:
         for nome, valor in sorted(d.por_grupo.get(grupo, {}).items()):
             por("detalhe", nome, sinal * valor)
 
-    por("total", "Receita bruta", d.receita_bruta)
+    por("total", "Receita bruta", d.receita_bruta, chave="receita_bruta")
     por("detalhe", "Vendas no caixa", d.itens_vendidos)
     if d.acrescimos_de_forma:
         por("detalhe", "Acréscimos das formas de pagamento", d.acrescimos_de_forma)
     detalhar(GrupoDRE.RECEITA_BRUTA, 1)
 
-    por("linha", "(−) Descontos concedidos", -d.descontos)
+    por("linha", "(−) Descontos concedidos", -d.descontos, chave="descontos")
     if d.descontos_do_gerente:
         por("detalhe", "Descontos na venda", -d.descontos_do_gerente)
     if d.descontos_de_forma:
         por("detalhe", "Descontos das formas de pagamento", -d.descontos_de_forma)
 
-    por("linha", "(−) Deduções", -d.grupo(GrupoDRE.DEDUCAO), pct=True)
+    por("linha", "(−) Deduções", -d.grupo(GrupoDRE.DEDUCAO), chave="deducoes", pct=True)
     detalhar(GrupoDRE.DEDUCAO, -1)
 
-    por("total", "= Receita líquida", liquida, pct=True)
+    por("total", "= Receita líquida", liquida, chave="receita_liquida", pct=True)
 
     cmv = "(−) Custo das mercadorias vendidas (CMV)"
     if conhecido:
-        por("linha", cmv, -d.cmv, pct=True, motivo=parcial)
+        por("linha", cmv, -d.cmv, chave="cmv", pct=True, motivo=parcial)
         if d.vendas_quantidade:
             por("detalhe", "Custo dos itens vendidos", -d.cmv_das_vendas)
         detalhar(GrupoDRE.CMV, -1)
-        por("total", "= Lucro bruto", d.lucro_bruto, pct=True, motivo=parcial)
+        por("total", "= Lucro bruto", d.lucro_bruto, chave="lucro_bruto", pct=True, motivo=parcial)
     else:
-        por("linha", cmv, None, motivo=SEM_CUSTO)
-        por("total", "= Lucro bruto", None, motivo=SEM_CUSTO)
+        por("linha", cmv, None, chave="cmv", motivo=SEM_CUSTO)
+        por("total", "= Lucro bruto", None, chave="lucro_bruto", motivo=SEM_CUSTO)
 
-    por("linha", "(−) Despesas operacionais", -d.grupo(GrupoDRE.DESPESA_OPERACIONAL), pct=True)
+    despesas = -d.grupo(GrupoDRE.DESPESA_OPERACIONAL)
+    por("linha", "(−) Despesas operacionais", despesas, chave="despesas", pct=True)
     detalhar(GrupoDRE.DESPESA_OPERACIONAL, -1)
     if d.grupo(GrupoDRE.OUTRAS_RECEITAS):
         por("linha", "(+) Outras receitas", d.grupo(GrupoDRE.OUTRAS_RECEITAS), pct=True)
@@ -504,10 +518,11 @@ def _linhas_do_dre(d: financeiro.Dre) -> list[LinhaDre]:
         por("linha", "(−) Outras despesas", -d.grupo(GrupoDRE.OUTRAS_DESPESAS), pct=True)
         detalhar(GrupoDRE.OUTRAS_DESPESAS, -1)
 
+    final = "= Resultado do período"
     if conhecido:
-        por("total", "= Resultado do período", d.resultado, pct=True, motivo=parcial)
+        por("total", final, d.resultado, chave="resultado", pct=True, motivo=parcial)
     else:
-        por("total", "= Resultado do período", None, motivo=SEM_CUSTO)
+        por("total", final, None, chave="resultado", motivo=SEM_CUSTO)
     return linhas
 
 
@@ -519,17 +534,16 @@ def _avisos_do_dre(sessao: Session, d: financeiro.Dre) -> list[str]:
     mais = f" e mais {len(produtos) - 5}" if len(produtos) > 5 else ""
     if d.custo_conhecido:
         efeito = (
-            "O custo deles só está neste demonstrativo se foi lançado como despesa do grupo "
-            "“Custo das mercadorias”; se não foi, o lucro bruto e o resultado estão maiores "
-            "do que o real."
+            "O custo deles só está neste demonstrativo se foi lançado como despesa de custo; "
+            "se não foi, o lucro bruto e o resultado estão maiores do que o real."
         )
     else:
         efeito = "Sem custo nenhum, o lucro bruto e o resultado não podem ser calculados."
     return [
         f"{d.itens_sem_custo} item(ns) vendido(s), somando "
         f"{dinheiro.formatar(d.venda_sem_custo)}, estavam sem custo cadastrado "
-        f"({nomes}{mais}). {efeito} O custo entra pela Entrada de NF, por um ajuste de estoque "
-        "com custo ou pelo cadastro do produto, e vale para as vendas feitas depois."
+        f"({nomes}{mais}). {efeito} Cadastre o custo em Produtos ou dê entrada pela nota: "
+        "ele vale para as vendas feitas depois."
     ]
 
 
@@ -541,14 +555,14 @@ def dre(
     d = financeiro.dre(sessao, inicio, fim)
     if not d.tem_dados:
         nomes = (
-            ("total", "Receita bruta"),
-            ("linha", "(−) Descontos concedidos"),
-            ("linha", "(−) Deduções"),
-            ("total", "= Receita líquida"),
-            ("linha", "(−) Custo das mercadorias vendidas (CMV)"),
-            ("total", "= Lucro bruto"),
-            ("linha", "(−) Despesas operacionais"),
-            ("total", "= Resultado do período"),
+            ("total", "receita_bruta", "Receita bruta"),
+            ("linha", "descontos", "(−) Descontos concedidos"),
+            ("linha", "deducoes", "(−) Deduções"),
+            ("total", "receita_liquida", "= Receita líquida"),
+            ("linha", "cmv", "(−) Custo das mercadorias vendidas (CMV)"),
+            ("total", "lucro_bruto", "= Lucro bruto"),
+            ("linha", "despesas", "(−) Despesas operacionais"),
+            ("total", "resultado", "= Resultado do período"),
         )
         return DreOut(
             inicio=inicio,
@@ -557,8 +571,14 @@ def dre(
             motivo=SEM_MOVIMENTO,
             vendas_quantidade=0,
             linhas=[
-                LinhaDre(rotulo=rotulo, valor_centavos=None, nivel=nivel, motivo=SEM_MOVIMENTO)
-                for nivel, rotulo in nomes
+                LinhaDre(
+                    chave=chave,
+                    rotulo=rotulo,
+                    valor_centavos=None,
+                    nivel=nivel,
+                    motivo=SEM_MOVIMENTO,
+                )
+                for nivel, chave, rotulo in nomes
             ],
             avisos=[],
         )
@@ -593,11 +613,14 @@ class RentabilidadeOut(BaseModel):
     inicio: date
     fim: date
     linhas: list[LinhaRentabilidadeOut]
-    receita_centavos: int | None
-    custo_centavos: int | None  # só dos produtos com custo completo
+    receita_centavos: int | None  # de todos os produtos (= total das vendas)
+    # Só dos produtos com custo completo: é sobre esta receita que a margem é calculada.
+    receita_com_custo_centavos: int | None
+    custo_centavos: int | None
     margem_centavos: int | None
     margem_percentual: str | None
     produtos_sem_custo: int
+    receita_sem_custo_centavos: int  # vendido sem custo cadastrado (fora da margem)
     motivo: str
 
 
@@ -644,11 +667,13 @@ def rentabilidade(
         fim=fim,
         linhas=linhas,
         receita_centavos=receita if dados else None,
+        receita_com_custo_centavos=receita_com_custo if tem_margem else None,
         custo_centavos=custo if tem_margem else None,
         margem_centavos=receita_com_custo - custo if tem_margem else None,
         margem_percentual=_percentual(receita_com_custo - custo, receita_com_custo)
         if tem_margem
         else None,
         produtos_sem_custo=len(dados) - len(completas),
+        receita_sem_custo_centavos=receita - receita_com_custo,
         motivo=motivo,
     )

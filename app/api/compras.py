@@ -33,7 +33,9 @@ class ItemLidoOut(BaseModel):
     unidade_tributavel: str | None
     fator_da_nota: Decimal | None  # quando a nota informa (ex.: CX com 24 UN)
     sugestao_produto_id: int | None
+    sugestao_codigo: str | None
     sugestao_descricao: str | None
+    sugestao_unidade: str | None
     sugestao_fator: Decimal
     sugestao_origem: str | None  # memoria (ligado antes) ou ean (código de barras)
 
@@ -96,6 +98,7 @@ class ItemNotaOut(BaseModel):
     produto_id: int | None
     produto_codigo: str | None
     produto_descricao: str | None
+    produto_unidade: str | None
     entrou: Decimal | None  # quantidade que entrou no estoque (None = não deu entrada)
     custo_unitario_centavos: int | None
 
@@ -159,6 +162,7 @@ def _item_out(item: NotaEntradaItem) -> ItemNotaOut:
         produto_id=item.produto_id,
         produto_codigo=item.produto.codigo if item.produto else None,
         produto_descricao=item.produto.descricao if item.produto else None,
+        produto_unidade=item.produto.unidade if item.produto else None,
         entrou=entrou,
         custo_unitario_centavos=custo,
     )
@@ -208,7 +212,9 @@ def conferir(dados: XmlIn, sessao: Session = Depends(db.sessao)) -> NotaLidaOut:
                 unidade_tributavel=item.unidade_tributavel,
                 fator_da_nota=item.fator_da_nota,
                 sugestao_produto_id=sugestao.produto.id if sugestao.produto else None,
+                sugestao_codigo=sugestao.produto.codigo if sugestao.produto else None,
                 sugestao_descricao=sugestao.produto.descricao if sugestao.produto else None,
+                sugestao_unidade=sugestao.produto.unidade if sugestao.produto else None,
                 sugestao_fator=sugestao.fator,
                 sugestao_origem=sugestao.origem,
             )

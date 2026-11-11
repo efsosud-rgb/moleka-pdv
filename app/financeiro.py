@@ -21,9 +21,10 @@ DRE:
     (-) despesas operacionais, (+) outras receitas, (-) outras despesas
     = resultado
 
-O grupo "fora do resultado" (compra de mercadoria para revenda, retirada dos sócios) entra no
-fluxo de caixa e fica fora do DRE: o custo da mercadoria comprada aparece no CMV quando ela é
-vendida, e contar a compra de novo seria contar duas vezes.
+Os grupos "fora do resultado" (saídas: compra de mercadoria para revenda, retirada dos sócios;
+entradas: aporte dos sócios, empréstimo) entram no fluxo de caixa e ficam fora do DRE: o custo
+da mercadoria comprada aparece no CMV quando ela é vendida, e contar a compra de novo seria
+contar duas vezes.
 
 Fluxo de caixa: venda entra no dia em que foi feita, inclusive no cartão (prazos e taxas da
 maquininha ainda não são considerados). Sangria e suprimento são da gaveta e não entram aqui.
@@ -67,10 +68,12 @@ ROTULOS_DOS_GRUPOS: dict[GrupoDRE, str] = {
     GrupoDRE.DESPESA_OPERACIONAL: "Despesas operacionais",
     GrupoDRE.OUTRAS_RECEITAS: "Outras receitas",
     GrupoDRE.OUTRAS_DESPESAS: "Outras despesas",
-    GrupoDRE.FORA_DO_DRE: "Fora do resultado (só fluxo de caixa)",
+    GrupoDRE.FORA_DO_DRE: "Fora do resultado: saídas (só fluxo de caixa)",
+    GrupoDRE.ENTRADA_FORA_DO_DRE: "Fora do resultado: entradas (só fluxo de caixa)",
 }
+GRUPOS_FORA_DO_RESULTADO = frozenset({GrupoDRE.FORA_DO_DRE, GrupoDRE.ENTRADA_FORA_DO_DRE})
 GRUPOS_DE_RECEITA = frozenset(
-    {GrupoDRE.RECEITA_BRUTA, GrupoDRE.OUTRAS_RECEITAS, GrupoDRE.FORA_DO_DRE}
+    {GrupoDRE.RECEITA_BRUTA, GrupoDRE.OUTRAS_RECEITAS, GrupoDRE.ENTRADA_FORA_DO_DRE}
 )
 GRUPOS_DE_DESPESA = frozenset(
     {
@@ -102,6 +105,7 @@ CATEGORIAS_INICIAIS: tuple[tuple[str, GrupoDRE], ...] = (
     ("Outras vendas (fora do caixa)", GrupoDRE.RECEITA_BRUTA),
     ("Outras receitas", GrupoDRE.OUTRAS_RECEITAS),
     ("Retirada dos sócios", GrupoDRE.FORA_DO_DRE),
+    ("Aporte dos sócios e empréstimos", GrupoDRE.ENTRADA_FORA_DO_DRE),
 )
 PERIODO_MAXIMO_DIAS = 366
 
@@ -494,7 +498,7 @@ def dre(sessao: Session, inicio: date, fim: date) -> Dre:
                 )
     for lancamento in _lancamentos_vivos(sessao, _entre(Lancamento.competencia, inicio, fim)):
         grupo = lancamento.categoria.grupo_dre
-        if grupo == GrupoDRE.FORA_DO_DRE:
+        if grupo in GRUPOS_FORA_DO_RESULTADO:
             continue
         resultado.lancamentos_quantidade += 1
         categorias = resultado.por_grupo.setdefault(grupo, {})
