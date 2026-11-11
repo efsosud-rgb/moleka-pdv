@@ -14,7 +14,7 @@ Backend em **Python**; interface em HTML/CSS/JS dentro de uma janela desktop (**
 
 Não pede senha de administrador. Para atualizar, instale a versão nova por cima: os dados ficam em `%APPDATA%\MolekaPDV` e o programa cuida de adaptá-los (com cópia de segurança antes).
 
-O instalador é gerado e testado no GitHub (`.github/workflows/instalador-windows.yml`) a cada tag `v*`: roda os testes, empacota com PyInstaller, abre o programa num Windows de verdade, tira um print da janela e só então publica.
+O instalador é gerado e testado no GitHub (`.github/workflows/instalador-windows.yml`). Para sair uma versão nova, basta aumentar `VERSAO` em `app/config.py` e enviar para o `main`: o GitHub roda os testes, empacota com PyInstaller, abre o programa num Windows de verdade, tira um print da janela e só então publica em Releases.
 
 ## Como rodar (desenvolvimento)
 
