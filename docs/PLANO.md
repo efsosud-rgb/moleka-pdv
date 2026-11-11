@@ -8,6 +8,11 @@ Cada frente é um bloco que uma sessão do Claude Code (Opus 5.5) constrói de p
 - [x] Base executável: `main.py` (pywebview + uvicorn), `app/config.py`, `app/db.py`, schema completo em `app/models.py`, `app/dinheiro.py` e `app/precos.py` com testes, `/api/status` honesto, cadastros básicos (`/api/produtos`, `/api/clientes`, `/api/tabelas-preco`), adaptador fiscal com `ProvedorNulo`, 4 telas em `ui/` lendo o status real. 41 testes passando; lint limpo.
 - [ ] **Não verificado**: abertura da janela pywebview no Windows (o ambiente de desenvolvimento usado não tem interface gráfica). Primeira coisa a testar no PC.
 
+## Feito (10/11/2026)
+
+- [x] Prévia do layout refeita com as cores da logomarca e as artes novas na capa (5 telas, `docs/prototipo/`). Conferida em 1366×768 por exportação local e no canvas publicado.
+- [ ] **Pendente de aprovação do Eric**: levar a nova identidade para o frontend real (`ui/css/moleka.css` e telas), embutir as fontes e as artes da capa no pacote.
+
 ## Frente 1 — Operadores e login
 Tabela `operador` já existe. Criar o primeiro gerente na primeira execução (tela "Configuração inicial"), hash de senha com `argon2-cffi` ou `hashlib.scrypt`, `POST /api/login`, cookie de sessão local, perfil operador/gerente, tela de login ligada de verdade. Teste: login certo/errado, bloqueio de operador inativo.
 

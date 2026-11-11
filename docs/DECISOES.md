@@ -17,3 +17,12 @@ Registro curto, em ordem cronológica. Uma linha por decisão; o motivo quando n
 - Autenticação de operador ainda não existe: o botão Entrar leva ao Início (Frente 1 do PLANO.md).
 - Fontes Nunito/Inter vêm do Google Fonts por enquanto; serão embutidas no instalador (Frente 9).
 - Janela pywebview em tela cheia (1366×768 alvo), com `--janela` e `--sem-janela` para desenvolvimento. Abertura da janela no Windows ainda não verificada.
+
+## 2026-11-10
+
+- Identidade visual: o sistema usa as cores da logomarca (vermelho `#E43030`, amarelo `#FCF00C`, vinho `#542424`, verde `#249C48`) sobre fundo creme claro. O laranja da primeira versão sai: era o fundo do arquivo da logo, não uma cor da marca. Pedido do Eric.
+- Capa do sistema: usa as artes novas enviadas pelo Eric (logo 3D com a mascote e a loja, alternando na vitrine) e a animação da mascote num telão. A animação chegou como GIF de 9 quadros (507×336 px); no telão ela passa um quadro por segundo, a partir de uma tira com os 9 quadros. Se existir o vídeo original, ele substitui a tira.
+- Logo das telas internas: redesenho provisório em vetor a partir do arquivo de 447 px (`tools/design/vetoriza_logo.py`), porque a logo ampliada ficava borrada. "SORVETES" foi recolocado com a fonte Inter ExtraBold. Trocar pelo vetor oficial quando o cliente enviar.
+- Animações e 3D só com CSS (relevo, perspectiva, camadas, tira de quadros), sem WebGL. Motivo: o PC do caixa tem i3, 4 GB e HD (ver ESPECIFICACAO §10).
+- Protótipo passa a ter 5 telas (entra Produtos) e é exportado do canvas por `tools/design/exporta_prototipo.py`.
+- O frontend real (`ui/`) só recebe a nova identidade depois que o Eric aprovar a prévia.
