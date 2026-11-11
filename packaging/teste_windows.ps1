@@ -1,7 +1,9 @@
 # Testa o Moleka PDV empacotado, no Windows: sobe o servidor, confere as páginas e o login, faz
 # uma venda de teste do começo ao fim (cadastro, caixa, duas formas de pagamento, fechamento),
-# dá entrada numa nota fictícia por XML, confere estoque, custo, fluxo de caixa e DRE, abre a
-# janela e tira um print da tela. Roda no GitHub Actions depois do PyInstaller e depois do instalador.
+# dá entrada numa nota fictícia por XML, confere estoque, custo, fluxo de caixa e DRE, grava as
+# configurações, faz a cópia de segurança, imprime o cupom numa impressora de teste (só no GitHub
+# Actions), abre a janela e tira um print da tela. Roda no GitHub Actions depois do PyInstaller e
+# depois do instalador.
 #
 # Uso:
 #   .\packaging\teste_windows.ps1                               # testa dist\MolekaPDV\MolekaPDV.exe
@@ -64,7 +66,7 @@ try {
   Write-Host "OK: servidor no ar, versão $($status.versao), banco $($status.banco.texto)"
 
   # O que abre sem login: a capa e os arquivos da interface.
-  $scripts = 'moleka', 'entrada', 'operadores', 'produtos', 'clientes', 'tabelas', 'controle_caixa', 'caixa', 'estoque', 'entrada_nf', 'financeiro' | ForEach-Object { "/static/js/$_.js" }
+  $scripts = 'moleka', 'entrada', 'operadores', 'produtos', 'clientes', 'tabelas', 'controle_caixa', 'caixa', 'estoque', 'entrada_nf', 'financeiro', 'configuracoes' | ForEach-Object { "/static/js/$_.js" }
   foreach ($caminho in @('/', '/static/css/moleka.css', '/assets/brand/mascote.png') + $scripts) {
     $r = Invoke-WebRequest "$base$caminho" -UseBasicParsing -TimeoutSec 10
     if ($r.StatusCode -ne 200) { throw "$caminho respondeu $($r.StatusCode)" }
@@ -85,7 +87,7 @@ try {
   $gerente = @{ nome = 'Gerente de Teste'; login = 'gerente'; senha = $senha } | ConvertTo-Json -Compress
   $r = Invoke-WebRequest "$base/api/configuracao-inicial" -Method Post -Body $gerente -ContentType 'application/json' -SessionVariable janela -UseBasicParsing -TimeoutSec 20
   if ($r.StatusCode -ne 201) { throw "a configuração inicial respondeu $($r.StatusCode)" }
-  foreach ($tela in 'inicio', 'caixa', 'controle-caixa', 'produtos', 'clientes', 'tabelas-preco', 'estoque', 'entrada-nf', 'financeiro', 'operadores') {
+  foreach ($tela in 'inicio', 'caixa', 'controle-caixa', 'produtos', 'clientes', 'tabelas-preco', 'estoque', 'entrada-nf', 'financeiro', 'operadores', 'configuracoes') {
     $r = Invoke-WebRequest "$base/$tela" -WebSession $janela -UseBasicParsing -TimeoutSec 10
     if ($r.Content -notmatch "data-tela=`"$tela`"") { throw "a tela /$tela não abriu para o gerente logado" }
     if ($r.Content -notmatch 'Operador: Gerente de Teste') { throw "a tela /$tela não mostra o operador logado" }
@@ -211,6 +213,135 @@ try {
   Conferir 'DRE de hoje (receita líquida; CMV; lucro bruto; resultado, em centavos)' "$($linhas.receita_liquida);$($linhas.cmv);$($linhas.lucro_bruto);$($linhas.resultado)" '4395;-2000;2395;1395'
   $rent = Pedir GET "/api/financeiro/rentabilidade?inicio=$hoje&fim=$hoje"
   Conferir 'rentabilidade do picolé (receita; custo; margem; %)' "$($rent.linhas[0].receita_centavos);$($rent.linhas[0].custo_centavos);$($rent.linhas[0].margem_centavos);$($rent.linhas[0].margem_percentual)" '4395;2000;2395;54,5%'
+
+  # Configurações (versão 0.5.0): começam em branco, e os dados da loja ficam gravados.
+  $cfg = Pedir GET '/api/configuracoes'
+  Conferir 'configurações novas (loja em branco; sem impressora; 48 colunas; oferecer o botão)' "$($cfg.loja.nome_fantasia);$($cfg.impressao.impressora);$($cfg.impressao.colunas);$($cfg.impressao.quando)" ';;48;perguntar'
+  $loja = @{ nome_fantasia = 'Sorveteria de Teste'; razao_social = 'Sorveteria de Teste Ltda'; cnpj = '11.222.333/0001-81'; ie = ''; logradouro = 'Rua das Flores'; numero = '100'; bairro = 'Centro'; cidade = 'São Paulo'; uf = 'SP'; cep = '01001-000'; telefone = ''; rodape = 'Obrigado pela preferência!' }
+  $gravada = Pedir PUT '/api/configuracoes/loja' $loja
+  Conferir 'dados da loja gravados (CNPJ e CEP só com os números; cidade com acento)' "$($gravada.cnpj);$($gravada.cep);$($gravada.cidade)" '11222333000181;01001000;São Paulo'
+
+  # Cópia de segurança: a do dia é feita quando o programa abre; "fazer agora" refaz a cópia e
+  # manda também para a pasta extra.
+  $copiaDoDia = Join-Path $env:MOLEKA_PDV_DADOS "backups\moleka-$hoje.db"
+  if (-not (Test-Path $copiaDoDia)) { throw "a cópia de segurança do dia não foi feita ao abrir o programa ($copiaDoDia)" }
+  Write-Host "OK: a cópia de segurança do dia foi feita ao abrir o programa ($((Get-Item $copiaDoDia).Length) bytes)"
+  $pastaExtra = Join-Path (Resolve-Path $Saida).Path "pasta-extra-$rotulo"
+  if (Test-Path $pastaExtra) { Remove-Item -Recurse -Force $pastaExtra }
+  New-Item -ItemType Directory -Force $pastaExtra | Out-Null
+  $null = Pedir PUT '/api/configuracoes/backup' @{ pasta_extra = "$pastaExtra"; manter = 30 }
+  $copia = Pedir POST '/api/backup'
+  Conferir 'cópia de segurança feita agora (arquivo; erro da pasta extra)' "$($copia.copia.arquivo);$($copia.extra_erro)" "moleka-$hoje.db;"
+  $naExtra = Join-Path $pastaExtra "moleka-$hoje.db"
+  if (-not (Test-Path $naExtra)) { throw "a cópia de segurança não chegou à pasta extra ($naExtra)" }
+  Conferir 'a cópia da pasta extra é um banco SQLite' ([Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes($naExtra), 0, 15)) 'SQLite format 3'
+  Conferir 'indicador da cópia de segurança, com as duas cópias feitas' (Pedir GET '/api/status').backup.ok 'True'
+  $null = Pedir PUT '/api/configuracoes/backup' @{ pasta_extra = ''; manter = 30 }
+  Remove-Item -Recurse -Force $pastaExtra   # a cópia de teste não precisa ir junto com os prints
+
+  # Impressoras: a lista do sistema tem de ser a do Windows, lida aqui por outro caminho (WMI).
+  $naNuvem = $env:GITHUB_ACTIONS -eq 'true'
+  if ($naNuvem) { try { Set-Service Spooler -StartupType Manual; Start-Service Spooler } catch { Write-Host "Aviso: não liguei o serviço de impressão do Windows ($($_.Exception.Message))" } }
+  $lista = Pedir GET '/api/impressoras'
+  if (-not $lista.disponivel) {
+    Write-Host "::warning::NAO VERIFICADO ($rotulo): o Windows não entregou a lista de impressoras ($($lista.motivo))"
+  } else {
+    $doSistema = (@($lista.impressoras | ForEach-Object { $_.nome }) | Sort-Object) -join ' | '
+    $doWindows = (@(Get-CimInstance Win32_Printer | ForEach-Object { $_.Name }) | Sort-Object) -join ' | '
+    Conferir 'impressoras instaladas: a lista do sistema é a mesma do Windows' $doSistema $doWindows
+  }
+
+  # Impressão de verdade pela fila do Windows. Só na máquina de teste do GitHub, porque aqui se
+  # cria uma impressora de teste (num computador de uso este script nunca instala nada). A
+  # impressora "Generic / Text Only" grava num arquivo exatamente os bytes que recebe.
+  $impressaoConferida = $false
+  if ($naNuvem -and $lista.disponivel) {
+    $nomeDaImpressora = "Moleka Teste $rotulo"
+    $arquivoDaFila = Join-Path (Resolve-Path $Saida).Path "impressora-$rotulo.prn"
+    $criada = $false
+    try {
+      if (Test-Path $arquivoDaFila) { Remove-Item -Force $arquivoDaFila }
+      if (-not (Get-PrinterDriver -Name 'Generic / Text Only' -ErrorAction SilentlyContinue)) { Add-PrinterDriver -Name 'Generic / Text Only' }
+      if (-not (Get-PrinterPort -Name $arquivoDaFila -ErrorAction SilentlyContinue)) { Add-PrinterPort -Name $arquivoDaFila }
+      if (-not (Get-Printer -Name $nomeDaImpressora -ErrorAction SilentlyContinue)) { Add-Printer -Name $nomeDaImpressora -DriverName 'Generic / Text Only' -PortName $arquivoDaFila }
+      $criada = $true
+    } catch {
+      Write-Host "::warning::NAO VERIFICADO ($rotulo): não consegui criar a impressora de teste no Windows ($($_.Exception.Message))"
+    }
+    if ($criada) {
+      try {
+        function Esperar-Impresso([int]$Minimo = 100, [int]$Segundos = 40) {
+          $limite = (Get-Date).AddSeconds($Segundos)
+          while ((Get-Date) -lt $limite) {
+            if ((Test-Path $arquivoDaFila) -and ((Get-Item $arquivoDaFila).Length -ge $Minimo)) {
+              Start-Sleep -Milliseconds 800   # a fila pode ainda estar escrevendo
+              try { return , [IO.File]::ReadAllBytes($arquivoDaFila) } catch { Start-Sleep -Milliseconds 300 }
+            }
+            Start-Sleep -Milliseconds 300
+          }
+          throw "a impressora de teste não gravou o arquivo em $Segundos s ($arquivoDaFila)"
+        }
+        function Limpar-Fila {
+          for ($i = 0; $i -lt 20; $i++) {
+            try { if (Test-Path $arquivoDaFila) { Remove-Item -Force $arquivoDaFila }; return } catch { Start-Sleep -Milliseconds 500 }
+          }
+          throw "não consegui apagar $arquivoDaFila para a impressão seguinte"
+        }
+        function Hex([byte[]]$Bytes) { return (($Bytes | ForEach-Object { $_.ToString('x2') }) -join '') }
+        $latin1 = [Text.Encoding]::GetEncoding(28591)
+
+        $lista = Pedir GET '/api/impressoras'
+        if (@($lista.impressoras | Where-Object { $_.nome -eq $nomeDaImpressora }).Count -ne 1) { throw "a impressora de teste criada no Windows não apareceu na lista do sistema" }
+        $opcoes = @{ impressora = $nomeDaImpressora; colunas = 48; acentos = 'cp850'; vias = 1; quando = 'sempre'; cortar = $true; gaveta = $true }
+        $gravadas = Pedir PUT '/api/configuracoes/impressao' $opcoes
+        Conferir 'impressora de cupom escolhida, ainda sem confirmação' "$($gravadas.impressora);$($gravadas.confirmada)" "$nomeDaImpressora;False"
+
+        # 1) Página de teste: ESC @ + ESC t 2 no começo, "IMPRESSÃO" com Ã = C7 (página 850),
+        #    a régua de 48 números e o corte do papel no fim.
+        $null = Pedir POST '/api/impressao/teste'
+        $bytes = Esperar-Impresso
+        $hex = Hex $bytes
+        if (-not $hex.StartsWith('1b401b7402')) { throw "a página de teste não começa com ESC @ e ESC t 2: $($hex.Substring(0, 20))" }
+        if (-not $hex.EndsWith('1b45001d21001d564200')) { throw "a página de teste não termina com o corte do papel: $($hex.Substring($hex.Length - 24))" }
+        if (-not $hex.Contains('494d5052455353c74f')) { throw 'a página de teste não traz "IMPRESSÃO" na página de código 850 (Ã = C7)' }
+        if (-not $latin1.GetString($bytes).Contains('123456789012345678901234567890123456789012345678')) { throw 'a página de teste não traz a régua de 48 colunas' }
+        Write-Host "OK: a página de teste passou pela fila do Windows e saiu na impressora de teste ($($bytes.Length) bytes conferidos)"
+        $null = Pedir POST '/api/impressao/teste/confirmar' @{ saiu = $true }
+        Conferir 'indicador da impressora de cupom depois da confirmação' (Pedir GET '/api/status').impressora_cupom.ok 'True'
+
+        # 2) Reimpressão do comprovante da venda feita acima (total 43,95; troco 6,05).
+        Limpar-Fila
+        $null = Pedir POST "/api/vendas/$($venda.id)/imprimir"
+        $bytes = Esperar-Impresso
+        $texto = $latin1.GetString($bytes)
+        foreach ($trecho in 'Sorveteria de Teste', 'CNPJ 11.222.333/0001-81', 'COMPROVANTE DE VENDA', 'TOTAL', '43,95', 'Troco', '6,05') {
+          if (-not $texto.Contains($trecho)) { throw "o comprovante impresso não traz '$trecho'" }
+        }
+        if ((Hex $bytes).StartsWith('1b70')) { throw 'a reimpressão não deveria abrir a gaveta' }
+        Write-Host "OK: comprovante da venda impresso pela fila do Windows ($($bytes.Length) bytes conferidos)"
+
+        # 3) Venda nova em dinheiro com "imprimir sozinho" e gaveta: o pulso vem antes do comprovante.
+        $null = Pedir POST '/api/caixa/abrir' @{ fundo_troco_centavos = 0 }
+        Limpar-Fila
+        $null = Pedir POST '/api/venda/itens' @{ codigo = '1'; quantidade = 1 }
+        $null = Pedir POST '/api/venda/pagamentos' @{ forma = 'dinheiro'; valor_centavos = 500 }
+        $fim = Pedir POST '/api/venda/finalizar' @{ emitir_nfce = $false }
+        Conferir 'venda com "imprimir sozinho" (situação; comprovante enviado; erro)' "$($fim.venda.status);$($fim.depois.enviado);$($fim.depois.erro)" 'finalizada;True;'
+        $bytes = Esperar-Impresso
+        $hex = Hex $bytes
+        if (-not $hex.StartsWith('1b700019fa1b401b7402')) { throw "na venda em dinheiro o pulso da gaveta deveria vir antes do comprovante: $($hex.Substring(0, 24))" }
+        Write-Host 'OK: venda em dinheiro imprime sozinha, com o pulso da gaveta antes do comprovante'
+        $null = Pedir PUT '/api/configuracoes/impressao' @{ impressora = ''; colunas = 48; acentos = 'cp850'; vias = 1; quando = 'perguntar'; cortar = $true; gaveta = $false }
+        $impressaoConferida = $true
+      }
+      finally {
+        Remove-Printer -Name $nomeDaImpressora -ErrorAction SilentlyContinue
+        Remove-PrinterPort -Name $arquivoDaFila -ErrorAction SilentlyContinue
+      }
+    }
+  }
+  if ($impressaoConferida) { Write-Host "OK: impressão do cupom pela fila do Windows (RAW) CONFERIDA nesta máquina de teste ($rotulo)" }
+  else { Write-Host "NAO VERIFICADO ($rotulo): impressão do cupom pela fila do Windows (sem impressora de teste nesta máquina)" }
 
   # Recuperação de acesso (senha esquecida): o programa sorteia uma senha provisória e mostra numa
   # caixa de mensagem. Confere que a caixa aparece e que a senha antiga deixa de valer.

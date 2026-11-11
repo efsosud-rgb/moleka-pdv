@@ -293,11 +293,17 @@ def test_depois_da_venda_imprime_sozinho_ou_so_abre_a_gaveta(cliente, loja, impr
     assert no_pix["depois"]["enviado"] is True
     assert arquivos()[-1].read_bytes().startswith(b"\x1b@")  # comprovante sem abrir a gaveta
     assert len(arquivos()) == 3
+    # Reimprimir a venda em dinheiro não abre a gaveta de novo: ela abre só na hora da venda.
+    assert cliente.post(f"/api/vendas/{sempre['venda']['id']}/imprimir").status_code == 200
+    reimpresso = arquivos()[-1].read_bytes()
+    assert reimpresso.startswith(b"\x1b@") and b"\x1bp" not in reimpresso
+    assert reimpresso == ultimo.removeprefix(b"\x1bp\x00\x19\xfa")  # o mesmo papel, sem o pulso
+    assert len(arquivos()) == 4
 
     # "Nunca" com a gaveta desligada: nada vai para a impressora.
     _impressora(cliente, quando="nunca")
     nunca = _vender_em(cliente, loja["picole"], "dinheiro")
-    assert nunca["depois"]["enviado"] is False and len(arquivos()) == 3
+    assert nunca["depois"]["enviado"] is False and len(arquivos()) == 4
 
 
 def test_impressora_com_defeito_nao_desfaz_a_venda(cliente, loja, impressora_de_teste, monkeypatch):

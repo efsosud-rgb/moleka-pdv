@@ -221,6 +221,33 @@ def test_copia_atrasada_aparece_como_atrasada(cliente, loja):
     assert status["motivo"] == f"a última cópia de segurança é de {ontem:%d/%m/%Y}"
 
 
+def test_conferencia_reprova_banco_com_defeito_banco_vazio_e_arquivo_que_nao_e_banco(tmp_path):
+    # Banco fictício em que o índice não bate com a tabela: o SQLite abre o arquivo, mas a
+    # conferência (integrity_check) reclama. É o tipo de defeito que só a conferência pega.
+    com_defeito = tmp_path / "com-defeito.db"
+    banco = sqlite3.connect(com_defeito)
+    banco.execute("create table t (a, b)")
+    banco.execute("create index i on t (a)")
+    banco.executemany("insert into t values (?, ?)", [(n, -n) for n in range(50)])
+    banco.commit()
+    banco.execute("pragma writable_schema = on")
+    banco.execute("update sqlite_master set sql = 'CREATE INDEX i ON t (b)' where name = 'i'")
+    banco.commit()
+    banco.close()
+    with pytest.raises(RegraError, match="não passou na conferência"):
+        backup._conferir(com_defeito)
+
+    vazio = tmp_path / "vazio.db"
+    sqlite3.connect(vazio).close()
+    with pytest.raises(RegraError, match="saiu vazia"):
+        backup._conferir(vazio)
+
+    nao_e_banco = tmp_path / "nao-e-banco.db"
+    nao_e_banco.write_bytes(b"isto nao e um banco de dados " * 200)
+    with pytest.raises(sqlite3.DatabaseError):
+        backup._conferir(nao_e_banco)
+
+
 def test_copia_que_nao_passa_na_conferencia_nao_vira_a_copia_do_dia(cliente, loja, monkeypatch):
     def reprovada(arquivo):
         raise RegraError("A cópia foi feita, mas não passou na conferência do banco.", status=500)
