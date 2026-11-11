@@ -18,12 +18,180 @@
     return (negativo ? "-" : "") + "R$ " + reais + "," + cents;
   };
 
-  Moleka.dataHojePorExtenso = function () {
-    return new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" });
+  /* As datas e horas chegam do servidor já no horário da loja (ex.: "2026-11-11T13:17:25-03:00").
+     A tela mostra os números desse texto, sem converter: assim a hora aparece certa mesmo que o
+     relógio ou o fuso do Windows estejam errados. */
+  function dataDoTexto(iso) {
+    const p = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || "");
+    return p ? new Date(Number(p[1]), Number(p[2]) - 1, Number(p[3])) : new Date();
+  }
+
+  Moleka.dataHojePorExtenso = function (iso) {
+    return dataDoTexto(iso).toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" });
   };
 
-  Moleka.mesAno = function () {
-    return new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  Moleka.mesAno = function (iso) {
+    return dataDoTexto(iso).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  };
+
+  /* "12,50" (sem o R$), para campos de digitação e colunas de tabela. */
+  Moleka.reais = function (centavos) {
+    if (centavos === null || centavos === undefined) return "—";
+    return Moleka.formatarCentavos(centavos).replace("R$ ", "");
+  };
+
+  /* Lê um valor digitado ("12,5", "1.234,56", "12.50") e devolve centavos, ou null se não for valor. */
+  Moleka.lerReais = function (texto) {
+    let t = String(texto === null || texto === undefined ? "" : texto).replace(/[R$\s]/g, "");
+    if (!t) return null;
+    if (t.indexOf(",") >= 0) t = t.replace(/\./g, "").replace(",", ".");
+    if (!/^-?\d+(\.\d{1,2})?$/.test(t)) return null;
+    return Math.round(parseFloat(t) * 100);
+  };
+
+  /* Quantidade para mostrar: "3" ou "0,350". */
+  Moleka.qtd = function (valor) {
+    const n = Number(valor);
+    if (!isFinite(n)) return "—";
+    return Number.isInteger(n) ? String(n) : n.toFixed(3).replace(".", ",");
+  };
+
+  /* Percentual de uma forma de pagamento: -500 -> "-5%"; 300 -> "+3%"; 0 -> "". */
+  Moleka.pct = function (bp) {
+    if (!bp) return "";
+    const texto = String(Math.abs(bp) / 100).replace(".", ",");
+    return (bp < 0 ? "-" : "+") + texto + "%";
+  };
+
+  /* "13:17", a partir de "2026-11-11T13:17:25-03:00". */
+  Moleka.hora = function (iso) {
+    const p = /T(\d{2}:\d{2})/.exec(iso || "");
+    return p ? p[1] : "—";
+  };
+
+  /* "11/11 13:17". */
+  Moleka.dataHora = function (iso) {
+    const p = /^\d{4}-(\d{2})-(\d{2})T(\d{2}:\d{2})/.exec(iso || "");
+    return p ? p[2] + "/" + p[1] + " " + p[3] : "—";
+  };
+
+  /* Cria um elemento. Texto entra sempre como texto (nunca como HTML).
+     Moleka.el("td", { class: "num", text: "12,50" }) ou Moleka.el("tr", null, td1, td2). */
+  Moleka.el = function (tag, props) {
+    const el = document.createElement(tag);
+    Object.keys(props || {}).forEach(function (chave) {
+      const valor = props[chave];
+      if (valor === null || valor === undefined || valor === false) return;
+      if (chave === "text") el.textContent = valor;
+      else if (chave === "class") el.className = valor;
+      else if (chave.indexOf("on") === 0) el.addEventListener(chave.slice(2), valor);
+      else if (chave in el && chave !== "list") el[chave] = valor;
+      else el.setAttribute(chave, valor === true ? "" : valor);
+    });
+    for (let i = 2; i < arguments.length; i++) {
+      const filho = arguments[i];
+      if (filho === null || filho === undefined || filho === false) continue;
+      el.appendChild(typeof filho === "string" ? document.createTextNode(filho) : filho);
+    }
+    return el;
+  };
+
+  /* Troca todo o conteúdo de um elemento pelos filhos dados. */
+  Moleka.trocar = function (el) {
+    el.replaceChildren.apply(el, Array.prototype.slice.call(arguments, 1).filter(Boolean));
+  };
+
+  // ------------------------------------------------------------------ caixas de pergunta
+  /* Pergunta de sim ou não. Devolve uma promessa com { ok, motivo }.
+     opcoes: { titulo, texto, sim: "Cancelar a venda", perigo: true, motivo: "obrigatorio" | "opcional" } */
+  Moleka.confirmar = function (opcoes) {
+    const dialogo = document.getElementById("dlg-confirmar");
+    return new Promise(function (resolver) {
+      if (!dialogo) { resolver({ ok: false, motivo: "" }); return; }
+      const form = dialogo.querySelector("form");
+      const campo = form.motivo;
+      dialogo.querySelector("h2").textContent = opcoes.titulo || "Confirmar";
+      dialogo.querySelector("[data-texto]").textContent = opcoes.texto || "";
+      dialogo.querySelector("[data-motivo]").hidden = !opcoes.motivo;
+      dialogo.querySelector("[data-motivo] label").textContent = opcoes.motivo === "opcional" ? "Motivo (opcional)" : "Motivo";
+      campo.value = "";
+      const sim = form.querySelector('button[type="submit"]');
+      sim.textContent = opcoes.sim || "Confirmar";
+      sim.className = "btn3d " + (opcoes.perigo ? "vermelho" : "verde");
+      Moleka.mensagem(form, "");
+      function fechar(ok) {
+        form.removeEventListener("submit", aoEnviar);
+        dialogo.removeEventListener("close", aoFechar);
+        if (dialogo.open) dialogo.close();
+        resolver({ ok: ok, motivo: campo.value.trim() });
+      }
+      function aoEnviar(evento) {
+        evento.preventDefault();
+        if (opcoes.motivo === "obrigatorio" && !campo.value.trim()) { Moleka.mensagem(form, "Escreva o motivo."); campo.focus(); return; }
+        fechar(true);
+      }
+      function aoFechar() { fechar(false); }
+      form.addEventListener("submit", aoEnviar);
+      dialogo.addEventListener("close", aoFechar);
+      dialogo.showModal();
+      (opcoes.motivo ? campo : sim).focus();
+    });
+  };
+
+  /* Pede um valor digitado. Devolve uma promessa com o texto, ou null se a pessoa desistiu.
+     opcoes: { titulo, texto, rotulo, valor: "12,50", confirmar: "Lançar" } */
+  Moleka.perguntarValor = function (opcoes) {
+    const dialogo = document.getElementById("dlg-valor");
+    return new Promise(function (resolver) {
+      if (!dialogo) { resolver(null); return; }
+      const form = dialogo.querySelector("form");
+      const campo = form.valor;
+      dialogo.querySelector("h2").textContent = opcoes.titulo || "Valor";
+      dialogo.querySelector("[data-texto]").textContent = opcoes.texto || "";
+      dialogo.querySelector("[data-rotulo]").textContent = opcoes.rotulo || "Valor (R$)";
+      form.querySelector('button[type="submit"]').textContent = opcoes.confirmar || "Confirmar (Enter)";
+      campo.value = opcoes.valor || "";
+      let resposta = null;
+      function aoEnviar(evento) { evento.preventDefault(); resposta = campo.value.trim(); dialogo.close(); }
+      function aoFechar() {
+        form.removeEventListener("submit", aoEnviar);
+        dialogo.removeEventListener("close", aoFechar);
+        resolver(resposta);
+      }
+      form.addEventListener("submit", aoEnviar);
+      dialogo.addEventListener("close", aoFechar);
+      dialogo.showModal();
+      campo.focus();
+      campo.select();
+    });
+  };
+
+  // ------------------------------------------------------------------ saldo de vendas do dia
+  /* Preenche os elementos [data-resumo="total|quantidade|ticket"] com os números de hoje,
+     vindos de /api/vendas/resumo-hoje. Sem venda, fica "—" e o motivo vai na dica. */
+  Moleka.atualizarResumoDoDia = async function () {
+    const alvos = document.querySelectorAll("[data-resumo]");
+    if (!alvos.length) return null;
+    const r = await Moleka.api("GET", "/api/vendas/resumo-hoje");
+    const d = r.ok ? r.dados : null;
+    const motivo = d ? d.motivo : "sem resposta do servidor local";
+    const valores = {
+      total: d && d.total_centavos !== null ? Moleka.formatarCentavos(d.total_centavos) : "—",
+      quantidade: d ? String(d.quantidade) : "—", // zero vendas é um número de verdade
+      ticket: d && d.ticket_medio_centavos !== null ? Moleka.formatarCentavos(d.ticket_medio_centavos) : "—",
+    };
+    alvos.forEach(function (el) {
+      el.textContent = valores[el.dataset.resumo] || "—";
+      el.title = motivo;
+    });
+    document.querySelectorAll("[data-resumo-palavra]").forEach(function (el) {
+      el.textContent = d && d.quantidade === 1 ? "venda" : "vendas";
+    });
+    document.querySelectorAll("[data-resumo-motivo]").forEach(function (el) {
+      el.textContent = motivo ? "Sem dados: " + motivo + "." : "";
+      el.hidden = !motivo;
+    });
+    return d;
   };
 
   // ------------------------------------------------------------------ aviso rápido ("torrada")
@@ -126,13 +294,24 @@
         el.title = info.motivo || "";
         el.classList.add("ok");
       } else {
-        texto.textContent = rotulo + ": —";
+        // "estado" vem quando o sistema sabe o que há (ex.: caixa fechado); sem ele, fica "—".
+        texto.textContent = rotulo + ": " + (info.estado || "—");
         el.title = info.motivo || "não disponível";
       }
+    });
+    // Só o valor, sem o rótulo: <b data-status-valor="caixa">—</b>
+    document.querySelectorAll("[data-status-valor]").forEach(function (el) {
+      const info = status ? status[el.dataset.statusValor] : null;
+      el.textContent = info ? (info.ok ? info.texto || "ok" : info.estado || "—") : "—";
+      el.title = info ? info.motivo || "" : "sem resposta do servidor local";
     });
     document.querySelectorAll("[data-versao]").forEach(function (el) {
       el.textContent = status ? status.app + " v" + status.versao : "—";
     });
+    if (status && status.agora) { // a data do topo é a da loja, dita pelo servidor
+      document.querySelectorAll("[data-hoje]").forEach(function (el) { el.textContent = Moleka.dataHojePorExtenso(status.agora); });
+      document.querySelectorAll("[data-mes-ano]").forEach(function (el) { el.textContent = Moleka.mesAno(status.agora); });
+    }
     preencherSobre(status);
     return status;
   };
@@ -274,7 +453,11 @@
   }
 
   // ------------------------------------------------------------------ teclas de atalho
-  /* Qualquer elemento com data-atalho="F2" (ou "Enter", "Escape"...) é "clicado" pela tecla. */
+  /* Qualquer elemento visível com data-atalho="F2" (ou "Enter", "Escape"...) é "clicado" pela
+     tecla. Se a tela não usa a tecla, valem as teclas dos menus do topo (F2 Venda, F5 Produtos,
+     F11 Controle de caixa). */
+  function visivel(el) { return el.getClientRects().length > 0; }
+
   function iniciarAtalhos() {
     document.addEventListener("keydown", function (evento) {
       if (evento.ctrlKey || evento.altKey || evento.metaKey) return;
@@ -294,8 +477,20 @@
         evento.preventDefault();
         return;
       }
-      const alvo = document.querySelector('[data-atalho="' + evento.key + '"]');
-      if (!alvo) return;
+      // Fora da capa, o primeiro Esc num campo preenchido só limpa o campo (não sai da tela).
+      if (evento.key === "Escape" && foco && foco.value && foco.matches('input:not([type="checkbox"]):not([type="radio"]), textarea')) {
+        foco.value = "";
+        foco.dispatchEvent(new Event("input", { bubbles: true }));
+        evento.preventDefault();
+        return;
+      }
+      const seletor = '[data-atalho="' + evento.key + '"]';
+      const alvo = Array.prototype.find.call(document.querySelectorAll(seletor), visivel);
+      if (!alvo) {
+        const doMenu = document.querySelector('a[data-atalho-menu="' + evento.key + '"]');
+        if (doMenu) { evento.preventDefault(); window.location.href = doMenu.getAttribute("href"); }
+        return;
+      }
       evento.preventDefault();
       if (alvo.matches("input, select, textarea")) {
         alvo.focus();
@@ -330,6 +525,7 @@
     iniciarMinhaSenha();
     avisoDoEndereco();
     Moleka.atualizarStatus();
+    Moleka.atualizarResumoDoDia();
     setInterval(Moleka.atualizarStatus, 30000);
   };
 

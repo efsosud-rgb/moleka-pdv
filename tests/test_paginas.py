@@ -8,7 +8,27 @@ import re
 
 import pytest
 
-PAGINAS = ["/", "/inicio", "/caixa", "/produtos", "/financeiro", "/operadores"]
+PAGINAS = [
+    "/",
+    "/inicio",
+    "/caixa",
+    "/controle-caixa",
+    "/produtos",
+    "/clientes",
+    "/tabelas-preco",
+    "/financeiro",
+    "/operadores",
+]
+SCRIPTS = [
+    "moleka.js",
+    "entrada.js",
+    "operadores.js",
+    "produtos.js",
+    "clientes.js",
+    "tabelas.js",
+    "controle_caixa.js",
+    "caixa.js",
+]
 
 
 @pytest.mark.parametrize("caminho", PAGINAS)
@@ -41,7 +61,7 @@ def test_arquivos_da_interface_e_da_marca(cliente):
         if caminho.startswith("../"):
             caminho = "/static/" + caminho[3:]
         assert cliente.get(caminho).status_code == 200, caminho
-    for script in ("moleka.js", "entrada.js", "operadores.js"):
+    for script in SCRIPTS:
         assert cliente.get(f"/static/js/{script}").status_code == 200, script
     assert cliente.get("/assets/brand/mascote.png").headers["content-type"] == "image/png"
 
@@ -66,5 +86,23 @@ def test_modulos_sem_tela_avisam_que_estao_em_construcao(cliente):
     html = cliente.get("/inicio").text
     assert html.count("em breve") >= 6
     assert "data-em-breve" in html
-    for tela in ("/caixa", "/produtos", "/financeiro"):
-        assert "Tela em construção" in cliente.get(tela).text, tela
+    # O Financeiro ainda é só o visual; as telas que já gravam dados não trazem o aviso.
+    assert "Tela em construção" in cliente.get("/financeiro").text
+    for tela in ("/caixa", "/controle-caixa", "/produtos", "/clientes", "/tabelas-preco"):
+        assert "Tela em construção" not in cliente.get(tela).text, tela
+
+
+@pytest.mark.parametrize("caminho", ["/caixa", "/controle-caixa", "/produtos", "/clientes"])
+def test_telas_que_gravam_carregam_o_seu_script(cliente, caminho):
+    html = cliente.get(caminho).text
+    scripts = re.findall(r'<script src="(/static/js/[^"?]+)', html)
+    assert len(scripts) == 2, scripts  # o comum (moleka.js) e o da tela
+    assert scripts[0] == "/static/js/moleka.js"
+
+
+def test_teclas_dos_menus_valem_em_todas_as_telas(cliente):
+    """F2 (venda) e F11 (controle de caixa) saem dos menus, que estão em toda tela com moldura."""
+    for caminho in ("/inicio", "/produtos", "/clientes", "/tabelas-preco", "/operadores"):
+        html = cliente.get(caminho).text
+        assert 'data-atalho-menu="F2"' in html, caminho
+        assert 'data-atalho-menu="F11"' in html, caminho

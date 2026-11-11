@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone, chip %}
+{% block titulo_pagina %}Clientes{% endblock %}
+{% block titulo %}Clientes{% endblock %}
+{% block conteudo %}
+<div class="cad">
+<section class="cartao lista" aria-labelledby="t-lista">
+<div class="cab-cartao">
+<h2 id="t-lista">Clientes</h2>
+<span data-contagem>—</span>
+<button class="btn3d amarelo mini" type="button" data-novo data-atalho="F3">{{ icone("mais") }}Novo cliente (F3)</button>
+</div>
+<div class="filtro">
+<div class="com-icone">{{ icone("busca") }}<input id="busca" class="campo" type="search" autocomplete="off" placeholder="Pesquisar (F4): nome, CPF, CNPJ ou telefone" data-atalho="F4" aria-label="Pesquisar cliente"></div>
+{% if gerente %}<label class="check"><input type="checkbox" id="ver-inativos">Mostrar inativos</label>{% endif %}
+</div>
+<div class="rolagem">
+<table class="tabela" id="tabela-clientes">
+<thead><tr><th>Nome</th><th style="width:170px">CPF ou CNPJ</th><th style="width:110px">Tabela</th><th style="width:96px">Situação</th><th style="width:96px"><span class="so-leitor">Ações</span></th></tr></thead>
+<tbody><tr><td class="sem-linhas" colspan="5">Carregando os clientes…</td></tr></tbody>
+</table>
+</div>
+</section>
+<aside class="cartao ficha" aria-labelledby="t-ficha">
+<h2 id="t-ficha">Novo cliente</h2>
+<form id="form-cliente" class="form-entrada fixa" autocomplete="off" novalidate data-gerente="{{ 'sim' if gerente else 'nao' }}">
+<div><label class="rotulo" for="c-nome">Nome ou razão social</label><input id="c-nome" name="nome" class="campo" type="text" maxlength="120"></div>
+<div class="par">
+<div><label class="rotulo" for="c-doc">CPF ou CNPJ</label><input id="c-doc" name="cpf_cnpj" class="campo" type="text" maxlength="18" placeholder="Opcional"></div>
+<div><label class="rotulo" for="c-tel">Telefone</label><input id="c-tel" name="telefone" class="campo" type="text" maxlength="20"></div>
+</div>
+<div><label class="rotulo" for="c-email">E-mail</label><input id="c-email" name="email" class="campo" type="text" maxlength="120"></div>
+<div><label class="rotulo" for="c-end">Endereço</label><input id="c-end" name="endereco" class="campo" type="text" maxlength="200"></div>
+<div><label class="rotulo" for="c-tabela">Tabela de preço{% if not gerente %} (só o gerente muda){% endif %}</label><div class="sel"><select id="c-tabela" name="tabela_id" class="campo"{% if not gerente %} disabled title="Só o gerente define a tabela de preço do cliente"{% endif %}><option value="">Tabela padrão da loja</option></select>{{ icone("seta", "seta") }}</div></div>
+<div><label class="rotulo" for="c-obs">Observação</label><input id="c-obs" name="observacao" class="campo" type="text" maxlength="200"></div>
+<label class="check" data-so-na-edicao hidden><input type="checkbox" name="ativo" checked{% if not gerente %} disabled{% endif %}>Ativo</label>
+<p class="msg-form" role="alert" hidden></p>
+<div class="botoes">
+<button class="btn3d" type="button" data-limpar>Limpar</button>
+<button class="btn3d verde" type="submit" data-atalho="F10">{{ icone("salvar") }}Salvar (F10)</button>
+</div>
+</form>
+</aside>
+</div>
+{% endblock %}
+{% block teclas %}
+<button class="tecla" type="button" data-acao="sobre" data-atalho="F1"><kbd>F1</kbd>Ajuda</button>
+<span class="tecla"><kbd>F3</kbd>Novo</span>
+<span class="tecla"><kbd>F4</kbd>Pesquisar</span>
+<span class="tecla"><kbd>F10</kbd>Salvar</span>
+<a class="tecla" href="/inicio" data-atalho="Escape"><kbd>Esc</kbd>Início</a>
+{% endblock %}
+{% block scripts %}<script src="/static/js/clientes.js?v={{ versao }}" defer></script>{% endblock %}

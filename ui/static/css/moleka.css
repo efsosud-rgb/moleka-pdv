@@ -134,7 +134,7 @@ span.tecla{cursor:default}
 .btn3d.mini{font-size:13px;padding:7px 12px;min-height:36px;border-radius:10px;box-shadow:inset 0 1px 0 #FFFFFF,0 3px 0 #CDB77A,0 6px 10px rgba(110,70,0,.16)}
 .btn3d.bloco{display:flex;width:100%}
 .btn3d .ic{width:22px;height:22px}
-.btn3d:disabled{opacity:.55;cursor:not-allowed;filter:grayscale(.3)}
+.btn3d:disabled,.btn3d[aria-disabled="true"]{opacity:.55;cursor:not-allowed;filter:grayscale(.3)}
 
 /* ---------------------------------------------------------------- campos com profundidade */
 .rotulo{display:block;font-weight:800;font-size:11.5px;color:#5A4237;letter-spacing:.06em;text-transform:uppercase;margin:0 0 6px}
@@ -150,6 +150,8 @@ span.tecla{cursor:default}
 .sel{position:relative}
 .sel select{appearance:none;padding-right:38px}
 .sel .seta{position:absolute;left:auto;right:12px;top:50%;transform:translateY(-50%);color:#9E1A20;pointer-events:none}
+/* Seleção criada pelo JavaScript, sem o ícone: a seta é desenhada aqui. */
+.sel.auto::after{content:"";position:absolute;right:13px;top:50%;width:8px;height:8px;margin-top:-7px;border-right:2px solid #9E1A20;border-bottom:2px solid #9E1A20;transform:rotate(45deg);pointer-events:none}
 .check{display:flex;align-items:center;gap:10px;font-size:14px;color:#5A4237;cursor:pointer}
 .check input{width:18px;height:18px;accent-color:#1B7F39}
 
@@ -220,6 +222,7 @@ a.tile:focus-visible{outline:3px solid #1F6FD1;outline-offset:2px}
 .resumo .data{margin-top:-6px;font-size:12.5px;color:#5A4237}
 .linha-res{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed #E2CF95;font-size:14px;color:#5A4237}
 .linha-res b{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:18px;color:#542424}
+.linha-res b.menor{font-size:14.5px;text-align:right}
 
 /* ---------------------------------------------------------------- caixa: venda */
 .pdv{flex:1;min-height:0;overflow:auto;display:flex;flex-wrap:wrap;align-items:stretch;gap:18px 20px;padding:26px 22px 16px}
@@ -365,10 +368,155 @@ fieldset.grupo{min-width:0;margin:0;padding:2px 16px 8px;border:1px solid #DCC88
 .tabela tr.selecionada td{background:#FFF6CC}
 .tabela tr.inativa td:first-child,.tabela tr.inativa td:nth-child(2){color:#76604F}
 
+/* ---------------------------------------------------------------- cadastros: lista à esquerda, ficha à direita
+   Os dois cartões ocupam a altura da janela; quem rola é a lista (com o cabeçalho parado) e,
+   se precisar, a ficha. */
+.cad{display:flex;align-items:stretch;gap:18px;height:100%;min-height:0}
+.cad .lista{flex:1 1 0;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.cad .lista .cab-cartao{flex:none;align-items:center;padding:10px 14px 8px}
+.cad .lista .cab-cartao .btn3d{margin-left:auto}
+.filtro{flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;padding:0 14px 10px}
+.filtro .com-icone{flex:1 1 240px;min-width:0}
+.filtro .campo{font-size:14.5px;min-height:40px;padding:8px 12px 8px 42px}
+.cad .lista .rolagem{flex:1;min-height:0;overflow:auto}
+.cad .lista thead th{position:sticky;top:0;z-index:1}
+.cad .lista .tabela th{padding:8px 12px}
+.cad .lista .tabela td{padding:7px 12px}
+.cad .lista .tabela td.sem-linhas{padding:22px 14px}
+.cad .ficha{flex:0 0 372px;min-width:0;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:14px 16px}
+.cad .ficha.larga{flex-basis:484px}
+.cad .ficha h2{font-weight:900;font-size:19px;color:#542424}
+.cad .form-entrada{gap:8px}
+.cad .form-entrada .rotulo{margin-bottom:3px}
+.cad .form-entrada .campo{font-size:14.5px;min-height:36px;padding:5px 10px}
+/* Se a ficha for mais alta que a janela, ela rola por dentro e os botões continuam à vista.
+   O -14px é o enchimento de baixo da ficha: a barra encosta na borda do cartão. */
+.cad .ficha .form-entrada.fixa > .botoes{position:sticky;bottom:-14px;z-index:2;margin:0 -16px -14px;padding:8px 16px 12px;background:#FFFFFF;border-top:1px solid #F3E8C4;border-radius:0 0 16px 16px}
+.cad .ficha .botoes .btn3d{min-height:40px;padding:8px 14px;font-size:14.5px}
+.cad .form-entrada .sel select{padding-right:34px}
+.tres{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.quatro{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.sub{display:block;font-size:12px;line-height:1.3;color:#76604F}
+.cad .grupo{padding:0 10px 8px;box-shadow:none}
+.cad .grupo .tabela th{padding:5px 5px}
+.cad .grupo .tabela td{padding:4px 4px;border-bottom:0}
+.cad .grupo .tabela .campo{min-height:36px;padding:5px 9px;font-size:14px}
+.cad .grupo .tabela .sel select{padding-right:30px}
+.btn-x{flex:none;width:30px;height:30px;padding:0;border:1px solid #E2CF95;border-radius:8px;background:#FFF8E6;color:#9E1A20;font-weight:900;font-size:17px;line-height:1;cursor:pointer}
+.btn-x:hover{background:#FCE3E3;border-color:#D42828}
+.btn-x:focus-visible{outline:3px solid #1F6FD1;outline-offset:1px}
+.grupo-fiscal{padding:6px 12px;border:1px dashed #DCC88A;border-radius:10px;background:#FFFDF6}
+.grupo-fiscal summary{cursor:pointer;font-weight:700;font-size:13px;color:#542424}
+.grupo-fiscal[open] summary{margin-bottom:8px}
+.form-entrada.em-linha{flex:none;flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:10px 12px;padding:10px 14px;border-top:1px solid #EADBA8;background:#FFFDF6}
+.form-entrada.em-linha .cresce{flex:1 1 150px;min-width:0}
+.form-entrada.em-linha .check{min-height:40px}
+.form-entrada.em-linha .btn3d{min-height:40px;font-size:14px;padding:8px 14px}
+.form-entrada.em-linha .msg-form{flex-basis:100%}
+.cad .lista .nota{flex:none;margin-top:0}
+.cad .ficha .tabela th{padding:7px 8px}
+.cad .ficha .tabela td{padding:6px 8px}
+.cad .ficha .tabela .campo{min-height:36px;padding:5px 9px;font-size:14.5px}
+.dialogo.estreito{width:min(400px,92vw)}
+.dialogo.largo{width:min(680px,94vw)}
+.dialogo .botoes{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px}
+.dialogo .tabela{margin-bottom:4px}
+.dialogo .tabela th{padding:7px 10px}
+.dialogo .tabela td{padding:6px 10px}
+.dialogo .tabela .campo{min-height:38px;padding:6px 10px;font-size:15px}
+.positivo{color:#166B30}
+.negativo{color:#B81E22}
+
+/* ---------------------------------------------------------------- controle de caixa */
+.cx{display:flex;flex-direction:column;gap:12px;height:100%;min-height:0}
+.cx .kpis{flex:none;grid-template-columns:repeat(4,minmax(0,1fr))}
+.cx .kpi .v{font-size:23px}
+.cx .cad{flex:1;height:auto}
+.cx .abas{flex:none;margin:10px 14px 0}
+.cx .aba{font-size:13.5px;padding:6px 13px}
+.cx .resumo-cx{flex:none;padding:8px 14px;border-top:1px dashed #E2CF95;font-size:13px;line-height:1.5;color:#5A4237}
+.cx .resumo-cx b{color:#542424;font-variant-numeric:tabular-nums}
+.cx .ficha > div{display:flex;flex-direction:column;gap:10px}
+.cx .ficha hr{width:100%;margin:2px 0;border:0;border-top:1px dashed #E2CF95}
+
+/* ---------------------------------------------------------------- caixa (PDV): busca, itens, cliente e pagamentos
+   Tudo cabe em 1366x697 com dois pagamentos lançados: a faixa do topo não quebra em duas
+   linhas (o texto do título encolhe com reticências) e a coluna da direita tem largura fixa. */
+.topo.compacto{flex-wrap:nowrap}
+.topo.compacto .marca,.topo.compacto .chips{flex:none}
+.topo.compacto .chips{flex-wrap:nowrap}
+.topo.compacto .titulo{flex:0 1 auto;min-width:0}
+.topo.compacto .titulo h1,.topo.compacto .titulo p{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdv{gap:14px 18px;padding:20px 22px 10px}
+.pdv .esq{gap:12px}
+.pdv .lado{flex:0 0 372px;max-width:none;gap:8px}
+.busca .produto{position:relative}
+.sugestoes{position:absolute;left:0;right:0;top:100%;z-index:20;margin:4px 0 0;padding:6px;list-style:none;max-height:300px;overflow:auto;background:#FFFFFF;border:1px solid #CDB77A;border-radius:12px;box-shadow:0 4px 0 #CDB77A,0 16px 28px rgba(60,20,0,.3)}
+.sugestoes li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:14.5px;color:#2A1A18;cursor:pointer}
+.sugestoes li:hover{background:#FFF6CC}
+.sugestoes li.marcada{background:#FCF00C}
+.sugestoes li.nada,.sugestoes li.nada:hover{cursor:default;background:transparent;font-size:13.5px;color:#5A4237}
+.sugestoes .cod{flex:0 0 84px;overflow:hidden;text-overflow:ellipsis;font-size:13px;color:#5A4237;font-variant-numeric:tabular-nums}
+.sugestoes .nome{flex:1;min-width:0;font-weight:600}
+.sugestoes .preco{flex:none;font-weight:800;color:#542424;font-variant-numeric:tabular-nums}
+.sugestoes .doc{flex:none;font-size:12.5px;color:#5A4237;font-variant-numeric:tabular-nums}
+.itens .rolagem{flex:1;min-height:0;overflow:auto}
+.itens thead th{position:sticky;top:0;z-index:1}
+.itens .tabela td{padding:6px 12px}
+.itens .tabela td.sem-linhas{padding:26px 14px}
+.itens .campo.qtd-item{display:inline-block;width:86px;min-height:36px;padding:5px 9px;font-size:15px;text-align:right}
+.itens .un{display:inline-block;min-width:24px;margin-left:5px;font-size:12px;color:#76604F;text-align:left}
+.itens .tag{margin-left:8px;vertical-align:middle}
+.itens-rodape{flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;padding:8px 14px 10px;border-top:1px dashed #E2CF95}
+.pdv .itens-topo{padding:9px 14px}
+.itens-topo .dica{font-size:12.5px;color:#5A4237}
+.itens-rodape .espaco{flex:1}
+.fechado{flex:none;display:flex;align-items:center;gap:14px;padding:12px 16px;border:2px solid #E43030}
+.fechado .ic{flex:none;width:28px;height:28px;color:#C8202A}
+.fechado p{flex:1;font-size:14px;line-height:1.4;color:#5A4237}
+.fechado b{color:#542424}
+.pdv .total{padding:8px 16px}
+.pdv .total .v{margin-top:2px;font-size:38px}
+.pdv .total .linhas{margin-top:4px;font-size:12px;gap:2px 8px}
+.total .situacao{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:6px;padding-top:5px;border-top:1px dashed rgba(255,232,176,.4);font:800 12.5px Inter,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.total .situacao b{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:22px;letter-spacing:0;color:#FFFFFF;font-variant-numeric:tabular-nums}
+.total .situacao.falta b{color:#FCF00C}
+.total .situacao.troco b,.total .situacao.pago b{color:#8BF0AC}
+.pdv .cliente{position:relative;gap:6px;padding:8px 12px}
+.cli-atual{display:flex;align-items:center;gap:8px;min-height:30px}
+.cli-atual .rotulo{flex:none;margin:0}
+.cli-atual b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14.5px;color:#542424}
+.pdv .cliente .campo{min-height:36px;font-size:14.5px;padding:5px 10px 5px 40px}
+.pdv .pagamentos{gap:8px}
+.pdv .pagamentos .btn3d{flex-direction:column;gap:1px;min-height:46px;padding:3px 8px;font-size:14.5px}
+.pagamentos .l1{display:flex;align-items:center;gap:7px}
+.pagamentos .l1 .ic{width:18px;height:18px}
+.pagamentos .l2{min-height:15px;font:700 12px Inter,system-ui,sans-serif;color:#5A4237;font-variant-numeric:tabular-nums}
+.lancados{flex:none;display:flex;flex-direction:column;gap:5px;max-height:104px;overflow:auto;padding:5px 10px}
+.pdv .lado .btn3d.xl{min-height:52px;font-size:17px}
+.lancados h3{font:800 11.5px Inter,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#5A4237}
+.pg{display:flex;align-items:center;gap:8px}
+.pg .sel{flex:1;min-width:0}
+.pg .campo{min-height:32px;padding:3px 30px 3px 9px;font-size:14px}
+.pg .valor{flex:none;text-align:right;font-weight:800;line-height:1.15;color:#542424;font-variant-numeric:tabular-nums}
+.pg .valor small{display:block;font-weight:600;font-size:11px;color:#76604F}
+button.chip{font-family:inherit;cursor:pointer}
+button.chip:focus-visible{outline:3px solid #FCF00C;outline-offset:2px}
+.chip.saldo b{font-variant-numeric:tabular-nums}
+.troco-fim{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 16px;padding:12px 16px;border-radius:12px;background:linear-gradient(#5E2626,#3B1818);color:#FFE8B0;font:800 13px Inter,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.troco-fim b{font-family:Nunito,Inter,sans-serif;font-weight:900;font-size:40px;letter-spacing:0;color:#FCF00C;font-variant-numeric:tabular-nums}
+
 /* ---------------------------------------------------------------- telas menores e menos movimento */
 @media (max-width:1000px){
   .grade{grid-template-columns:repeat(2,minmax(0,1fr))}
   .resumo,.fin-lado,.painel,.ops .ficha{max-width:none}
+  .cad{flex-wrap:wrap;height:auto}
+  .cad .lista,.cad .ficha,.cad .ficha.larga{flex:1 1 100%}
+  .cad .lista .rolagem{max-height:50vh}
+  .cx{height:auto}
+  .topo.compacto,.topo.compacto .chips{flex-wrap:wrap}
+  .pdv .lado{flex:1 1 100%}
+  .cx .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .form{grid-template-columns:minmax(0,1fr)}
   .l4{grid-template-columns:repeat(2,minmax(0,1fr))}
 }

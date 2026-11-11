@@ -1,65 +1,84 @@
 {% extends "base.html" %}
-{% from "_macros.html" import icone, marca, pingos, chip, em_construcao %}
+{% from "_macros.html" import icone, marca, pingos, chip %}
 {% block titulo_pagina %}Caixa{% endblock %}
-{#- O caixa ocupa a tela toda: faixa do topo compacta, sem menus nem menu lateral. -#}
+{#- O caixa ocupa a tela toda: faixa do topo compacta, sem menus nem menu lateral.
+    Tudo o que aparece vem de /api/venda (ver ui/static/js/caixa.js). -#}
 {% block moldura %}
 <header class="topo compacto">
 {{ marca() }}
 <div class="titulo">
 <h1>Caixa — Venda</h1>
-<p><span data-hoje>—</span> · Operador: {{ operador.nome if operador else "—" }} · Venda nº —</p>
+<p><span data-hoje>—</span> · Operador: {{ operador.nome if operador else "—" }}{% if gerente %} (gerente){% endif %} · Venda nº <span id="v-numero">—</span></p>
 </div>
 <div class="chips">
-{{ em_construcao("Caixa: o visual está pronto, mas esta tela ainda não registra vendas. A venda entra numa próxima versão.") }}
-{{ chip("caixa", "Caixa") }}{{ chip("fiscal", "SEFAZ") }}{{ chip("impressora_cupom", "Impressora de cupom") }}
+<button class="chip saldo" type="button" id="saldo-do-dia" title="Clique para ver o detalhe das vendas de hoje">Vendas hoje:&nbsp;<b data-resumo="total">—</b>&nbsp;·&nbsp;<b data-resumo="quantidade">—</b>&nbsp;<span data-resumo-palavra>vendas</span></button>
+{{ chip("caixa", "Caixa") }}{{ chip("fiscal", "SEFAZ") }}
 </div>
 {{ pingos() }}
 </header>
-<main class="pdv">
+<main class="pdv" id="pdv" data-gerente="{{ 'sim' if gerente else 'nao' }}">
 <section class="esq" aria-label="Itens da venda">
-<form class="busca" data-em-breve="Adicionar produto: entra numa próxima versão, junto com o cadastro de produtos.">
+<div class="cartao fechado" id="aviso-fechado" hidden>
+{{ icone("cadeado") }}
+<p><b>O caixa está fechado.</b> Para vender, abra o caixa e informe o fundo de troco.</p>
+<a class="btn3d verde" href="/controle-caixa">{{ icone("caixa") }}Abrir o caixa (F11)</a>
+</div>
+<form class="busca" id="form-item" autocomplete="off" novalidate>
 <div class="produto">
-<label class="rotulo" for="prod">Produto (F2) — código de barras ou nome</label>
-<div class="com-icone grande">{{ icone("barras") }}<input id="prod" name="prod" class="campo lg" type="text" autocomplete="off" placeholder="Passe o leitor ou digite o nome do produto" data-atalho="F2"></div>
+<label class="rotulo" for="prod">Produto (F2) — código de barras, código ou nome</label>
+<div class="com-icone grande">{{ icone("barras") }}<input id="prod" name="prod" class="campo lg" type="text" autocomplete="off" maxlength="80" placeholder="Passe o leitor ou digite o nome do produto" data-atalho="F2" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sugestoes-prod"></div>
+<ul class="sugestoes" id="sugestoes-prod" role="listbox" aria-label="Produtos encontrados" hidden></ul>
 </div>
 <div class="qtd">
 <label class="rotulo" for="qtd">Qtd (F3)</label>
-<input id="qtd" name="qtd" class="campo lg num" type="number" value="1" min="1" data-atalho="F3">
+<input id="qtd" name="qtd" class="campo lg num" type="text" inputmode="decimal" maxlength="9" value="1" data-atalho="F3">
 </div>
 <button class="btn3d amarelo lg" type="submit">{{ icone("mais") }}Adicionar (Enter)</button>
 </form>
 <div class="cartao itens">
-<div class="itens-topo"><h2>Itens da venda</h2><span class="cont">—</span></div>
+<div class="itens-topo"><h2>Itens da venda</h2><span class="dica">Para mudar a quantidade, digite na coluna <b>Qtd</b> e aperte Enter.</span><span class="cont" id="v-cont">—</span></div>
 <div class="rolagem">
-<table class="tabela">
-<thead><tr><th style="width:44px">#</th><th style="width:90px">Código</th><th>Descrição</th><th class="num" style="width:70px">Qtd</th><th class="num" style="width:150px">Unit. (R$)</th><th class="num" style="width:120px">Total (R$)</th></tr></thead>
-<tbody>
-<tr><td class="sem-linhas" colspan="6">Nenhuma venda aberta.</td></tr>
-</tbody>
+<table class="tabela" id="tabela-itens">
+<thead><tr><th style="width:44px">#</th><th style="width:96px">Código</th><th>Descrição</th><th class="num" style="width:150px">Qtd</th><th class="num" style="width:110px">Unit. (R$)</th><th class="num" style="width:120px">Total (R$)</th><th style="width:52px"><span class="so-leitor">Tirar</span></th></tr></thead>
+<tbody><tr><td class="sem-linhas" colspan="7">Carregando…</td></tr></tbody>
 </table>
 </div>
-<p class="nota">Preço por quantidade: ao atingir a faixa de atacado do produto, o preço unitário muda sozinho e a linha ganha a etiqueta ATACADO.</p>
+<div class="itens-rodape">
+<button class="btn3d vermelho mini" type="button" id="btn-cancelar" data-atalho="F12">{{ icone("x") }}Cancelar venda (F12)</button>
+<span class="espaco"></span>
+{% if gerente %}
+<button class="btn3d mini" type="button" id="btn-desconto" data-atalho="F5">{{ icone("etiqueta") }}Desconto (F5)</button>
+{% else %}
+<button class="btn3d mini" type="button" aria-disabled="true" data-atalho="F5" data-aviso="Só o gerente dá desconto. O gerente entra com o usuário dele (a venda continua aberta), dá o desconto e devolve o caixa.">{{ icone("cadeado") }}Desconto (F5)</button>
+{% endif %}
+</div>
 </div>
 </section>
 <aside class="lado" aria-label="Pagamento">
 <div class="total">
-<span class="r">Total a pagar</span>
-<div class="v" title="nenhuma venda aberta">—</div>
-<div class="linhas"><span>Subtotal: —</span><span>Desconto (F5): —</span><span>Itens: —</span></div>
+<span class="r">Total da venda</span>
+<div class="v" id="v-total" title="nenhuma venda aberta">—</div>
+<div class="linhas"><span id="v-subtotal">Subtotal: —</span><span id="v-desconto">Desconto: —</span><span id="v-ajuste" hidden></span></div>
+<div class="situacao" id="v-situacao" hidden><span></span><b></b></div>
 </div>
 <div class="cartao cliente">
-<label class="rotulo" for="cli">Cliente (F4)</label>
-<input id="cli" name="cli" class="campo" type="text" value="Consumidor final" data-atalho="F4">
-<label class="check"><input type="checkbox" name="cpf">CPF na nota</label>
+<div class="cli-atual">
+<span class="rotulo">Cliente (F4)</span>
+<b id="cli-nome">Consumidor final</b>
+<span class="tag atacado" id="cli-tabela" hidden></span>
+<button class="btn-x" type="button" id="cli-tirar" title="Tirar o cliente da venda (volta para consumidor final)" aria-label="Tirar o cliente da venda" hidden>×</button>
 </div>
-<div class="pagamentos">
-<button class="btn3d" type="button" data-em-breve="Pagamento em dinheiro: entra numa próxima versão." data-atalho="F6">{{ icone("dinheiro") }}Dinheiro (F6)</button>
-<button class="btn3d" type="button" data-em-breve="Pagamento por Pix: entra numa próxima versão." data-atalho="F7">{{ icone("pix") }}Pix (F7)</button>
-<button class="btn3d" type="button" data-em-breve="Pagamento no débito: entra numa próxima versão." data-atalho="F8">{{ icone("cartao") }}Débito (F8)</button>
-<button class="btn3d" type="button" data-em-breve="Pagamento no crédito: entra numa próxima versão." data-atalho="F9">{{ icone("cartao") }}Crédito (F9)</button>
+<div class="com-icone">{{ icone("busca") }}<input id="cli" name="cli" class="campo" type="text" autocomplete="off" maxlength="60" placeholder="Buscar no cadastro: nome, CPF ou CNPJ" data-atalho="F4" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sugestoes-cli" aria-label="Buscar cliente"></div>
+<ul class="sugestoes" id="sugestoes-cli" role="listbox" aria-label="Clientes encontrados" hidden></ul>
 </div>
-<button class="btn3d verde xl bloco" type="button" data-em-breve="Finalizar e emitir NFC-e: entra numa próxima versão." data-atalho="F10">{{ icone("recibo") }}Finalizar e emitir NFC-e (F10)</button>
-<button class="btn3d vermelho bloco" type="button" data-em-breve="Cancelar venda: entra numa próxima versão." data-atalho="F12">{{ icone("x") }}Cancelar venda (F12)</button>
+<div class="pagamentos" id="pagamentos">
+<button class="btn3d" type="button" data-forma="dinheiro" data-atalho="F6"><span class="l1">{{ icone("dinheiro") }}Dinheiro (F6)</span><span class="l2"></span></button>
+<button class="btn3d" type="button" data-forma="pix" data-atalho="F7"><span class="l1">{{ icone("pix") }}Pix (F7)</span><span class="l2"></span></button>
+<button class="btn3d" type="button" data-forma="debito" data-atalho="F8"><span class="l1">{{ icone("cartao") }}Débito (F8)</span><span class="l2"></span></button>
+<button class="btn3d" type="button" data-forma="credito" data-atalho="F9"><span class="l1">{{ icone("cartao") }}Crédito (F9)</span><span class="l2"></span></button>
+</div>
+<div class="cartao lancados" id="lancados" hidden></div>
+<button class="btn3d verde xl bloco" type="button" id="btn-finalizar" data-atalho="F10">{{ icone("recibo") }}Finalizar venda (F10)</button>
 </aside>
 </main>
 <footer class="rodape">
@@ -69,8 +88,47 @@
 <span class="tecla"><kbd>F5</kbd>Desconto</span>
 <span class="tecla"><kbd>F6–F9</kbd>Pagamento</span>
 <span class="tecla"><kbd>F10</kbd>Finalizar</span>
-<span class="tecla"><kbd>F11</kbd>Sangria / Suprimento</span>
+<a class="tecla" href="/controle-caixa" data-atalho="F11"><kbd>F11</kbd>Controle de caixa</a>
 <span class="tecla"><kbd>F12</kbd>Cancelar</span>
 <span class="dir"><a class="tecla" href="/inicio" data-atalho="Escape"><kbd>Esc</kbd>Voltar ao início</a></span>
 </footer>
 {% endblock %}
+{% block dialogos %}
+<dialog class="dialogo" id="dlg-finalizar" aria-labelledby="df-titulo">
+<h2 id="df-titulo">Finalizar a venda</h2>
+<dl>
+<dt>Total</dt><dd data-fim="total">—</dd>
+<dt>Pagamento</dt><dd data-fim="pagamento">—</dd>
+<dt>Troco</dt><dd data-fim="troco">—</dd>
+</dl>
+<p><b>Emitir a NFC-e (cupom fiscal) desta venda?</b> <span data-fim="nfce"></span></p>
+<p class="msg-form" role="alert" hidden></p>
+<div class="botoes">
+<button class="btn3d" type="button" data-fechar-dialogo>Voltar (Esc)</button>
+<button class="btn3d amarelo" type="button" id="df-com">{{ icone("recibo") }}Com NFC-e</button>
+<button class="btn3d verde" type="button" id="df-sem">Sem NFC-e</button>
+</div>
+</dialog>
+<dialog class="dialogo estreito" id="dlg-fim" aria-labelledby="dt-titulo">
+<h2 id="dt-titulo">Venda finalizada</h2>
+<p data-troco-resumo></p>
+<div class="troco-fim"><span>Troco</span><b data-troco-valor>—</b></div>
+<form method="dialog"><button class="btn3d verde" type="submit">Nova venda (Enter)</button></form>
+</dialog>
+<dialog class="dialogo estreito" id="dlg-saldo" aria-labelledby="ds-titulo">
+<h2 id="ds-titulo">Vendas de hoje</h2>
+<p><span data-hoje>—</span>. Só entram as vendas finalizadas; as canceladas ficam de fora.</p>
+<dl>
+<dt>Total vendido</dt><dd data-saldo="total">—</dd>
+<dt>Vendas finalizadas</dt><dd data-saldo="quantidade">—</dd>
+<dt>Ticket médio</dt><dd data-saldo="ticket">—</dd>
+<dt>Em dinheiro</dt><dd data-saldo="dinheiro">—</dd>
+<dt>Em Pix</dt><dd data-saldo="pix">—</dd>
+<dt>No débito</dt><dd data-saldo="debito">—</dd>
+<dt>No crédito</dt><dd data-saldo="credito">—</dd>
+</dl>
+<p class="vazio" data-saldo-motivo hidden></p>
+<form method="dialog"><button class="btn3d amarelo" type="submit">Fechar (Esc)</button></form>
+</dialog>
+{% endblock %}
+{% block scripts %}<script src="/static/js/caixa.js?v={{ versao }}" defer></script>{% endblock %}

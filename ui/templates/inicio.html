@@ -20,21 +20,21 @@
 </div>
 <div class="cartao aviso">
 {{ icone("alerta") }}
-<p><b>Versão {{ versao }}, de teste.</b> Já funcionam a entrada com usuário e senha e o cadastro de operadores (menu Cadastros). As funções dos outros módulos entram nas próximas versões.</p>
+<p><b>Versão {{ versao }}, de teste.</b> Já funcionam: entrada com senha, cadastros (produtos, clientes, tabelas de preço, operadores), controle de caixa e venda. Ainda não: NFC-e, impressão do cupom, estoque e financeiro.</p>
 </div>
 </section>
 <aside class="cartao resumo" aria-labelledby="t-res">
 <h2 id="t-res">Resumo de hoje</h2>
 <p class="data" data-hoje>—</p>
 <div>
-<div class="linha-res"><span>Vendas (R$)</span><b>—</b></div>
-<div class="linha-res"><span>Cupons NFC-e emitidos</span><b>—</b></div>
-<div class="linha-res"><span>Ticket médio</span><b>—</b></div>
-<div class="linha-res"><span>Caixa aberto desde</span><b>—</b></div>
+<div class="linha-res"><span>Vendas (R$)</span><b data-resumo="total">—</b></div>
+<div class="linha-res"><span>Vendas finalizadas</span><b data-resumo="quantidade">—</b></div>
+<div class="linha-res"><span>Ticket médio</span><b data-resumo="ticket">—</b></div>
+<div class="linha-res"><span>Caixa</span><b class="menor" data-status-valor="caixa">—</b></div>
 </div>
-<p class="vazio">Sem dados: o registro de vendas entra numa próxima versão.</p>
-<button class="btn3d verde xl bloco" type="button" data-em-breve="Abertura de caixa: entra numa próxima versão.">{{ icone("caixa") }}Abrir caixa (F11)</button>
-<button class="btn3d bloco" type="button" data-em-breve="Fechamento do dia: entra numa próxima versão.">Fechamento do dia</button>
+<p class="vazio" data-resumo-motivo hidden></p>
+<a class="btn3d verde xl bloco" href="/caixa">{{ icone("caixa") }}Vender (F2)</a>
+<a class="btn3d bloco" href="/controle-caixa">{{ icone("relogio") }}Controle de caixa (F11)</a>
 </aside>
 </div>
 {% endblock %}

@@ -41,7 +41,13 @@ class Modulo:
 
 MODULOS: tuple[Modulo, ...] = (
     Modulo(
-        "caixa", "Caixa (PDV)", "Venda rápida e cupom NFC-e", "caixa", "vermelho", "/caixa", "F2"
+        "caixa",
+        "Caixa (PDV)",
+        "Venda rápida, em uma ou mais formas",
+        "caixa",
+        "vermelho",
+        "/caixa",
+        "F2",
     ),
     Modulo(
         "controle-caixa",
@@ -49,6 +55,8 @@ MODULOS: tuple[Modulo, ...] = (
         "Abertura, sangria, suprimento e fechamento",
         "relogio",
         "amarelo",
+        "/controle-caixa",
+        "F11",
     ),
     Modulo(
         "produtos",
@@ -71,13 +79,21 @@ MODULOS: tuple[Modulo, ...] = (
         "vermelho",
         so_gerente=True,
     ),
-    Modulo("clientes", "Clientes", "Cadastro, CPF na nota e histórico", "pessoas", "amarelo"),
+    Modulo(
+        "clientes",
+        "Clientes",
+        "Cadastro com CPF ou CNPJ e tabela",
+        "pessoas",
+        "amarelo",
+        "/clientes",
+    ),
     Modulo(
         "tabelas-preco",
         "Tabelas de Preço",
-        "Varejo, atacado e preço por quantidade",
+        "Varejo, atacado e formas de pagamento",
         "lista",
         "verde",
+        "/tabelas-preco",
         so_gerente=True,
     ),
     Modulo(
@@ -137,12 +153,18 @@ MENUS: tuple[tuple[str, tuple[ItemMenu, ...]], ...] = (
         "Cadastros",
         (
             ItemMenu("Produtos", url="/produtos", atalho="F5", so_gerente=True),
-            ItemMenu("Clientes"),
-            ItemMenu("Tabelas de preço"),
+            ItemMenu("Clientes", url="/clientes"),
+            ItemMenu("Tabelas de preço e pagamento", url="/tabelas-preco", so_gerente=True),
             ItemMenu("Operadores", url="/operadores", so_gerente=True),
         ),
     ),
-    ("Caixa", (ItemMenu("Venda (PDV)", url="/caixa", atalho="F2"), ItemMenu("Controle de caixa"))),
+    (
+        "Caixa",
+        (
+            ItemMenu("Venda (PDV)", url="/caixa", atalho="F2"),
+            ItemMenu("Controle de caixa", url="/controle-caixa", atalho="F11"),
+        ),
+    ),
     ("Estoque", (ItemMenu("Saldos e ajustes"), ItemMenu("Entrada de NF (XML)"))),
     (
         "Financeiro",
@@ -307,3 +329,24 @@ def tela_operadores(
     request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
 ) -> Response:
     return _tela(request, "operadores.html", "operadores", operador, so_gerente=True)
+
+
+@router.get("/clientes", response_class=HTMLResponse)
+def tela_clientes(
+    request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
+) -> Response:
+    return _tela(request, "clientes.html", "clientes", operador)
+
+
+@router.get("/tabelas-preco", response_class=HTMLResponse)
+def tela_tabelas(
+    request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
+) -> Response:
+    return _tela(request, "tabelas.html", "tabelas-preco", operador, so_gerente=True)
+
+
+@router.get("/controle-caixa", response_class=HTMLResponse)
+def tela_controle_de_caixa(
+    request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
+) -> Response:
+    return _tela(request, "controle_caixa.html", "controle-caixa", operador)

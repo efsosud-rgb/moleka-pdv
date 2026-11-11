@@ -25,6 +25,9 @@ class Indicador(BaseModel):
     ok: bool
     texto: str  # o que mostrar quando ok (ex.: "Homologação", "Caixa 01 · aberto 08:12")
     motivo: str  # por que não está ok, ou detalhe quando está
+    # O que mostrar quando não está ok mas o sistema sabe o que há (ex.: "fechado").
+    # Vazio = não há o que dizer e a interface mostra "—".
+    estado: str = ""
 
 
 class Status(BaseModel):
@@ -100,5 +103,6 @@ def status(sessao: Session = Depends(db.sessao)) -> Status:
                 else ""
             ),
             motivo="nenhum caixa aberto" if not aberta else f"operador {aberta.operador.nome}",
+            estado="" if aberta else "fechado",
         ),
     )

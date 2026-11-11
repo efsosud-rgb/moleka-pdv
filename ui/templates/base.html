@@ -1,5 +1,7 @@
 {#- Moldura das telas: barra de menus, faixa do topo, menu lateral e barra de status.
     Cada tela estende este arquivo e preenche só os blocos que mudam.
+    As teclas dos menus (F2, F5, F11) valem em todas as telas, a não ser que a tela use a
+    mesma tecla para outra coisa (ver iniciarAtalhos em moleka.js).
     Só chega aqui quem fez login (ver app/web.py): `operador` é quem está usando o sistema e
     `gerente` diz se ele tem o perfil de gerente. O que é só do gerente aparece trancado
     para o operador comum. -#}
@@ -26,7 +28,7 @@
 {% if item.so_gerente and not gerente %}
 <span class="em-breve" data-aviso="{{ item.rotulo }}: só o gerente abre esta tela.">{{ item.rotulo }}<small>só gerente</small></span>
 {% elif item.url %}
-<a href="{{ item.url }}">{{ item.rotulo }}{% if item.atalho %}<kbd>{{ item.atalho }}</kbd>{% endif %}</a>
+<a href="{{ item.url }}"{% if item.atalho %} data-atalho-menu="{{ item.atalho }}"{% endif %}>{{ item.rotulo }}{% if item.atalho %}<kbd>{{ item.atalho }}</kbd>{% endif %}</a>
 {% elif item.acao %}
 <button type="button" data-acao="{{ item.acao }}">{{ item.rotulo }}{% if item.atalho %}<kbd>{{ item.atalho }}</kbd>{% endif %}</button>
 {% else %}
@@ -72,8 +74,9 @@
 <span class="dir">
 {% block teclas %}
 <button class="tecla" type="button" data-acao="sobre" data-atalho="F1"><kbd>F1</kbd>Ajuda</button>
-<a class="tecla" href="/caixa" data-atalho="F2"><kbd>F2</kbd>Caixa</a>
+<a class="tecla" href="/caixa" data-atalho="F2"><kbd>F2</kbd>Venda</a>
 {% if gerente %}<a class="tecla" href="/produtos" data-atalho="F5"><kbd>F5</kbd>Produtos</a>{% endif %}
+<a class="tecla" href="/controle-caixa" data-atalho="F11"><kbd>F11</kbd>Controle de caixa</a>
 {% endblock %}
 </span>
 </footer>
@@ -88,6 +91,29 @@
 <dt>Fiscal</dt><dd data-sobre="fiscal">—</dd>
 </dl>
 <form method="dialog"><button class="btn3d amarelo" type="submit">Fechar (Esc)</button></form>
+</dialog>
+<dialog class="dialogo" id="dlg-confirmar" aria-labelledby="dc-titulo">
+<h2 id="dc-titulo">Confirmar</h2>
+<p data-texto></p>
+<form class="form-entrada" autocomplete="off" novalidate>
+<div data-motivo hidden><label class="rotulo" for="dc-motivo">Motivo</label><input id="dc-motivo" name="motivo" class="campo" type="text" maxlength="160" autocomplete="off"></div>
+<p class="msg-form" role="alert" hidden></p>
+<div class="botoes">
+<button class="btn3d" type="button" data-fechar-dialogo>Voltar (Esc)</button>
+<button class="btn3d verde" type="submit">Confirmar</button>
+</div>
+</form>
+</dialog>
+<dialog class="dialogo estreito" id="dlg-valor" aria-labelledby="dv-titulo">
+<h2 id="dv-titulo">Valor</h2>
+<p data-texto></p>
+<form class="form-entrada" autocomplete="off" novalidate>
+<div><label class="rotulo" for="dv-valor" data-rotulo>Valor (R$)</label><input id="dv-valor" name="valor" class="campo lg num" type="text" inputmode="decimal" autocomplete="off"></div>
+<div class="botoes">
+<button class="btn3d" type="button" data-fechar-dialogo>Voltar (Esc)</button>
+<button class="btn3d amarelo" type="submit">Confirmar (Enter)</button>
+</div>
+</form>
 </dialog>
 {% if operador %}
 <dialog class="dialogo" id="minha-senha" aria-labelledby="ms-titulo">
@@ -107,6 +133,7 @@
 </form>
 </dialog>
 {% endif %}
+{% block dialogos %}{% endblock %}
 {% block scripts %}{% endblock %}
 </body>
 </html>
