@@ -11,8 +11,10 @@ from fastapi.staticfiles import StaticFiles
 
 from app import acesso, config
 from app.api.cadastros import router as cadastros_router
+from app.api.caixa import router as caixa_router
 from app.api.login import router as login_router
 from app.api.status import router as status_router
+from app.api.vendas import router as vendas_router
 from app.operadores import RegraError
 from app.web import router as paginas_router
 
@@ -58,9 +60,10 @@ def criar_app() -> FastAPI:
     app.include_router(status_router, prefix="/api")
     app.include_router(login_router, prefix="/api")
     # Cadastros só para quem entrou no sistema; o que é só do gerente está marcado em cada rota.
-    app.include_router(
-        cadastros_router, prefix="/api", dependencies=[Depends(acesso.exigir_operador)]
-    )
+    so_logado = [Depends(acesso.exigir_operador)]
+    app.include_router(cadastros_router, prefix="/api", dependencies=so_logado)
+    app.include_router(caixa_router, prefix="/api", dependencies=so_logado)
+    app.include_router(vendas_router, prefix="/api", dependencies=so_logado)
     app.include_router(paginas_router)
 
     # Marca (logo, mascote, artes da capa) e arquivos da interface (CSS, JS, fontes).

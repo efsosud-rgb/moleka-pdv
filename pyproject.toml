@@ -54,4 +54,11 @@ files = [
     "app/acesso.py",
     "app/operadores.py",
     "app/api/login.py",
+    "app/tempo.py",
+    "app/documentos.py",
+    "app/caixa.py",
+    "app/vendas.py",
+    "app/api/caixa.py",
+    "app/api/vendas.py",
+    "app/api/cadastros.py",
 ]

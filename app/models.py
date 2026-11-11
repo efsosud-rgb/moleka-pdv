@@ -42,6 +42,7 @@ class Produto(Base):
     codigo: Mapped[str] = mapped_column(String(30), unique=True)  # código interno
     ean: Mapped[str | None] = mapped_column(String(14), index=True)
     descricao: Mapped[str] = mapped_column(String(120))
+    categoria: Mapped[str | None] = mapped_column(String(40), index=True)  # texto livre
     unidade: Mapped[str] = mapped_column(String(6), default="UN")  # UN, KG, L, CX...
     ncm: Mapped[str | None] = mapped_column(String(8))
     cest: Mapped[str | None] = mapped_column(String(7))
@@ -55,7 +56,11 @@ class Produto(Base):
         DateTime, server_default=func.now(), onupdate=func.now()
     )
 
-    precos: Mapped[list[PrecoProduto]] = relationship(back_populates="produto")
+    precos: Mapped[list[PrecoProduto]] = relationship(
+        back_populates="produto",
+        order_by="(PrecoProduto.tabela_id, PrecoProduto.qtd_min)",
+        cascade="all, delete-orphan",
+    )
 
 
 class TabelaPreco(Base):
@@ -142,11 +147,15 @@ class SessaoCaixa(Base):
     aberto_em: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     fechado_em: Mapped[datetime | None] = mapped_column(DateTime)
     fundo_troco_centavos: Mapped[int] = mapped_column(Integer, default=0)
-    conferido_centavos: Mapped[int | None] = mapped_column(Integer)  # contado no fechamento
+    conferido_centavos: Mapped[int | None] = mapped_column(Integer)  # dinheiro contado
     observacao: Mapped[str | None] = mapped_column(Text)
+    fechado_por_id: Mapped[int | None] = mapped_column(ForeignKey("operador.id"))
 
     caixa: Mapped[Caixa] = relationship()
-    operador: Mapped[Operador] = relationship()
+    operador: Mapped[Operador] = relationship(foreign_keys=[operador_id])
+    fechado_por: Mapped[Operador | None] = relationship(foreign_keys=[fechado_por_id])
+    movimentos: Mapped[list[MovimentoCaixa]] = relationship(order_by="MovimentoCaixa.id")
+    conferencias: Mapped[list[ConferenciaCaixa]] = relationship(order_by="ConferenciaCaixa.id")
 
 
 class TipoMovimentoCaixa(enum.StrEnum):
@@ -186,9 +195,27 @@ class Venda(Base):
     total_centavos: Mapped[int] = mapped_column(Integer, default=0)
     iniciada_em: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     finalizada_em: Mapped[datetime | None] = mapped_column(DateTime)
+    # Formato 2 do banco (versão 0.3.0):
+    operador_id: Mapped[int | None] = mapped_column(ForeignKey("operador.id"))  # quem vendeu
+    desconto_por_id: Mapped[int | None] = mapped_column(ForeignKey("operador.id"))
+    # Soma dos descontos/acréscimos das formas de pagamento (pode ser negativa).
+    # total = subtotal - desconto + ajuste_pagamento
+    ajuste_pagamento_centavos: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    quer_nfce: Mapped[bool | None] = mapped_column(Boolean)  # escolha feita ao finalizar
+    cancelada_em: Mapped[datetime | None] = mapped_column(DateTime)
+    cancelada_por_id: Mapped[int | None] = mapped_column(ForeignKey("operador.id"))
+    motivo_cancelamento: Mapped[str | None] = mapped_column(String(160))
 
-    itens: Mapped[list[VendaItem]] = relationship(back_populates="venda")
-    pagamentos: Mapped[list[Pagamento]] = relationship(back_populates="venda")
+    itens: Mapped[list[VendaItem]] = relationship(
+        back_populates="venda", order_by="VendaItem.id", cascade="all, delete-orphan"
+    )
+    pagamentos: Mapped[list[Pagamento]] = relationship(
+        back_populates="venda", order_by="Pagamento.id", cascade="all, delete-orphan"
+    )
+    cliente: Mapped[Cliente | None] = relationship()
+    tabela: Mapped[TabelaPreco] = relationship()
+    operador: Mapped[Operador | None] = relationship(foreign_keys=[operador_id])
+    sessao: Mapped[SessaoCaixa] = relationship()
 
 
 class VendaItem(Base):
@@ -202,6 +229,10 @@ class VendaItem(Base):
     faixa_qtd_min: Mapped[Decimal | None] = mapped_column(Numeric(12, 3))  # faixa aplicada
     desconto_centavos: Mapped[int] = mapped_column(Integer, default=0)
     total_centavos: Mapped[int] = mapped_column(Integer)
+    # Retrato do produto na hora da venda (o cadastro pode mudar depois). Formato 2 do banco.
+    codigo: Mapped[str | None] = mapped_column(String(30))
+    descricao: Mapped[str | None] = mapped_column(String(120))
+    unidade: Mapped[str | None] = mapped_column(String(6))
 
     venda: Mapped[Venda] = relationship(back_populates="itens")
     produto: Mapped[Produto] = relationship()
@@ -220,10 +251,40 @@ class Pagamento(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     venda_id: Mapped[int] = mapped_column(ForeignKey("venda.id"), index=True)
     forma: Mapped[FormaPagamento] = mapped_column(Enum(FormaPagamento))
-    valor_centavos: Mapped[int] = mapped_column(Integer)
+    valor_centavos: Mapped[int] = mapped_column(Integer)  # o que entrou nesta forma, sem o troco
     troco_centavos: Mapped[int] = mapped_column(Integer, default=0)
+    # Desconto (negativo) ou acréscimo (positivo) desta forma, já incluído em valor_centavos.
+    # A parte da venda que este pagamento quita é valor_centavos - ajuste_centavos.
+    ajuste_centavos: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     venda: Mapped[Venda] = relationship(back_populates="pagamentos")
+
+
+class RegraFormaPagamento(Base):
+    """Desconto ou acréscimo de cada forma de pagamento, em centésimos de por cento.
+
+    -500 = 5% de desconto; 300 = 3% de acréscimo; 0 = não altera o preço.
+    Forma sem linha nesta tabela vale 0 e está ativa.
+    """
+
+    __tablename__ = "regra_forma_pagamento"
+
+    forma: Mapped[FormaPagamento] = mapped_column(Enum(FormaPagamento), primary_key=True)
+    ajuste_bp: Mapped[int] = mapped_column(Integer, default=0)
+    ativo: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class ConferenciaCaixa(Base):
+    """Fechamento do caixa: o que o sistema esperava e o que foi contado, por forma."""
+
+    __tablename__ = "conferencia_caixa"
+    __table_args__ = (UniqueConstraint("sessao_id", "forma"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    sessao_id: Mapped[int] = mapped_column(ForeignKey("sessao_caixa.id"), index=True)
+    forma: Mapped[FormaPagamento] = mapped_column(Enum(FormaPagamento))
+    esperado_centavos: Mapped[int] = mapped_column(Integer)
+    contado_centavos: Mapped[int] = mapped_column(Integer)
 
 
 # ---------------------------------------------------------------- fiscal

@@ -23,9 +23,49 @@ from app.models import Base
 
 log = logging.getLogger("moleka.banco")
 
-VERSAO_DO_BANCO = 1
+VERSAO_DO_BANCO = 2
+
+
+def _colunas(con: Connection, tabela: str) -> set[str]:
+    return {linha[1] for linha in con.exec_driver_sql(f"PRAGMA table_info({tabela})")}
+
+
+def _acrescentar_colunas(con: Connection, tabela: str, colunas: dict[str, str]) -> None:
+    """Acrescenta as colunas que faltam (pode rodar de novo sem erro)."""
+    existentes = _colunas(con, tabela)
+    for nome, tipo in colunas.items():
+        if nome not in existentes:
+            con.exec_driver_sql(f"ALTER TABLE {tabela} ADD COLUMN {nome} {tipo}")
+
+
+def _formato_1_para_2(con: Connection) -> None:
+    """Versão 0.3.0: cadastros completos, controle de caixa e venda."""
+    _acrescentar_colunas(con, "produto", {"categoria": "VARCHAR(40)"})
+    _acrescentar_colunas(con, "sessao_caixa", {"fechado_por_id": "INTEGER REFERENCES operador(id)"})
+    _acrescentar_colunas(
+        con,
+        "venda",
+        {
+            "operador_id": "INTEGER REFERENCES operador(id)",
+            "desconto_por_id": "INTEGER REFERENCES operador(id)",
+            "ajuste_pagamento_centavos": "INTEGER NOT NULL DEFAULT 0",
+            "quer_nfce": "BOOLEAN",
+            "cancelada_em": "DATETIME",
+            "cancelada_por_id": "INTEGER REFERENCES operador(id)",
+            "motivo_cancelamento": "VARCHAR(160)",
+        },
+    )
+    _acrescentar_colunas(
+        con,
+        "venda_item",
+        {"codigo": "VARCHAR(30)", "descricao": "VARCHAR(120)", "unidade": "VARCHAR(6)"},
+    )
+    _acrescentar_colunas(con, "pagamento", {"ajuste_centavos": "INTEGER NOT NULL DEFAULT 0"})
+    con.exec_driver_sql("CREATE INDEX IF NOT EXISTS ix_produto_categoria ON produto (categoria)")
+
+
 # PASSOS[n] leva o banco da versão n para a n + 1.
-PASSOS: dict[int, Callable[[Connection], None]] = {}
+PASSOS: dict[int, Callable[[Connection], None]] = {1: _formato_1_para_2}
 
 
 class BancoMaisNovoError(RuntimeError):

@@ -7,20 +7,18 @@ no tooltip. Nada aqui é estimado: ou o backend verificou, ou diz que não verif
 from __future__ import annotations
 
 from datetime import datetime
-from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app import config, db
+from app import config, db, tempo
 from app.fiscal import provedor_configurado
 from app.models import Configuracao, SessaoCaixa
+from app.tempo import FUSO
 
 router = APIRouter(tags=["status"])
-
-FUSO = ZoneInfo("America/Sao_Paulo")
 
 
 class Indicador(BaseModel):
@@ -97,7 +95,7 @@ def status(sessao: Session = Depends(db.sessao)) -> Status:
         caixa=Indicador(
             ok=aberta is not None,
             texto=(
-                f"{aberta.caixa.nome} · aberto {aberta.aberto_em.strftime('%H:%M')}"
+                f"{aberta.caixa.nome} · aberto {tempo.na_loja(aberta.aberto_em).strftime('%H:%M')}"
                 if aberta
                 else ""
             ),

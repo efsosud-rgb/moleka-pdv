@@ -58,13 +58,32 @@ def criar_schema() -> None:
     url = url_banco()
     if not url.startswith("sqlite"):
         Base.metadata.create_all(engine())
-        return
-    em_arquivo = "memory" not in url and not os.environ.get("MOLEKA_PDV_BANCO_URL")
-    migracoes.preparar(
-        engine(),
-        arquivo=config.caminho_banco() if em_arquivo else None,
-        pasta_backups=config.pasta_dados() / "backups" if em_arquivo else None,
-    )
+    else:
+        em_arquivo = "memory" not in url and not os.environ.get("MOLEKA_PDV_BANCO_URL")
+        migracoes.preparar(
+            engine(),
+            arquivo=config.caminho_banco() if em_arquivo else None,
+            pasta_backups=config.pasta_dados() / "backups" if em_arquivo else None,
+        )
+    semear_padroes()
+
+
+def semear_padroes() -> None:
+    """Cria o mínimo para a loja começar: as tabelas VAREJO (padrão) e ATACADO e o Caixa 01.
+
+    Só cria o que não existe; nunca altera o que a loja já cadastrou. Não são dados de
+    exemplo: são os nomes que o Eric pediu (tabela varejista e atacadista).
+    """
+    from sqlalchemy import select
+
+    from app.models import Caixa, TabelaPreco
+
+    with nova_sessao() as sessao:
+        if sessao.scalar(select(TabelaPreco).limit(1)) is None:
+            sessao.add_all([TabelaPreco(nome="VAREJO", padrao=True), TabelaPreco(nome="ATACADO")])
+        if sessao.scalar(select(Caixa).limit(1)) is None:
+            sessao.add(Caixa(nome="Caixa 01"))
+        sessao.commit()
 
 
 def sessao() -> Iterator[Session]:

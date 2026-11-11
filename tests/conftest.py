@@ -66,3 +66,62 @@ def caixa(app_teste, cliente):
         )
         assert entrada.status_code == 200, entrada.text
         yield c
+
+
+@pytest.fixture()
+def loja(cliente):
+    """Loja de teste pronta para vender: tabelas, três produtos fictícios e o caixa aberto.
+
+    Devolve os ids. Preços em centavos:
+    - picolé (UN): varejo 5,00 e 4,50 a partir de 10; atacado 4,00;
+    - sorvete (KG): varejo 59,90 o quilo;
+    - água (UN): varejo 3,00 (sem preço no atacado).
+    """
+
+    def criar(caminho, dados):
+        resposta = cliente.post(caminho, json=dados)
+        assert resposta.status_code == 201, resposta.text
+        return resposta.json()
+
+    varejo = criar("/api/tabelas-preco", {"nome": "VAREJO", "padrao": True})["id"]
+    atacado = criar("/api/tabelas-preco", {"nome": "ATACADO"})["id"]
+    picole = criar(
+        "/api/produtos",
+        {
+            "codigo": "1",
+            "descricao": "Picolé de teste",
+            "ean": "7890000000017",
+            "categoria": "Picolés",
+            "precos": [
+                {"tabela_id": varejo, "qtd_min": "1", "preco_centavos": 500},
+                {"tabela_id": varejo, "qtd_min": "10", "preco_centavos": 450},
+                {"tabela_id": atacado, "qtd_min": "1", "preco_centavos": 400},
+            ],
+        },
+    )["id"]
+    sorvete = criar(
+        "/api/produtos",
+        {
+            "codigo": "2",
+            "descricao": "Sorvete de teste por quilo",
+            "unidade": "kg",
+            "precos": [{"tabela_id": varejo, "qtd_min": "1", "preco_centavos": 5990}],
+        },
+    )["id"]
+    agua = criar(
+        "/api/produtos",
+        {
+            "codigo": "3",
+            "descricao": "Água de teste",
+            "precos": [{"tabela_id": varejo, "qtd_min": "1", "preco_centavos": 300}],
+        },
+    )["id"]
+    aberto = cliente.post("/api/caixa/abrir", json={"fundo_troco_centavos": 10000})
+    assert aberto.status_code == 201, aberto.text
+    return {
+        "varejo": varejo,
+        "atacado": atacado,
+        "picole": picole,
+        "sorvete": sorvete,
+        "agua": agua,
+    }
