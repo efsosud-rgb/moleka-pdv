@@ -31,6 +31,7 @@ from app.models import (
     TabelaPreco,
 )
 from app.operadores import RegraError
+from app.pesquisa import sem_acento
 
 router = APIRouter(tags=["cadastros"])
 log = logging.getLogger("moleka.cadastros")
@@ -334,16 +335,17 @@ def listar_produtos(
     limite: int = 200,
     sessao: Session = Depends(db.sessao),
 ) -> list[Produto]:
-    consulta = select(Produto).order_by(func.lower(Produto.descricao))
+    # Ordem alfabética e busca sem acento: "agua" acha "Água" (ver app/pesquisa.py).
+    consulta = select(Produto).order_by(func.sem_acento(Produto.descricao))
     if not inativos:
         consulta = consulta.where(Produto.ativo.is_(True))
     if busca and busca.strip():
-        termo = f"%{busca.strip()}%"
+        termo = f"%{sem_acento(busca.strip())}%"
         consulta = consulta.where(
-            Produto.descricao.ilike(termo)
-            | Produto.codigo.ilike(termo)
-            | Produto.ean.ilike(termo)
-            | Produto.categoria.ilike(termo)
+            func.sem_acento(Produto.descricao).like(termo)
+            | func.sem_acento(Produto.codigo).like(termo)
+            | Produto.ean.like(termo)
+            | func.sem_acento(Produto.categoria).like(termo)
         )
     return list(sessao.scalars(consulta.limit(max(1, min(limite, 500)))))
 
@@ -486,12 +488,12 @@ def listar_clientes(
     limite: int = 200,
     sessao: Session = Depends(db.sessao),
 ) -> list[ClienteOut]:
-    consulta = select(Cliente).order_by(func.lower(Cliente.nome))
+    consulta = select(Cliente).order_by(func.sem_acento(Cliente.nome))
     if not inativos:
         consulta = consulta.where(Cliente.ativo.is_(True))
     if busca and busca.strip():
-        termo = f"%{busca.strip()}%"
-        filtro = Cliente.nome.ilike(termo) | Cliente.telefone.ilike(termo)
+        termo = f"%{sem_acento(busca.strip())}%"
+        filtro = func.sem_acento(Cliente.nome).like(termo) | Cliente.telefone.like(termo)
         documento = documentos.limpar(busca)
         if len(documento) >= 3 and any(c.isdigit() for c in documento):
             filtro = filtro | Cliente.cpf_cnpj.ilike(f"%{documento}%")

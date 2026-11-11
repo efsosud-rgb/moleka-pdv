@@ -157,6 +157,39 @@ def test_formas_de_pagamento(cliente, caixa):
     assert ultima.status_code == 409 and "Pelo menos uma" in ultima.json()["detail"]
 
 
+def test_pesquisa_ignora_acentos_e_maiusculas(cliente):
+    """No caixa ninguém digita acento: "agua" acha "Água" e "joao" acha "João"."""
+    from app.pesquisa import sem_acento
+
+    assert sem_acento("Água de CÔCO com Limão") == "agua de coco com limao"
+    assert sem_acento(None) == "" and sem_acento("") == ""
+
+    for descricao in ("Banana de teste", "Água de teste", "açaí de teste"):
+        assert _produto(cliente, descricao=descricao, categoria="Geladíssimos").status_code == 201
+
+    def produtos(texto=None):
+        filtro = {"busca": texto} if texto else {}
+        return [p["descricao"] for p in cliente.get("/api/produtos", params=filtro).json()]
+
+    assert produtos("agua") == ["Água de teste"]
+    assert produtos("ÁGUA") == ["Água de teste"]
+    assert produtos("acai") == ["açaí de teste"]
+    assert len(produtos("geladissimos")) == 3  # pela categoria
+    # A lista sai em ordem alfabética de verdade (o "Á" não vai para o fim).
+    assert produtos() == ["açaí de teste", "Água de teste", "Banana de teste"]
+
+    for nome in ("João de Teste", "Ângela de Teste"):
+        assert cliente.post("/api/clientes", json={"nome": nome}).status_code == 201
+
+    def clientes(texto=None):
+        filtro = {"busca": texto} if texto else {}
+        return [c["nome"] for c in cliente.get("/api/clientes", params=filtro).json()]
+
+    assert clientes("joao") == ["João de Teste"]
+    assert clientes("ANGELA") == ["Ângela de Teste"]
+    assert clientes() == ["Ângela de Teste", "João de Teste"]
+
+
 # ---------------------------------------------------------------- clientes
 
 

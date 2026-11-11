@@ -11,6 +11,7 @@ from sqlalchemy.pool import StaticPool
 
 from app import config
 from app.models import Base
+from app.pesquisa import sem_acento
 
 _engine: Engine | None = None
 _fabrica: sessionmaker[Session] | None = None
@@ -37,6 +38,8 @@ def engine() -> Engine:
 
             @event.listens_for(_engine, "connect")
             def _pragmas(conexao, _registro):  # type: ignore[no-untyped-def]
+                # Pesquisa sem acento: sem_acento('Água') = 'agua' (ver app/pesquisa.py).
+                conexao.create_function("sem_acento", 1, sem_acento, deterministic=True)
                 cursor = conexao.cursor()
                 cursor.execute("PRAGMA foreign_keys=ON")
                 if ":memory:" not in url:
