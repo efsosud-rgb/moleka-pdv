@@ -26,3 +26,13 @@ Registro curto, em ordem cronológica. Uma linha por decisão; o motivo quando n
 - Animações e 3D só com CSS (relevo, perspectiva, camadas, tira de quadros), sem WebGL. Motivo: o PC do caixa tem i3, 4 GB e HD (ver ESPECIFICACAO §10).
 - Protótipo passa a ter 5 telas (entra Produtos) e é exportado do canvas por `tools/design/exporta_prototipo.py`.
 - O frontend real (`ui/`) só recebe a nova identidade depois que o Eric aprovar a prévia.
+- Eric aprovou a prévia ("está muito bom o design do frontend"). A identidade foi para o frontend real.
+- Telas montadas no servidor com Jinja2 (`ui/templates/`, moldura única em `base.html`); os dados continuam chegando pela API. Motivo: a moldura estava copiada em cada página e ia se multiplicar a cada módulo. Dependência leve (`jinja2`).
+- O que ainda não existe aparece como "em breve" (menus, menu lateral, tela inicial) ou com o selo "Tela em construção" (Caixa, Produtos, Financeiro), e avisa ao ser clicado. Nenhuma tela do sistema mostra valor de exemplo; há teste automático para isso.
+- Fontes Inter e Nunito embutidas em `ui/static/fonts/` (licença OFL junto): o sistema não busca nada na internet para abrir.
+- `tzdata` entra nas dependências: o Windows não traz a base de fusos horários, e sem ela o programa não abria. Achado pelo primeiro build no GitHub Actions.
+- Formato do banco controlado por `PRAGMA user_version` (`app/migracoes.py`), com cópia de segurança em `<dados>/backups` antes de cada mudança, em vez de Alembic. Motivo: um único arquivo SQLite por loja, e o Eric vai instalar versões novas por cima dos dados de teste.
+- Instalador: PyInstaller em pasta (não arquivo único, por causa do HD do caixa) + Inno Setup, instalando só para o usuário (sem senha de administrador) e instalando o WebView2 se faltar. Gerado e testado no GitHub Actions a cada tag `v*`, porque o instalador de Windows só pode ser gerado num Windows. O teste abre o programa, confere as páginas e tira um print da janela antes de publicar.
+- Janela maximizada por padrão; `--tela-cheia` fica para o modo caixa. Motivo: nos testes o Eric precisa conseguir fechar e alternar janelas.
+- Programa empacotado não tem terminal: erros de partida aparecem numa caixa de aviso e vão para `<dados>/logs/moleka.log`.
+- Ícone do programa: rosto da mascote da arte 3D (`tools/design/gera_icone.py`).

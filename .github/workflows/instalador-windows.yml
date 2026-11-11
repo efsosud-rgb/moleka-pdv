@@ -98,5 +98,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $instalador = (Get-ChildItem dist\MolekaPDV-Instalador-*.exe).FullName
-          gh release create $env:GITHUB_REF_NAME $instalador --title "Moleka PDV ${{ steps.versao.outputs.versao }}" --notes-file packaging/notas-da-versao.md --prerelease
+          # Vão juntos o instalador e os prints da janela tirados no teste (prova de que abriu).
+          $arquivos = @((Get-ChildItem dist\MolekaPDV-Instalador-*.exe).FullName)
+          $arquivos += @(Get-ChildItem dist\teste\janela-*.png | ForEach-Object { $_.FullName })
+          gh release create $env:GITHUB_REF_NAME $arquivos --title "Moleka PDV ${{ steps.versao.outputs.versao }}" --notes-file packaging/notas-da-versao.md --prerelease
