@@ -60,7 +60,9 @@
     const filtros = new URLSearchParams({ limite: String(LIMITE) });
     if (busca.value.trim()) filtros.set("busca", busca.value.trim());
     if (verInativos.checked) filtros.set("inativos", "true");
+    const vale = M.novaCarga("produtos");
     const r = await M.api("GET", "/api/produtos?" + filtros.toString());
+    if (!vale()) return; // já saiu uma pesquisa mais nova: esta resposta não serve mais
     if (!r.ok) { contagem.textContent = "—"; linhaUnica("Não foi possível carregar os produtos: " + r.erro); return; }
     produtos = r.dados;
     desenhar();

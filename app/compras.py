@@ -192,14 +192,23 @@ def importar(
     gerar_contas: bool = True,
     categoria_id: int | None = None,
     vencimento_sem_parcelas: date | None = None,
+    chave_esperada: str | None = None,
 ) -> Importacao:
     """Grava a nota e tudo o que decorre dela (ver o começo do arquivo).
 
     Contas a pagar (`gerar_contas`): uma por parcela da nota. Nota sem parcelas só gera conta
     se vier `vencimento_sem_parcelas` (uma conta com o total da nota, nesse vencimento).
     `categoria_id` é a categoria dessas contas; sem ela, "Compra de mercadorias para revenda".
+    `chave_esperada` é a chave da nota que a pessoa conferiu na tela: se o arquivo enviado for de
+    outra nota, nada é gravado (as decisões foram tomadas olhando para outra nota).
     """
     nota = nfe_xml.ler(texto_xml)
+    if chave_esperada is not None and nota.chave != chave_esperada:
+        raise RegraError(
+            "O arquivo enviado não é o da nota que estava na tela. "
+            "Escolha o arquivo de novo e confira antes de importar.",
+            status=409,
+        )
     registro = ja_importada(sessao, nota.chave)
     if registro is not None and registro.estornada_em is None:
         dia = tempo.na_loja(registro.importada_em).strftime("%d/%m/%Y")

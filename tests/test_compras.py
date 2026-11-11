@@ -496,6 +496,22 @@ def test_importar_confere_tudo_antes_de_gravar(cliente, loja, tmp_path):
     _nada_foi_gravado(cliente, tmp_path)
 
 
+def test_importar_recusa_arquivo_que_nao_e_o_da_nota_conferida(cliente, loja, tmp_path):
+    """A tela manda junto a chave da nota que estava sendo conferida. Se o XML enviado for de
+    outra nota (o arquivo foi trocado com a confirmação aberta), nada é gravado: as decisões
+    foram tomadas olhando para outra nota."""
+    conferida = cliente.post("/api/compras/conferir", json={"xml": nota_xml()}).json()
+    outra_nota = nota_xml(140)  # os mesmos números de item (1 a 3), mas é outra nota
+    trocada = _importar(cliente, outra_nota, _decisoes(loja), chave=conferida["chave"])
+    assert trocada.status_code == 409, trocada.text
+    assert "não é o da nota que estava na tela" in trocada.json()["detail"]
+    _nada_foi_gravado(cliente, tmp_path)
+
+    certa = _importar(cliente, nota_xml(), _decisoes(loja), chave=conferida["chave"])
+    assert certa.status_code == 201, certa.text
+    assert certa.json()["nota"]["numero"] == 123
+
+
 def _categoria(cliente, tipo):
     """Cria uma categoria de teste: de receita ("Outras receitas") ou do grupo de custo."""
     grupo = {"receita": "outras_receitas", "custo": "cmv"}[tipo]

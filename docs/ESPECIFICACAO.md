@@ -248,7 +248,7 @@ As três telas são só do gerente. Nenhuma das regras abaixo foi combinada ante
 - Em cada item o gerente escolhe: **dar entrada num produto nosso** (busca por nome ou código), **criar um produto novo** (com a descrição, o código de barras e o NCM da nota; nasce **sem preço de venda**) ou **não dar entrada**. O sistema sugere o produto pela memória daquele fornecedor e, se não houver, pelo código de barras.
 - **Fator**: quantas unidades nossas há em cada unidade da nota (caixa com 24 → 24). Entra no estoque `quantidade da nota × fator`. A tela mostra, antes de gravar, quanto entra e o custo de cada unidade.
 - **Custo do item** = valor dos produtos − desconto + frete + seguro + outras despesas + IPI + ICMS-ST (com FCP-ST). O ICMS próprio não é somado (já está no valor dos produtos). Custo de cada unidade = custo do item ÷ quantidade que entra, arredondado para o centavo.
-- **Passo 2 — importar**: grava a nota, os movimentos de estoque, o custo novo, a memória "código do fornecedor → nosso produto" e as contas a pagar. O arquivo fica guardado em `%APPDATA%\MolekaPDV\xml\entrada\<chave>.xml`. A mesma nota não entra duas vezes.
+- **Passo 2 — importar**: grava a nota, os movimentos de estoque, o custo novo, a memória "código do fornecedor → nosso produto" e as contas a pagar. O que entra é sempre a nota que estava na tela: se o arquivo for trocado depois da conferência, a importação é recusada. O arquivo fica guardado em `%APPDATA%\MolekaPDV\xml\entrada\<chave>.xml`. A mesma nota não entra duas vezes.
 - **Contas a pagar**: uma por parcela (duplicata) da nota, na categoria "Compra de mercadorias para revenda" ou na que o gerente escolher. Nota sem parcelas só gera conta se o gerente digitar um vencimento (uma conta com o total). Dá para importar sem gerar conta.
 - **Notas importadas**: lista com fornecedor, número, total, itens e contas; "Ver" mostra os itens como entraram. **Estornar** (com motivo) tira do estoque o que entrou, volta o custo e cancela as contas a pagar em aberto daquela nota. Não estorna se alguma parcela já foi paga: primeiro se desfaz a baixa. Se o custo não puder ser refeito com exatidão, a tela lista os produtos para o gerente conferir. A nota estornada pode ser importada de novo.
 
@@ -259,8 +259,10 @@ As três telas são só do gerente. Nenhuma das regras abaixo foi combinada ante
 - **Baixa**: dia e forma do pagamento ou do recebimento. Dá para desfazer.
 - **Situação**: em aberto, vencido (venceu antes de hoje e não foi pago), pago ou recebido, cancelado.
 - Lançamento **não é apagado**: é cancelado (fica na lista de cancelados, com data e autor). Pago não se altera nem cancela sem antes desfazer a baixa. Conta que veio de nota de compra só sai estornando a nota.
-- A lista filtra por período (do vencimento), tipo e situação; "Vencidas" mostra as de qualquer data. No alto: a pagar, a receber, pago e recebido do que está na lista.
-- Datas são digitadas em dia/mês/ano. Os períodos vão até 366 dias.
+- A lista filtra por período (do vencimento), tipo e situação. "Vencidas (qualquer data)" e "Em aberto (qualquer data)" não olham o período. Se há conta em aberto vencendo fora do período escolhido, a tela avisa quantas são e oferece "Ver todas em aberto" (a nota importada hoje costuma vencer no mês que vem).
+- No alto: a pagar, a receber, pago e recebido das contas com vencimento no período, mesmo com a lista filtrada. Com o filtro "Em aberto (qualquer data)", "A pagar" e "A receber" somam tudo o que está em aberto.
+- A lista nunca vem cortada: se passar de 2.000 lançamentos, a tela pede um período menor (uma lista cortada daria totais errados).
+- Períodos prontos: este mês, mês passado, hoje, últimos 7 e 30 dias, próximos 30 dias, mês que vem, este ano, ou as datas digitadas (dia/mês/ano), até 366 dias.
 
 ### Fluxo de caixa
 

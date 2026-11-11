@@ -84,6 +84,9 @@ class ImportarIn(BaseModel):
     categoria_id: int | None = None  # categoria das contas a pagar (vazio = compra p/ revenda)
     # Nota sem parcelas: preenchido, cria uma conta com o total da nota neste vencimento.
     vencimento_sem_parcelas: date | None = None
+    # A chave da nota que estava na tela quando a pessoa mandou importar. Se o XML enviado for de
+    # outra nota, a importação é recusada (409).
+    chave: str | None = Field(default=None, max_length=44)
 
 
 class ItemNotaOut(BaseModel):
@@ -263,6 +266,7 @@ def importar(
         gerar_contas=dados.gerar_contas,
         categoria_id=dados.categoria_id,
         vencimento_sem_parcelas=dados.vencimento_sem_parcelas,
+        chave_esperada=dados.chave,
     )
     return ImportacaoOut(
         nota=nota_out(sessao, feito.nota, com_itens=True),

@@ -87,6 +87,12 @@
       case "hoje": return [hoje, hoje];
       case "7": return [somarDias(hoje, -6), hoje];
       case "30": return [somarDias(hoje, -29), hoje];
+      case "prox30": return [hoje, somarDias(hoje, 29)];
+      case "mes-que-vem": {
+        const m = h.m === 12 ? 1 : h.m + 1;
+        const a = h.m === 12 ? h.a + 1 : h.a;
+        return [iso(a, m, 1), iso(a, m, ultimoDia(a, m))];
+      }
       case "ano": return [iso(h.a, 1, 1), iso(h.a, 12, 31)];
       case "datas": {
         const inicio = M.lerData(pdInicio.value);
@@ -117,25 +123,34 @@
     return centavos === null || centavos === undefined ? "—" : M.formatarCentavos(centavos);
   }
 
-  /* Pede uma visão do período à API. Devolve os dados, ou null depois de mostrar o erro. */
-  async function pedir(caminho, corpo, colunas, extras) {
+  /* Resposta que chegou depois de outra carga mais nova ter começado: é descartada. */
+  const VELHA = {};
+
+  /* Pede uma visão do período à API. Devolve os dados; null depois de mostrar o erro; ou VELHA
+     quando, na volta, `vale()` diz que já há uma carga mais nova (ver Moleka.novaCarga). */
+  async function pedir(caminho, corpo, colunas, extras, vale) {
     const faixa = intervalo();
     if (!faixa) { linhaUnica(corpo, colunas, "Digite a data inicial e a data final do período, assim: 01/11/2026."); return null; }
     const consulta = new URLSearchParams({ inicio: faixa[0], fim: faixa[1] });
     Object.keys(extras || {}).forEach(function (chave) { if (extras[chave]) consulta.set(chave, extras[chave]); });
     const r = await M.api("GET", caminho + "?" + consulta.toString());
+    if (!vale()) return VELHA;
     if (!r.ok) { linhaUnica(corpo, colunas, "Não foi possível carregar: " + r.erro); return null; }
     return r.dados;
   }
 
   // ------------------------------------------------------------------ contas a pagar e a receber
   const corpoLancamentos = raiz.querySelector("#tabela-lancamentos tbody");
+  const faixaFora = raiz.querySelector("[data-lc-fora]");
+  const textoFora = raiz.querySelector("[data-lc-fora-texto]");
 
-  function desenharTotais(dados) {
+  /* `dados`: as contas com vencimento no período. `abertas`: tudo o que está em aberto, de
+     qualquer data, quando é esse o filtro da lista (os dois primeiros cartões acompanham). */
+  function desenharTotais(dados, abertas) {
     const t = dados.totais;
     const tem = dados.itens.length > 0;
     const sem = "Sem dados: nenhuma conta com vencimento no período.";
-    preencher("[data-lk]", "lk", {
+    const valores = {
       a_pagar: tem ? dinheiro(t.a_pagar) : "—",
       a_pagar_m: !tem ? sem : (t.vencido_a_pagar ? dinheiro(t.vencido_a_pagar) + " já venceu" : "nada vencido no período"),
       a_receber: tem ? dinheiro(t.a_receber) : "—",
@@ -144,7 +159,16 @@
       pago_m: tem ? "das contas com vencimento no período" : sem,
       recebido: tem ? dinheiro(t.recebido) : "—",
       recebido_m: tem ? "das contas com vencimento no período" : sem,
-    });
+    };
+    if (abertas) {
+      const a = abertas.totais;
+      const texto = function (vencido) { return "em aberto, de qualquer data" + (vencido ? " · " + dinheiro(vencido) + " já venceu" : ""); };
+      valores.a_pagar = dinheiro(a.a_pagar);
+      valores.a_pagar_m = texto(a.vencido_a_pagar);
+      valores.a_receber = dinheiro(a.a_receber);
+      valores.a_receber_m = texto(a.vencido_a_receber);
+    }
+    preencher("[data-lk]", "lk", valores);
   }
 
   function etiquetaDaSituacao(l) {
@@ -184,15 +208,34 @@
   }
 
   async function carregarLancamentos() {
-    const filtrado = !!(lcTipo.value || lcSituacao.value);
-    const dados = await pedir("/api/financeiro/lancamentos", corpoLancamentos, 6, { tipo: lcTipo.value, situacao: lcSituacao.value });
+    const vale = M.novaCarga("lancamentos");
+    // Os filtros valem como estavam quando a carga começou.
+    const tipo = lcTipo.value;
+    const situacao = lcSituacao.value;
+    const filtrado = !!(tipo || situacao);
+    const caminho = "/api/financeiro/lancamentos";
+    const dados = await pedir(caminho, corpoLancamentos, 6, { tipo: tipo, situacao: situacao }, vale);
+    if (dados === VELHA) return;
     const contagem = raiz.querySelector("[data-lc-contagem]");
-    if (!dados) { contagem.textContent = "—"; return; }
+    if (!dados) { contagem.textContent = "—"; faixaFora.hidden = true; return; }
     // Os cartões de cima são sempre do período inteiro, mesmo com a lista filtrada.
-    const doPeriodo = filtrado ? await pedir("/api/financeiro/lancamentos", corpoLancamentos, 6) : dados;
-    if (doPeriodo) desenharTotais(doPeriodo);
+    const doPeriodo = filtrado ? await pedir(caminho, corpoLancamentos, 6, null, vale) : dados;
+    if (doPeriodo === VELHA) return;
+    // Com o filtro "em aberto (qualquer data)", "A pagar" e "A receber" somam tudo o que está em
+    // aberto, de despesas e de receitas, mesmo que a lista mostre só um dos tipos.
+    let abertas = null;
+    if (situacao === "todas_em_aberto") abertas = tipo ? await pedir(caminho, corpoLancamentos, 6, { situacao: situacao }, vale) : dados;
+    if (abertas === VELHA) return;
+    if (doPeriodo) desenharTotais(doPeriodo, abertas);
     const n = dados.itens.length;
-    contagem.textContent = (n === 1 ? "1 lançamento" : n + " lançamentos") + (lcSituacao.value === "vencido" ? ", de qualquer data" : ", vencimento de " + textoDoPeriodo(dados.inicio, dados.fim));
+    const deQualquerData = situacao === "vencido" || situacao === "todas_em_aberto";
+    contagem.textContent = (n === 1 ? "1 lançamento" : n + " lançamentos") + (deQualquerData ? ", de qualquer data" : ", vencimento de " + textoDoPeriodo(dados.inicio, dados.fim));
+    // Conta em aberto que vence fora do período não aparece na lista: a tela avisa que existe.
+    const fora = dados.em_aberto_fora_do_periodo || 0;
+    faixaFora.hidden = fora === 0;
+    textoFora.textContent = fora === 1
+      ? "Há mais 1 conta em aberto com vencimento fora deste período."
+      : "Há mais " + fora + " contas em aberto com vencimento fora deste período.";
     if (!n) { linhaUnica(corpoLancamentos, 6, filtrado ? "Nenhum lançamento com esse filtro." : "Nenhuma conta com vencimento neste período. Use “Novo lançamento (F3)” para lançar uma despesa ou receita."); return; }
     M.trocar.apply(null, [corpoLancamentos].concat(dados.itens.map(linhaDoLancamento)));
   }
@@ -349,8 +392,8 @@
   }
 
   async function carregarFluxo() {
-    const d = await pedir("/api/financeiro/fluxo", corpoFluxo, 8);
-    if (!d) return;
+    const d = await pedir("/api/financeiro/fluxo", corpoFluxo, 8, null, M.novaCarga("fluxo"));
+    if (!d || d === VELHA) return;
     const sem = d.motivo ? "Sem dados: " + d.motivo + "." : "";
     const vencidos = [];
     if (d.vencidos_a_pagar_centavos) vencidos.push(dinheiro(d.vencidos_a_pagar_centavos) + " a pagar");
@@ -400,8 +443,8 @@
   const corpoDre = raiz.querySelector("#tabela-dre tbody");
 
   async function carregarDre() {
-    const d = await pedir("/api/financeiro/dre", corpoDre, 3);
-    if (!d) return;
+    const d = await pedir("/api/financeiro/dre", corpoDre, 3, null, M.novaCarga("dre"));
+    if (!d || d === VELHA) return;
     raiz.querySelector("[data-dre-periodo]").textContent = textoDoPeriodo(d.inicio, d.fim);
     const avisos = raiz.querySelector("[data-dre-avisos]");
     M.trocar.apply(null, [avisos].concat(d.avisos.map(function (a) { return M.el("li", { text: a }); })));
@@ -451,8 +494,8 @@
   const corpoRent = raiz.querySelector("#tabela-rentabilidade tbody");
 
   async function carregarRentabilidade() {
-    const d = await pedir("/api/financeiro/rentabilidade", corpoRent, 7);
-    if (!d) return;
+    const d = await pedir("/api/financeiro/rentabilidade", corpoRent, 7, null, M.novaCarga("rentabilidade"));
+    if (!d || d === VELHA) return;
     raiz.querySelector("[data-rent-periodo]").textContent = textoDoPeriodo(d.inicio, d.fim);
     const nota = raiz.querySelector("[data-rent-nota]");
     nota.textContent = d.linhas.length
@@ -592,6 +635,10 @@
   pdFim.addEventListener("change", recarregar);
   lcTipo.addEventListener("change", carregarLancamentos);
   lcSituacao.addEventListener("change", carregarLancamentos);
+  raiz.querySelector("[data-lc-ver-abertas]").addEventListener("click", function () {
+    lcSituacao.value = "todas_em_aberto";
+    carregarLancamentos();
+  });
   document.getElementById("btn-novo").addEventListener("click", function () { abrirLancamento(null); });
   // F3 abre um lançamento novo em qualquer aba desta tela.
   document.addEventListener("keydown", function (evento) {

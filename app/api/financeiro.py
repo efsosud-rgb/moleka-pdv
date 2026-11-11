@@ -29,6 +29,10 @@ from app.operadores import RegraError
 
 router = APIRouter(tags=["financeiro"], dependencies=[Depends(acesso.exigir_gerente)])
 
+# A lista de lançamentos nunca vem cortada: passando disto, a tela pede um período menor.
+LIMITE_DA_LISTA = 2000
+SITUACOES_DA_LISTA = ("", "aberto", "pago", "cancelado", "vencido", "todas_em_aberto")
+
 
 # ---------------------------------------------------------------- período
 
@@ -191,6 +195,9 @@ class LancamentosOut(BaseModel):
     fim: date
     itens: list[LancamentoOut]
     totais: TotaisDeLancamentos
+    # Contas em aberto (do tipo pedido) com vencimento FORA do período: a lista não as mostra,
+    # e a tela avisa que existem. Zero quando o filtro já é "de qualquer data".
+    em_aberto_fora_do_periodo: int
     motivo: str  # por que a lista está vazia, quando está
 
 
@@ -218,19 +225,33 @@ def listar_lancamentos(
     inicio: date | None = None,
     fim: date | None = None,
     tipo: TipoLancamento | None = None,
-    situacao: str | None = None,  # aberto (inclui vencido), vencido, pago, cancelado
+    # aberto (inclui vencido), pago, cancelado: com vencimento no período;
+    # vencido, todas_em_aberto: de qualquer data.
+    situacao: str = "",
     sessao: Session = Depends(db.sessao),
 ) -> LancamentosOut:
-    """Lançamentos com vencimento no período. "vencido" traz os atrasados de qualquer data."""
+    """Lançamentos com vencimento no período. "vencido" traz os atrasados e "todas_em_aberto"
+    traz tudo o que falta pagar ou receber, os dois de qualquer data."""
     inicio, fim = _periodo(inicio, fim)
+    situacao = situacao or ""
+    if situacao not in SITUACOES_DA_LISTA:
+        raise RegraError("Filtro de situação desconhecido.")
     hoje = tempo.hoje()
+    no_periodo = financeiro._entre(Lancamento.vencimento, inicio, fim)
+    em_aberto = (Lancamento.pago_em.is_(None), Lancamento.cancelado_em.is_(None))
+    de_qualquer_data = situacao in ("vencido", "todas_em_aberto")
     consulta = select(Lancamento).order_by(Lancamento.vencimento, Lancamento.id)
-    if situacao != "vencido":
-        consulta = consulta.where(financeiro._entre(Lancamento.vencimento, inicio, fim))
+    consulta = consulta.where(*em_aberto) if de_qualquer_data else consulta.where(no_periodo)
     if tipo is not None:
         consulta = consulta.where(Lancamento.tipo == tipo)
+    encontrados = list(sessao.scalars(consulta.limit(LIMITE_DA_LISTA + 1)))
+    if len(encontrados) > LIMITE_DA_LISTA:
+        # Mostrar só uma parte daria totais errados sem ninguém perceber.
+        raise RegraError(
+            f"São mais de {LIMITE_DA_LISTA} lançamentos nesta lista. Escolha um período menor."
+        )
     itens = []
-    for lancamento in sessao.scalars(consulta.limit(2000)):
+    for lancamento in encontrados:
         atual = financeiro.situacao(lancamento, hoje)
         if atual == "cancelado" and situacao != "cancelado":
             continue
@@ -240,6 +261,13 @@ def listar_lancamentos(
             continue
         itens.append(lancamento_out(lancamento, hoje))
 
+    fora = 0
+    if situacao in ("", "aberto"):
+        contagem = select(func.count(Lancamento.id)).where(*em_aberto, ~no_periodo)
+        if tipo is not None:
+            contagem = contagem.where(Lancamento.tipo == tipo)
+        fora = sessao.scalar(contagem) or 0
+
     def soma(tipo_: TipoLancamento, *situacoes: str) -> int:
         return sum(i.valor_centavos for i in itens if i.tipo == tipo_ and i.situacao in situacoes)
 
@@ -247,6 +275,7 @@ def listar_lancamentos(
         inicio=inicio,
         fim=fim,
         itens=itens,
+        em_aberto_fora_do_periodo=fora,
         totais=TotaisDeLancamentos(
             a_pagar=soma(TipoLancamento.DESPESA, "aberto", "vencido"),
             a_receber=soma(TipoLancamento.RECEITA, "aberto", "vencido"),

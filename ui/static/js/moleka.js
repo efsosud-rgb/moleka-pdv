@@ -262,6 +262,18 @@
     return { ok: false, status: resposta.status, dados: dados, erro: erro };
   };
 
+  /* "Só a última vale". Cada carga de uma lista pega um número; quando a resposta chega, ela
+     só é usada se nenhuma carga mais nova começou depois (filtro trocado duas vezes em seguida,
+     digitação rápida). Sem isso, uma resposta atrasada poderia cobrir a tela com os dados de um
+     filtro ou período diferente do que está escolhido.
+     Uso:  const vale = Moleka.novaCarga("lista");  await ...;  if (!vale()) return; */
+  const cargas = {};
+  Moleka.novaCarga = function (chave) {
+    const numero = (cargas[chave] || 0) + 1;
+    cargas[chave] = numero;
+    return function () { return cargas[chave] === numero; };
+  };
+
   /* Linha de mensagem dos formulários: <p class="msg-form" role="alert" hidden>.
      tipo: "erro" (padrão), "ok" ou "dica". Texto vazio esconde a linha. */
   Moleka.mensagem = function (form, texto, tipo) {

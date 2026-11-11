@@ -100,6 +100,14 @@ const LARGURA = 1366, ALTURA = Number(process.argv[4] || 697);
     await (await aberta).setFiles(path.join(notas, nome));
     aoAbrirAJanela = null;
   }
+  // Solta o arquivo em cima da janela, como quem arrasta da pasta.
+  async function soltarArquivo(nome) {
+    await page.evaluate(([texto, n]) => {
+      const carga = new DataTransfer();
+      carga.items.add(new File([texto], n, { type: 'text/xml' }));
+      document.body.dispatchEvent(new DragEvent('drop', { dataTransfer: carga, bubbles: true, cancelable: true }));
+    }, [fs.readFileSync(path.join(notas, nome), 'utf8'), nome]);
+  }
 
   // ------------------------------------------------------------------ 1) preparação (pela API)
   await page.goto(base + '/');
@@ -178,8 +186,8 @@ const LARGURA = 1366, ALTURA = Number(process.argv[4] || 697);
   await page.goto(base + '/entrada-nf');
   await escolherArquivo('nao-e-nota.xml');
   await espera('[data-msg-arquivo]', /nao-e-nota\.xml.*não achei os dados da nota/, 'Entrada de NF: arquivo que não é nota é recusado, com o motivo');
-  await escolherArquivo('nota-ficticia-123.xml');
-  await espera('[data-nf="fornecedor"]', /^FORNECEDOR FICTICIO DE TESTE LTDA$/, 'Entrada de NF: fornecedor lido da nota');
+  await soltarArquivo('nota-ficticia-123.xml'); // arrastado para a janela: é lido como o escolhido
+  await espera('[data-nf="fornecedor"]', /^FORNECEDOR FICTICIO DE TESTE LTDA$/, 'Entrada de NF: fornecedor lido da nota (arquivo arrastado para a janela)');
   await espera('[data-nf="numero"]', /^NF 123 · série 1$/, 'Entrada de NF: número e série');
   await espera('[data-nf="total"]', /^R\$ 580,60$/, 'Entrada de NF: total da nota');
   await espera('[data-nf="itens"]', /^3 itens$/, 'Entrada de NF: quantidade de itens');
@@ -211,6 +219,12 @@ const LARGURA = 1366, ALTURA = Number(process.argv[4] || 697);
   confere('Entrada de NF: contas a pagar marcadas quando a nota traz parcelas', await page.isChecked('#gerar-contas'));
   await medir('entrada-nf-conferir');
   await page.keyboard.press('F10');
+  // Com a pergunta aberta, outro arquivo solto na janela não troca a nota: o que se importa é o
+  // que estava na tela (as decisões foram tomadas para aquela nota).
+  await page.waitForSelector('#dlg-confirmar[open]');
+  await soltarArquivo('nota-ficticia-140.xml');
+  await page.waitForTimeout(500);
+  confere('Entrada de NF: arquivo solto com a confirmação aberta não troca a nota', (await texto('[data-nf="numero"]')) === 'NF 123 · série 1', await texto('[data-nf="numero"]'));
   await confirmar(/2 itens dão entrada em produtos que já existem; 1 produto novo é criado \(sem preço de venda\)\. 2 contas a pagar são criadas\./, 'Entrada de NF: a confirmação resume o que vai acontecer');
   await page.waitForSelector('[data-passo="feito"]:not([hidden])');
   await espera('[data-feito]', /Picolé de teste : entraram 48 UN a R\$ 2,28 cada\./, 'importada: picolé');
@@ -298,6 +312,46 @@ const LARGURA = 1366, ALTURA = Number(process.argv[4] || 697);
   // Datas são sempre dia/mês/ano (não dependem do idioma do Windows): 03/12 é 3 de dezembro.
   const lidas = await page.evaluate(() => ['3/12/2026', '03/12/26', '03122026', '031226', '31/02/2026', '12/13/2026', '1/1/1999', '', 'abc'].map(window.Moleka.lerData));
   confere('Datas digitadas são lidas como dia/mês/ano', JSON.stringify(lidas) === JSON.stringify(['2026-12-03', '2026-12-03', '2026-12-03', '2026-12-03', null, null, null, null, null]), JSON.stringify(lidas));
+  // Ao entrar, o período é "Este mês". As parcelas da nota vencem daqui a 25 e a 55 dias: as que
+  // caem fora do mês não estão na lista, e a tela avisa. "Ver todas em aberto" mostra as duas.
+  const foraDoMes = [maisDias(hoje, 25), maisDias(hoje, 55)].filter(v => v.slice(0, 7) !== hoje.slice(0, 7)).length;
+  await espera('[data-lc-fora-texto]', new RegExp('^Há mais ' + foraDoMes + (foraDoMes === 1 ? ' conta' : ' contas') + ' em aberto com vencimento fora deste período\\.$'), 'Financeiro: avisa das contas em aberto que vencem fora do período');
+  await page.click('[data-lc-ver-abertas]');
+  await espera('[data-lc-contagem]', /^2 lançamentos, de qualquer data$/, 'Financeiro: "Ver todas em aberto" mostra as duas parcelas da nota');
+  confere('Financeiro: o filtro vira "Em aberto (qualquer data)" e o aviso some', (await page.inputValue('#lc-situacao')) === 'todas_em_aberto' && await page.isHidden('[data-lc-fora]'));
+  await esperaLinha('#tabela-lancamentos', 'parcela 002', /parcela 002 .*Despesa 290,30 Em aberto/, 'Financeiro: a parcela que vence daqui a 55 dias aparece');
+  await espera('[data-lk="a_pagar"]', /^R\$ 580,60$/, 'Financeiro: com esse filtro, "A pagar" soma tudo o que está em aberto');
+  await espera('[data-lk="a_pagar_m"]', /^em aberto, de qualquer data$/, 'Financeiro: e o cartão diz que é de qualquer data');
+  // Mostrando só as receitas, a lista fica vazia, mas o cartão continua somando as despesas em aberto.
+  await page.selectOption('#lc-tipo', 'receita');
+  await espera('#tabela-lancamentos tbody', /^Nenhum lançamento com esse filtro\.$/, 'Financeiro: só receitas em aberto: nenhuma');
+  await espera('[data-lk="a_pagar"]', /^R\$ 580,60$/, 'Financeiro: o cartão "A pagar" não muda com o filtro de tipo');
+  await page.selectOption('#lc-tipo', '');
+  await page.selectOption('#lc-situacao', '');
+  // "Próximos 30 dias" (de hoje a daqui a 29 dias): pega a parcela de daqui a 25 e avisa da outra.
+  await page.selectOption('#periodo', 'prox30');
+  await espera('[data-lc-contagem]', new RegExp('^1 lançamento, vencimento de ' + br(hoje) + ' a ' + br(maisDias(hoje, 29)) + '$'), 'Período "Próximos 30 dias": de hoje a daqui a 29 dias');
+  await espera('[data-lc-fora-texto]', /^Há mais 1 conta em aberto com vencimento fora deste período\.$/, 'Próximos 30 dias: avisa da parcela que vence depois');
+  // "Mês que vem": do dia 1 ao último dia do mês seguinte.
+  await page.selectOption('#periodo', 'mes-que-vem');
+  const [anoDeHoje, mesDeHoje] = hoje.split('-').map(Number);
+  const seguinte = mesDeHoje === 12 ? [anoDeHoje + 1, 1] : [anoDeHoje, mesDeHoje + 1];
+  const doisDigitos = n => String(n).padStart(2, '0');
+  const mesSeguinte = doisDigitos(seguinte[1]) + '/' + seguinte[0];
+  await espera('[data-lc-contagem]', new RegExp('vencimento de 01/' + mesSeguinte + ' a ' + doisDigitos(new Date(seguinte[0], seguinte[1], 0).getDate()) + '/' + mesSeguinte + '$'), 'Período "Mês que vem": o mês seguinte inteiro');
+  // Resposta atrasada não cobre a tela: o pedido de "Este mês" é segurado por 0,7 s e, nesse meio
+  // tempo, o período muda para "Próximos 30 dias". Tem de ficar na tela o último período escolhido.
+  await page.selectOption('#periodo', 'mes');
+  await espera('[data-lc-contagem]', new RegExp('vencimento de 01/' + br(hoje).slice(3) + ' a '), 'Período de volta em "Este mês"');
+  const fimDoMes = hoje.slice(0, 8) + doisDigitos(new Date(anoDeHoje, mesDeHoje, 0).getDate());
+  const pedidoDoMes = u => u.pathname === '/api/financeiro/lancamentos' && u.searchParams.get('inicio') === hoje.slice(0, 8) + '01' && u.searchParams.get('fim') === fimDoMes;
+  await page.route(pedidoDoMes, async rota => { await new Promise(pronto => setTimeout(pronto, 700)); await rota.continue(); });
+  await page.selectOption('#lc-tipo', 'despesa'); // carga de "Este mês": vai chegar atrasada
+  await page.selectOption('#periodo', 'prox30'); // carga mais nova, que chega antes
+  await page.waitForTimeout(1300);
+  await page.unroute(pedidoDoMes);
+  confere('Resposta atrasada de outro período não cobre a tela', new RegExp('vencimento de ' + br(hoje) + ' a ' + br(maisDias(hoje, 29)) + '$').test(await texto('[data-lc-contagem]')), await texto('[data-lc-contagem]'));
+  await page.selectOption('#lc-tipo', '');
   await page.selectOption('#periodo', 'datas');
   confere('Período: ao escolher datas, vem do dia 1 até hoje, em dia/mês/ano', (await page.inputValue('#pd-inicio')) === '01' + br(hoje).slice(2) && (await page.inputValue('#pd-fim')) === br(hoje), (await page.inputValue('#pd-inicio')) + ' a ' + (await page.inputValue('#pd-fim')));
   await page.fill('#pd-inicio', br(maisDias(hoje, -40))); await page.fill('#pd-fim', br(maisDias(hoje, 70)));

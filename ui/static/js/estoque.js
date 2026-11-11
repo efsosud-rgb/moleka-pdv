@@ -131,7 +131,9 @@
     if (busca.value.trim()) filtros.set("busca", busca.value.trim());
     if (situacao.value) filtros.set("situacao", situacao.value);
     if (verInativos.checked) filtros.set("inativos", "true");
+    const vale = M.novaCarga("estoque");
     const r = await M.api("GET", "/api/estoque?" + filtros.toString());
+    if (!vale()) return; // já saiu uma pesquisa mais nova: esta resposta não serve mais
     if (!r.ok) { contagem.textContent = "—"; linhaUnica("Não foi possível carregar o estoque: " + r.erro); return; }
     itens = r.dados.itens;
     desenharResumo(r.dados.resumo);

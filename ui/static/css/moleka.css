@@ -588,6 +588,8 @@ button.chip:focus-visible{outline:3px solid #FCF00C;outline-offset:2px}
 .cartao.rolavel > .filtro .espaco{flex:1}
 .cartao.rolavel > .nota{flex:none;margin-top:0;padding:8px 14px}
 .cartao.rolavel > .avisos{border-top:0;border-bottom:1px solid #EADBA8}
+.cartao.rolavel > .lote{border-top:0;border-bottom:1px solid #EADBA8}
+.lote.dica{font-weight:600;color:#542424;background:#FFF6CC}
 .kpi .v.menor{margin:5px 0 3px;font-size:14.5px;line-height:1.3}
 .kpi .v.positivo{color:#166B30}
 .kpi .v.negativo{color:#B81E22}

@@ -24,7 +24,7 @@ Não pede senha de administrador. Pode instalar por cima da versão 0.3.0: os da
   - ao importar: o estoque sobe, o **custo médio é refeito** e as **parcelas viram contas a pagar**;
   - a mesma nota não entra duas vezes; uma nota importada por engano pode ser **estornada** (com motivo).
 - **Financeiro** (menu Financeiro), no lugar da tela em construção:
-  - **Contas a pagar e a receber**: lançar, alterar, dar baixa, desfazer a baixa e cancelar; a lista mostra o que está em aberto, vencido e pago;
+  - **Contas a pagar e a receber**: lançar, alterar, dar baixa, desfazer a baixa e cancelar; a lista mostra o que está em aberto, vencido e pago, e avisa quando há conta em aberto vencendo fora do período escolhido (botão **Ver todas em aberto**);
   - **Fluxo de caixa** por dia: vendas, outros recebimentos, pagamentos, saldo do dia e acumulado;
   - **DRE**: receita bruta, descontos, deduções, receita líquida, custo das vendas, lucro bruto, despesas e resultado, com o percentual sobre a receita líquida;
   - **Rentabilidade por produto** (menu Relatórios): quantidade, receita, custo e margem de cada produto vendido;
@@ -63,4 +63,4 @@ Feche o sistema, aperte `Win + R`, cole o comando abaixo e dê Enter. Aparece um
 "%LOCALAPPDATA%\Programs\MolekaPDV\MolekaPDV.exe" --redefinir-senha
 ```
 
-Os prints abaixo (`janela-pasta.png` e `janela-instalado.png`) foram tirados pelo teste automático num Windows de verdade: o primeiro mostra o primeiro acesso; o segundo, a tela de login. O mesmo teste faz, dentro do programa instalado e sem abrir as telas, um roteiro completo pela API: cadastro, entrada no estoque, caixa, venda com duas formas de pagamento e troco, fechamento, importação de uma nota fictícia, uma despesa paga, fluxo de caixa, DRE e rentabilidade, conferindo cada valor. As telas novas foram conferidas no navegador (188 conferências), não dentro da janela do Windows.
+Os prints abaixo (`janela-pasta.png` e `janela-instalado.png`) foram tirados pelo teste automático num Windows de verdade: o primeiro mostra o primeiro acesso; o segundo, a tela de login. O mesmo teste faz, dentro do programa instalado e sem abrir as telas, um roteiro completo pela API: cadastro, entrada no estoque, caixa, venda com duas formas de pagamento e troco, fechamento, importação de uma nota fictícia, uma despesa paga, fluxo de caixa, DRE e rentabilidade, conferindo cada valor. As telas novas foram conferidas no navegador (202 conferências), não dentro da janela do Windows.

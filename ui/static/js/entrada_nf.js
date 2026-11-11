@@ -297,16 +297,20 @@
   async function lerArquivo(escolhido) {
     mensagemSolta(msgArquivo, "");
     if (!escolhido) return;
+    const vale = M.novaCarga("arquivo"); // vale o último arquivo escolhido
     if (escolhido.size > TAMANHO_MAXIMO) { passo("arquivo"); mensagemSolta(msgArquivo, "O arquivo é grande demais para ser uma NF-e. Confira se escolheu o XML da nota."); return; }
     let texto;
     try {
       texto = await escolhido.text();
     } catch (falha) {
+      if (!vale()) return;
       passo("arquivo");
       mensagemSolta(msgArquivo, "Não consegui abrir o arquivo. Tente escolher de novo.");
       return;
     }
+    if (!vale()) return;
     const r = await M.api("POST", "/api/compras/conferir", { xml: texto });
+    if (!vale()) return;
     if (!r.ok) {
       passo("arquivo");
       mensagemSolta(msgArquivo, "“" + escolhido.name + "”: " + r.erro);
@@ -336,6 +340,7 @@
   document.addEventListener("dragover", function (evento) { evento.preventDefault(); });
   document.addEventListener("drop", function (evento) {
     evento.preventDefault();
+    if (document.querySelector("dialog[open]")) return; // com uma pergunta aberta, a nota não é trocada
     const solto = evento.dataTransfer && evento.dataTransfer.files ? evento.dataTransfer.files[0] : null;
     if (solto) { mostrarAba("importar"); lerArquivo(solto); }
   });
@@ -350,6 +355,10 @@
   form.addEventListener("submit", async function (evento) {
     evento.preventDefault();
     if (!nota || nota.ja_importada) return;
+    // A nota e o arquivo como estão na tela agora: é isto que será importado, mesmo que outro
+    // arquivo seja lido enquanto a pergunta de confirmação estiver aberta.
+    const conferida = nota;
+    const xmlConferido = xml;
     const decisoes = [];
     const conta = { vincular: 0, criar: 0, ignorar: 0 };
     for (let i = 0; i < linhas.length; i++) {
@@ -384,8 +393,10 @@
       sim: "Importar a nota",
     });
     if (!resposta.ok) return;
+    if (nota !== conferida) { M.mensagem(form, "A nota na tela mudou. Confira os itens de novo antes de importar."); return; }
     const r = await M.api("POST", "/api/compras/importar", {
-      xml: xml,
+      xml: xmlConferido,
+      chave: conferida.chave,
       itens: decisoes,
       gerar_contas: gerar,
       categoria_id: gerar && form.categoria.value ? Number(form.categoria.value) : null,

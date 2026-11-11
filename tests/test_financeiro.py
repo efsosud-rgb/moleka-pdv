@@ -8,6 +8,7 @@ from datetime import timedelta
 from sqlalchemy import func, select
 
 from app import db, financeiro, tempo
+from app.api import financeiro as api_financeiro
 from app.models import CategoriaFinanceira, Lancamento
 
 
@@ -268,6 +269,95 @@ def test_lancamento_baixa_alteracao_e_cancelamento(cliente):
     vencidos = cliente.get("/api/financeiro/lancamentos", params={**longe, "situacao": "vencido"})
     assert [i["descricao"] for i in vencidos.json()["itens"]] == ["Aluguel do freezer"]
     assert cliente.get("/api/financeiro/lancamentos", params=longe).json()["itens"] == []
+
+
+def test_contas_em_aberto_fora_do_periodo(cliente, monkeypatch):
+    """O que vence fora do período não aparece na lista, mas a resposta diz que existe (a tela
+    avisa); "todas_em_aberto" traz tudo o que falta pagar ou receber, de qualquer data."""
+    cat = _categorias(cliente)
+    hoje = tempo.hoje()
+    so_hoje = _periodo(hoje, hoje)
+    _lancado(
+        cliente, "despesa", cat["Aluguel"], "Aluguel atrasado", 100000, hoje - timedelta(days=10)
+    )
+    _lancado(cliente, "despesa", cat["Água"], "Conta de água", 9000, hoje)
+    _lancado(
+        cliente,
+        "despesa",
+        cat["Energia elétrica"],
+        "Conta de luz",
+        30000,
+        hoje + timedelta(days=45),
+    )
+    _lancado(
+        cliente,
+        "receita",
+        cat["Outras receitas"],
+        "Aluguel do freezer",
+        12000,
+        hoje + timedelta(days=50),
+    )
+    # Paga e cancelada, as duas com vencimento fora do período: não são contas em aberto.
+    _lancado(
+        cliente,
+        "despesa",
+        cat["Água"],
+        "Água do mês passado",
+        8000,
+        hoje - timedelta(days=30),
+        pago_em=hoje,
+        forma="pix",
+    )
+    cancelada = _lancado(
+        cliente, "despesa", cat["Aluguel"], "Lançada por engano", 500, hoje + timedelta(days=20)
+    )
+    caminho = f"/api/financeiro/lancamentos/{cancelada['id']}/cancelar"
+    assert cliente.post(caminho).status_code == 200
+
+    def lista(**filtros):
+        resposta = cliente.get("/api/financeiro/lancamentos", params={**so_hoje, **filtros})
+        assert resposta.status_code == 200, resposta.text
+        return resposta.json()
+
+    do_dia = lista()
+    assert [i["descricao"] for i in do_dia["itens"]] == ["Conta de água"]
+    assert do_dia["em_aberto_fora_do_periodo"] == 3  # o atrasado, a luz e o freezer
+    assert lista(tipo="receita")["itens"] == []
+    assert lista(tipo="receita")["em_aberto_fora_do_periodo"] == 1
+    assert lista(tipo="despesa", situacao="aberto")["em_aberto_fora_do_periodo"] == 2
+
+    todas = lista(situacao="todas_em_aberto")
+    assert [(i["descricao"], i["situacao"]) for i in todas["itens"]] == [  # ordem de vencimento
+        ("Aluguel atrasado", "vencido"),
+        ("Conta de água", "aberto"),
+        ("Conta de luz", "aberto"),
+        ("Aluguel do freezer", "aberto"),
+    ]
+    assert todas["em_aberto_fora_do_periodo"] == 0  # já estão todas na lista
+    assert (
+        todas["totais"]["a_pagar"],
+        todas["totais"]["a_receber"],
+        todas["totais"]["vencido_a_pagar"],
+        todas["totais"]["pago"],
+    ) == (139000, 12000, 100000, 0)
+    so_receitas = lista(situacao="todas_em_aberto", tipo="receita")
+    assert [i["descricao"] for i in so_receitas["itens"]] == ["Aluguel do freezer"]
+    # Os outros filtros não falam de contas em aberto: sem aviso.
+    for situacao in ("pago", "cancelado", "vencido"):
+        assert lista(situacao=situacao)["em_aberto_fora_do_periodo"] == 0, situacao
+
+    desconhecido = cliente.get(
+        "/api/financeiro/lancamentos", params={**so_hoje, "situacao": "qualquer"}
+    )
+    assert desconhecido.status_code == 422 and "desconhecido" in desconhecido.json()["detail"]
+
+    # Lista grande demais não vem cortada (os totais sairiam errados sem ninguém perceber).
+    monkeypatch.setattr(api_financeiro, "LIMITE_DA_LISTA", 3)
+    grande = cliente.get(
+        "/api/financeiro/lancamentos", params={**so_hoje, "situacao": "todas_em_aberto"}
+    )
+    assert grande.status_code == 422 and "mais de 3 lançamentos" in grande.json()["detail"]
+    assert len(lista()["itens"]) == 1  # a lista pequena continua saindo
 
 
 def test_lancamento_ja_pago_e_recusas(cliente):

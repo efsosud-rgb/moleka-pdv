@@ -14,7 +14,7 @@
 </div>
 <div class="periodo-fin" data-periodo>
 <label class="rotulo" for="periodo">Período</label>
-<div class="sel"><select id="periodo" class="campo"><option value="mes">Este mês</option><option value="mes-passado">Mês passado</option><option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="ano">Este ano</option><option value="datas">Escolher datas…</option></select>{{ icone("seta", "seta") }}</div>
+<div class="sel"><select id="periodo" class="campo"><option value="mes">Este mês</option><option value="mes-passado">Mês passado</option><option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="prox30">Próximos 30 dias</option><option value="mes-que-vem">Mês que vem</option><option value="ano">Este ano</option><option value="datas">Escolher datas…</option></select>{{ icone("seta", "seta") }}</div>
 <span class="datas" data-datas hidden><input id="pd-inicio" class="campo" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" data-data aria-label="Data inicial"><span>a</span><input id="pd-fim" class="campo" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" data-data aria-label="Data final"></span>
 </div>
 </div>
@@ -29,10 +29,14 @@
 <section class="cartao rolavel" aria-label="Despesas e receitas">
 <div class="filtro">
 <div class="sel"><select id="lc-tipo" class="campo" aria-label="Tipo"><option value="">Despesas e receitas</option><option value="despesa">Só despesas</option><option value="receita">Só receitas</option></select>{{ icone("seta", "seta") }}</div>
-<div class="sel larga"><select id="lc-situacao" class="campo" aria-label="Situação"><option value="">Em aberto e pagas</option><option value="aberto">Só em aberto</option><option value="pago">Só pagas e recebidas</option><option value="vencido">Vencidas (de qualquer data)</option><option value="cancelado">Canceladas</option></select>{{ icone("seta", "seta") }}</div>
+<div class="sel larga"><select id="lc-situacao" class="campo" aria-label="Situação"><option value="">Em aberto e pagas</option><option value="aberto">Só em aberto</option><option value="todas_em_aberto">Em aberto (qualquer data)</option><option value="pago">Só pagas e recebidas</option><option value="vencido">Vencidas (qualquer data)</option><option value="cancelado">Canceladas</option></select>{{ icone("seta", "seta") }}</div>
 <span class="conta" data-lc-contagem>—</span>
 <span class="espaco"></span>
 <button class="btn3d amarelo mini" type="button" id="btn-novo" data-atalho="F3">{{ icone("mais") }}Novo lançamento (F3)</button>
+</div>
+<div class="lote dica" data-lc-fora hidden>
+<span data-lc-fora-texto>—</span>
+<button class="btn3d mini" type="button" data-lc-ver-abertas>Ver todas em aberto</button>
 </div>
 <div class="rolagem">
 <table class="tabela" id="tabela-lancamentos">
