@@ -13,6 +13,7 @@ dependencies = [
     "jinja2>=3.1",
     "tzdata>=2024.1",  # o Windows não traz a base de fusos horários (America/Sao_Paulo)
     "openpyxl>=3.1",  # planilhas do Excel dos relatórios (ver docs/DECISOES.md, 12/11/2026)
+    "cryptography>=42",  # abrir o certificado digital A1 (ver docs/DECISOES.md, 12/11/2026)
 ]
 
 [project.optional-dependencies]
@@ -78,6 +79,10 @@ files = [
     "app/impressao.py",
     "app/backup.py",
     "app/api/configuracoes.py",
+    "app/segredos.py",
+    "app/certificado.py",
+    "app/dados_fiscais.py",
+    "app/api/fiscal.py",
     "app/api/impressao.py",
     "app/relatorios.py",
     "app/api/relatorios.py",

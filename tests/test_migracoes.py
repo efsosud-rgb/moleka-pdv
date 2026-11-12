@@ -194,7 +194,8 @@ def test_banco_da_versao_0_3_e_atualizado_sem_perder_dados(tmp_path):
         )
 
     backups = tmp_path / "backups"
-    assert migracoes.preparar(engine, arquivo=arquivo, pasta_backups=backups) == 3
+    atual = migracoes.VERSAO_DO_BANCO
+    assert migracoes.preparar(engine, arquivo=arquivo, pasta_backups=backups) == atual
     inspetor = inspect(engine)
     colunas = {t: {c["name"] for c in inspetor.get_columns(t)} for t in inspetor.get_table_names()}
     assert "ultimo_custo_centavos" in colunas["produto"]
@@ -217,6 +218,47 @@ def test_banco_da_versao_0_3_e_atualizado_sem_perder_dados(tmp_path):
         item = con.execute(text("SELECT total_centavos, custo_unitario_centavos FROM venda_item"))
         assert item.one() == (1500, None)
     assert len(list(backups.glob("moleka-antes-do-formato-3-*.db"))) == 1
+    # ...e segue até o formato atual (4: CFOP do produto).
+    assert "cfop" in colunas["produto"]
+
+
+# A tabela que mudou do formato 3 (versões 0.4.0 a 0.6.0) para o 4, como era.
+FORMATO_3_PRODUTO = """
+CREATE TABLE produto (id INTEGER NOT NULL PRIMARY KEY, codigo VARCHAR(30) NOT NULL UNIQUE,
+  ean VARCHAR(14), descricao VARCHAR(120) NOT NULL, categoria VARCHAR(40),
+  unidade VARCHAR(6) NOT NULL, ncm VARCHAR(8), cest VARCHAR(7), cst_csosn VARCHAR(4),
+  origem VARCHAR(1) NOT NULL, custo_centavos INTEGER, ultimo_custo_centavos INTEGER,
+  estoque_minimo NUMERIC(12, 3) NOT NULL, ativo BOOLEAN NOT NULL,
+  criado_em DATETIME DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+  atualizado_em DATETIME DEFAULT (CURRENT_TIMESTAMP) NOT NULL)
+"""
+
+
+def test_banco_das_versoes_0_4_a_0_6_ganha_o_cfop_sem_perder_dados(tmp_path):
+    """Os produtos cadastrados até a 0.6.0 continuam iguais; o CFOP nasce vazio."""
+    arquivo = tmp_path / "loja.db"
+    engine = _engine(arquivo)
+    with engine.begin() as con:
+        con.exec_driver_sql(FORMATO_3_PRODUTO)
+    migracoes.Base.metadata.create_all(engine)  # as outras tabelas não mudaram
+    with engine.begin() as con:
+        con.exec_driver_sql("PRAGMA user_version = 3")
+        con.execute(
+            text(
+                "INSERT INTO produto (codigo, descricao, categoria, unidade, ncm, cst_csosn, "
+                "origem, custo_centavos, estoque_minimo, ativo) VALUES ('7', 'Picolé de teste', "
+                "'Picolés', 'UN', '21050010', '500', '0', 210, 0, 1)"
+            )
+        )
+    backups = tmp_path / "backups"
+    assert migracoes.preparar(engine, arquivo=arquivo, pasta_backups=backups) == 4
+    assert "cfop" in {c["name"] for c in inspect(engine).get_columns("produto")}
+    with engine.connect() as con:
+        produto = con.execute(
+            text("SELECT codigo, categoria, ncm, cst_csosn, custo_centavos, cfop FROM produto")
+        )
+        assert produto.one() == ("7", "Picolés", "21050010", "500", 210, None)
+    assert len(list(backups.glob("moleka-antes-do-formato-4-*.db"))) == 1
 
 
 def test_banco_de_versao_mais_nova_nao_e_aberto(tmp_path):

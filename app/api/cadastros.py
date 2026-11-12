@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app import acesso, catalogo, db, documentos, vendas
+from app import acesso, catalogo, dados_fiscais, db, documentos, vendas
 from app.caixa import ROTULOS
 from app.models import (
     Cliente,
@@ -215,6 +215,7 @@ class ProdutoIn(BaseModel):
     ncm: str | None = None
     cest: str | None = None
     cst_csosn: str | None = None
+    cfop: str | None = None
     origem: str = "0"
     custo_centavos: int | None = None
     estoque_minimo: Decimal = Decimal("0")
@@ -232,6 +233,7 @@ class ProdutoOut(BaseModel):
     ncm: str | None
     cest: str | None
     cst_csosn: str | None
+    cfop: str | None
     origem: str
     custo_centavos: int | None
     estoque_minimo: Decimal
@@ -308,7 +310,8 @@ def _gravar_produto(sessao: Session, produto: Produto, dados: ProdutoIn) -> None
     produto.ncm = _so_digitos(dados.ncm, (8,), "NCM")
     produto.cest = _so_digitos(dados.cest, (7,), "CEST")
     produto.cst_csosn = _so_digitos(dados.cst_csosn, (2, 3, 4), "CST/CSOSN")
-    produto.origem = (_texto(dados.origem, 1, "Origem") or "0")[:1]
+    produto.cfop = dados_fiscais.conferir_cfop(dados.cfop)
+    produto.origem = dados_fiscais.conferir_origem(dados.origem)
     produto.custo_centavos = dados.custo_centavos
     produto.estoque_minimo = dados.estoque_minimo
     produto.ativo = dados.ativo

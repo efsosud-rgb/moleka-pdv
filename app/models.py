@@ -47,6 +47,7 @@ class Produto(Base):
     ncm: Mapped[str | None] = mapped_column(String(8))
     cest: Mapped[str | None] = mapped_column(String(7))
     cst_csosn: Mapped[str | None] = mapped_column(String(4))
+    cfop: Mapped[str | None] = mapped_column(String(4))  # da venda na NFC-e (5102, 5405...)
     origem: Mapped[str] = mapped_column(String(1), default="0")  # 0 = nacional
     # Custo médio por unidade: é o que a venda guarda para o cálculo do lucro. Vem das entradas
     # (XML ou ajuste com custo) ou é digitado no cadastro.

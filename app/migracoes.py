@@ -23,7 +23,7 @@ from app.models import Base
 
 log = logging.getLogger("moleka.banco")
 
-VERSAO_DO_BANCO = 3
+VERSAO_DO_BANCO = 4
 
 
 def _colunas(con: Connection, tabela: str) -> set[str]:
@@ -100,8 +100,17 @@ def _formato_2_para_3(con: Connection) -> None:
     )
 
 
+def _formato_3_para_4(con: Connection) -> None:
+    """Versão 0.7.0: dados fiscais da NFC-e (o CFOP de cada produto)."""
+    _acrescentar_colunas(con, "produto", {"cfop": "VARCHAR(4)"})
+
+
 # PASSOS[n] leva o banco da versão n para a n + 1.
-PASSOS: dict[int, Callable[[Connection], None]] = {1: _formato_1_para_2, 2: _formato_2_para_3}
+PASSOS: dict[int, Callable[[Connection], None]] = {
+    1: _formato_1_para_2,
+    2: _formato_2_para_3,
+    3: _formato_3_para_4,
+}
 
 
 class BancoMaisNovoError(RuntimeError):

@@ -16,6 +16,7 @@ from app.api.compras import router as compras_router
 from app.api.configuracoes import router as configuracoes_router
 from app.api.estoque import router as estoque_router
 from app.api.financeiro import router as financeiro_router
+from app.api.fiscal import router as fiscal_router
 from app.api.impressao import router as impressao_router
 from app.api.login import router as login_router
 from app.api.planilhas import router as planilhas_router
@@ -72,7 +73,8 @@ def criar_app() -> FastAPI:
     app.include_router(caixa_router, prefix="/api", dependencies=so_logado)
     app.include_router(vendas_router, prefix="/api", dependencies=so_logado)
     app.include_router(impressao_router, prefix="/api", dependencies=so_logado)
-    # Estoque, entrada de nota, financeiro, relatórios e configurações: só o gerente (a exigência
+    # Estoque, entrada de nota, financeiro, relatórios, configurações e dados fiscais: só o
+    # gerente (a exigência
     # está em cada módulo).
     app.include_router(estoque_router, prefix="/api")
     app.include_router(compras_router, prefix="/api")
@@ -80,6 +82,7 @@ def criar_app() -> FastAPI:
     app.include_router(relatorios_router, prefix="/api")
     app.include_router(planilhas_router, prefix="/api")
     app.include_router(configuracoes_router, prefix="/api")
+    app.include_router(fiscal_router, prefix="/api")
     app.include_router(paginas_router)
 
     # Marca (logo, mascote, artes da capa) e arquivos da interface (CSS, JS, fontes).

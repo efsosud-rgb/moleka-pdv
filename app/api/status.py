@@ -13,9 +13,9 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app import backup, config, configuracoes, db, impressoras, tempo
+from app import backup, certificado, config, configuracoes, db, impressoras, tempo
 from app.fiscal import provedor_configurado
-from app.models import Configuracao, SessaoCaixa
+from app.models import SessaoCaixa
 from app.tempo import FUSO
 
 router = APIRouter(tags=["status"])
@@ -40,11 +40,6 @@ class Status(BaseModel):
     impressora_cupom: Indicador
     backup: Indicador
     caixa: Indicador
-
-
-def _config(sessao: Session, chave: str) -> str | None:
-    item = sessao.get(Configuracao, chave)
-    return item.valor if item and item.valor else None
 
 
 def _impressora_de_cupom(sessao: Session) -> Indicador:
@@ -115,12 +110,38 @@ def _copia_de_seguranca(sessao: Session) -> Indicador:
     return Indicador(ok=True, texto=quando, motivo=motivo)
 
 
+def _certificado(sessao: Session) -> Indicador:
+    """O certificado A1 instalado em Configurações → Fiscal, pelo que está gravado."""
+    situacao = certificado.situacao_gravada(sessao)
+    if situacao is None:
+        return Indicador(
+            ok=False, texto="", motivo="nenhum certificado A1 instalado (Configurações → Fiscal)"
+        )
+    if not situacao.tem_arquivo or not situacao.tem_senha:
+        falta = "o arquivo" if not situacao.tem_arquivo else "a senha"
+        return Indicador(
+            ok=False,
+            texto="",
+            estado="incompleto",
+            motivo=f"sumiu {falta} do certificado deste computador: instale de novo",
+        )
+    fim = certificado.data_br(situacao.fim)
+    if situacao.vencido():
+        return Indicador(ok=False, texto="", estado="vencido", motivo=f"venceu em {fim}")
+    dias = situacao.dias_restantes()
+    return Indicador(
+        ok=True,
+        texto=f"A1 · vence em {dias} dias"
+        if dias <= certificado.AVISO_DE_VENCIMENTO_DIAS
+        else "A1",
+        motivo=f"{situacao.titular} · válido até {fim}",
+    )
+
+
 @router.get("/status", response_model=Status)
 def status(sessao: Session = Depends(db.sessao)) -> Status:
     ok_banco, motivo_banco = db.banco_ok()
     fiscal = provedor_configurado().status()
-
-    certificado_caminho = _config(sessao, "fiscal.certificado_caminho")
 
     aberta = sessao.scalar(
         select(SessaoCaixa).where(SessaoCaixa.fechado_em.is_(None)).order_by(SessaoCaixa.id.desc())
@@ -140,13 +161,7 @@ def status(sessao: Session = Depends(db.sessao)) -> Status:
             texto=f"{fiscal.nome} · {fiscal.ambiente}",
             motivo=fiscal.motivo,
         ),
-        certificado=Indicador(
-            ok=certificado_caminho is not None,
-            texto="A1 configurado",
-            motivo="nenhum certificado A1 configurado"
-            if not certificado_caminho
-            else certificado_caminho,
-        ),
+        certificado=_certificado(sessao),
         impressora_cupom=_impressora_de_cupom(sessao),
         backup=_copia_de_seguranca(sessao),
         caixa=Indicador(
