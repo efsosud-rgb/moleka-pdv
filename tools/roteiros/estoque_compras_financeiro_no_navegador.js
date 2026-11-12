@@ -126,7 +126,7 @@ const LARGURA = 1366, ALTURA = Number(process.argv[4] || 697);
   await api('PUT', '/api/formas-pagamento/credito', { ajuste_bp: 300, ativo: true });
   await criar('/api/caixa/abrir', { fundo_troco_centavos: 10000 });
   await espera('.lateral a[href="/estoque"]', /Estoque/, 'menu lateral tem o Estoque');
-  await espera('.aviso', /estoque, entrada de nota por XML, financeiro \(contas, fluxo de caixa, DRE e rentabilidade\), relatório de vendas e planilhas do Excel\. Ainda não: NFC-e\.$/, 'Início diz o que já funciona nesta versão');
+  await espera('.aviso', /estoque, entrada de nota por XML, financeiro \(contas, fluxo de caixa, DRE e rentabilidade\), relatório de vendas, planilhas do Excel e os dados fiscais da NFC-e \(com o certificado A1\)\. Ainda não: emitir a NFC-e\.$/, 'Início diz o que já funciona nesta versão');
 
   // ------------------------------------------------------------------ 2) Estoque
   await page.goto(base + '/estoque');

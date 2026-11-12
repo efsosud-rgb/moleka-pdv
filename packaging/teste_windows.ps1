@@ -1,9 +1,9 @@
 # Testa o Moleka PDV empacotado, no Windows: sobe o servidor, confere as páginas e o login, faz
 # uma venda de teste do começo ao fim (cadastro, caixa, duas formas de pagamento, fechamento),
 # dá entrada numa nota fictícia por XML, confere estoque, custo, fluxo de caixa e DRE, grava as
-# configurações, faz a cópia de segurança, imprime o cupom numa impressora de teste (só no GitHub
-# Actions), abre a janela e tira um print da tela. Roda no GitHub Actions depois do PyInstaller e
-# depois do instalador.
+# configurações, faz a cópia de segurança, instala um certificado A1 fictício (dados fiscais),
+# imprime o cupom numa impressora de teste (só no GitHub Actions), abre a janela e tira um print
+# da tela. Roda no GitHub Actions depois do PyInstaller e depois do instalador.
 #
 # Uso:
 #   .\packaging\teste_windows.ps1                               # testa dist\MolekaPDV\MolekaPDV.exe
@@ -264,6 +264,51 @@ try {
   Conferir 'indicador da cópia de segurança, com as duas cópias feitas' (Pedir GET '/api/status').backup.ok 'True'
   $null = Pedir PUT '/api/configuracoes/backup' @{ pasta_extra = ''; manter = 30 }
   Remove-Item -Recurse -Force $pastaExtra   # a cópia de teste não precisa ir junto com os prints
+
+  # Dados fiscais e certificado digital A1 (versão 0.7.0). O certificado é FICTÍCIO (autoassinado,
+  # não vale para nada), gerado aqui pelo Python da máquina de teste. O programa empacotado abre o
+  # .pfx com a biblioteca cryptography e guarda a senha cifrada pela DPAPI do Windows.
+  $produtoLido = Pedir GET "/api/produtos/$($produto.id)"
+  Conferir 'o produto tem o campo CFOP (formato 4 do banco)' ($produtoLido.PSObject.Properties.Name -contains 'cfop') 'True'
+  $fiscal = Pedir GET '/api/fiscal'
+  $itens = @{}
+  foreach ($item in $fiscal.pendencias) { $itens[$item.chave] = $item.situacao }
+  Conferir 'dados fiscais em branco (certificado; regime; aviso de que não emite)' "$($null -eq $fiscal.certificado);$($itens.regime);$($fiscal.aviso -match 'ainda não emite NFC-e')" 'True;falta;True'
+  $pastaCert = Join-Path ([IO.Path]::GetTempPath()) "moleka-certificado-ficticio-$rotulo"
+  if (Test-Path $pastaCert) { Remove-Item -Recurse -Force $pastaCert }
+  $senhaCert = 'senha-ficticia-' + [guid]::NewGuid().ToString('N').Substring(0, 10)
+  $pfx = Join-Path $pastaCert 'empresa-ficticia.pfx'
+  $null = & python tools/roteiros/certificado_ficticio.py $pfx $senhaCert 11222333000181 365
+  if ($LASTEXITCODE -ne 0 -or -not (Test-Path $pfx)) { throw 'não consegui gerar o certificado fictício (tools/roteiros/certificado_ficticio.py)' }
+  $corpo = @{ nome_arquivo = 'empresa-ficticia.pfx'; conteudo_base64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($pfx)); senha = $senhaCert }
+  $instalado = Pedir POST '/api/fiscal/certificado' $corpo
+  Conferir 'certificado fictício instalado pelo programa empacotado (titular; CNPJ; é o da loja)' "$($instalado.certificado.titular);$($instalado.certificado.cnpj);$($instalado.certificado.cnpj_confere)" 'EMPRESA FICTICIA DE TESTE LTDA;11222333000181;True'
+  if (($instalado | ConvertTo-Json -Depth 8 -Compress).Contains($senhaCert)) { throw 'a resposta da instalação trouxe a senha do certificado' }
+  $teste = Pedir POST '/api/fiscal/certificado/conferir'
+  if ($teste.mensagem -notmatch 'abriu com a senha guardada') { throw "o certificado guardado não abriu com a senha guardada: $($teste.mensagem)" }
+  Write-Host "OK: $($teste.mensagem) (o programa leu a senha de volta pela DPAPI)"
+  $certStatus = (Pedir GET '/api/status').certificado
+  Conferir 'indicador do certificado (ok; texto)' "$($certStatus.ok);$($certStatus.texto)" 'True;A1'
+  $arquivoSenha = Join-Path $env:MOLEKA_PDV_DADOS 'segredos\certificado-senha'
+  $bytesSenha = [IO.File]::ReadAllBytes($arquivoSenha)
+  Conferir 'o arquivo da senha começa com a marca da DPAPI' ([Text.Encoding]::ASCII.GetString($bytesSenha, 0, 14)) 'MOLEKA-DPAPI-1'
+  if ([Text.Encoding]::UTF8.GetString($bytesSenha).Contains($senhaCert) -or [Text.Encoding]::Unicode.GetString($bytesSenha).Contains($senhaCert)) { throw 'a senha do certificado está em texto puro no arquivo' }
+  Write-Host 'OK: a senha do certificado não está em texto puro no arquivo'
+  # Abre o mesmo arquivo pelo .NET, como o mesmo usuário do Windows: prova que é DPAPI de verdade.
+  $protegido = $null
+  try { Add-Type -AssemblyName System.Security.Cryptography.ProtectedData -ErrorAction Stop } catch { try { Add-Type -AssemblyName System.Security -ErrorAction Stop } catch { } }
+  try {
+    $blob = [byte[]]($bytesSenha[15..($bytesSenha.Length - 1)])
+    $protegido = [Security.Cryptography.ProtectedData]::Unprotect($blob, [Text.Encoding]::ASCII.GetBytes('MolekaPDV-segredos'), [Security.Cryptography.DataProtectionScope]::CurrentUser)
+  } catch { Write-Host "::warning::NAO VERIFICADO ($rotulo): o .NET não abriu a DPAPI aqui ($($_.Exception.Message))" }
+  if ($null -ne $protegido) { Conferir 'a DPAPI do Windows devolve a senha guardada (mesmo usuário)' ([Text.Encoding]::UTF8.GetString($protegido) -eq $senhaCert) 'True' }
+  $copiaFiscal = Pedir POST '/api/backup'
+  $bytesCopia = [IO.File]::ReadAllBytes((Join-Path $env:MOLEKA_PDV_DADOS "backups\$($copiaFiscal.copia.arquivo)"))
+  if ([Text.Encoding]::UTF8.GetString($bytesCopia).Contains($senhaCert)) { throw 'a cópia de segurança levou a senha do certificado' }
+  Write-Host 'OK: a cópia de segurança não leva a senha do certificado'
+  $removido = Pedir POST '/api/fiscal/certificado/remover' @{ confirmo = $true }
+  Conferir 'certificado removido (sem certificado; arquivo da senha apagado)' "$($null -eq $removido.certificado);$(Test-Path $arquivoSenha)" 'True;False'
+  Remove-Item -Recurse -Force $pastaCert
 
   # Impressoras: a lista do sistema tem de ser a do Windows, lida aqui por outro caminho (WMI).
   $naNuvem = $env:GITHUB_ACTIONS -eq 'true'

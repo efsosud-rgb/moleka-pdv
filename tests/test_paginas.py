@@ -93,7 +93,7 @@ def test_modulos_sem_tela_avisam_que_estao_em_construcao(cliente):
     html = cliente.get("/inicio").text
     # O que ainda não existe (a lista de NFC-e emitidas) aparece como "em breve", não como link.
     assert "data-em-breve" in html
-    assert re.search(r'data-em-breve>NFC-e emitidas<small>em breve</small>', html)
+    assert re.search(r"data-em-breve>NFC-e emitidas<small>em breve</small>", html)
     # Estoque, Entrada de NF e Financeiro já são telas de verdade: têm link e não têm aviso. O
     # bloco Fiscal leva aos dados fiscais (a emissão ainda não existe, e o bloco diz isso).
     for modulo in ("/estoque", "/entrada-nf", "/financeiro", "/configuracoes#fiscal"):

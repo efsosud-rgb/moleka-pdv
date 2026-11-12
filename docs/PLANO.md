@@ -63,6 +63,15 @@ Ordem aprovada pelo Eric em 11/11: Frente 1 → Frente 2 → Frente 3 → Frente
 - [ ] **Não verificado**: a janela "Salvar como" e o "Abrir a planilha" dentro da janela do programa no Windows (no navegador de teste a planilha é baixada pelo próprio navegador); a planilha aberta no Excel (foi lida por duas bibliotecas diferentes e aberta no LibreOffice; o separador de milhar e a vírgula seguem a configuração do Windows, não conferido num Excel em português); as telas novas dentro da janela do programa; os tempos no computador do caixa.
 - [ ] **Não feito**: comparação com outro período; relatório por categoria e por cliente; margem no relatório de vendas (está na Rentabilidade).
 
+## Feito (12/11/2026, versão 0.7.0)
+
+- [x] **Configurações → Fiscal (NFC-e)** (só o gerente; também pelo bloco Fiscal / NFC-e do Início e pelo menu Fiscal): regime, município, credenciamento, certificado digital A1 (instalar, testar, trocar, remover), CSC de homologação e de produção, numeração, contato do contador, dados fiscais dos produtos por categoria e a lista **O que falta para emitir**. Ver ESPECIFICACAO §17.
+- [x] Senha do certificado e CSC fora do banco e da cópia de segurança, cifrados pela DPAPI do Windows.
+- [x] CFOP no cadastro do produto (formato 4 do banco) e origem numa lista de 0 a 8.
+- Verificado: os testes automáticos (os casos do certificado com certificados fictícios gerados na hora: senha errada, vencido, ainda não vale, e-CPF, sem CNPJ, outra empresa, filial, sem chave privada, CNPJ alfanumérico; a senha e o CSC nunca nas respostas, no banco, no registro do sistema nem na cópia de segurança); 22 regras conferidas "ao contrário", estragando uma linha do código para ver se algum teste percebia (22 de 22 pegas); roteiro novo no navegador (Chromium, 1366×697) com 110 conferências (`tools/roteiros/fiscal_no_navegador.js`), que instala certificados fictícios pela tela e confere que nenhuma das respostas trouxe a senha ou o CSC; os quatro roteiros anteriores repetidos (128, 202, 152 e 74 conferências); um banco criado e usado pelo código da 0.6.0 abrindo na 0.7.0 (formato 3 para 4, com a cópia de segurança antes).
+- [ ] **Não verificado**: certificado A1 de verdade (só fictícios); a escolha do arquivo e a aba Fiscal dentro da janela do programa no Windows; a DPAPI fora da máquina de teste do GitHub; se os valores sugeridos na tela (CFOP, CSOSN) servem para a Moleka (é o contador quem diz).
+- [ ] **Não feito**: a emissão da NFC-e (Frente 5); alíquotas de ICMS, PIS e COFINS por produto; IBS/CBS; dados do responsável técnico.
+
 ## Frente 1 — Operadores e login — FEITA em 11/11/2026
 Ver "Feito (11/11/2026)" acima e ESPECIFICACAO §12. Fica para depois, se o Eric quiser: pedir a senha de novo após um tempo sem uso; obrigar a troca da senha provisória no primeiro login.
 
@@ -76,7 +85,7 @@ Abertura com fundo de troco, sangria, suprimento, fechamento com conferência po
 Pedidos de 11/11 atendidos aqui: **1**, **2**, **3**, **4**, **6**, **7**, **8** (a escolha fica gravada; a emissão é da Frente 5) e **9**. Baixa de estoque na venda e estorno no cancelamento já são gravados (`movimento_estoque`); a tela de Estoque é da Frente 7. Ficam para depois: lançamento da receita no financeiro (Frente 8), rateio do desconto por item (Frente 5), impressão do cupom (Frente 6), autorização do gerente por senha na hora (desconto e cancelamento sem trocar de operador).
 
 ## Frente 5 — Fiscal (NFC-e)
-Depende da decisão API × PyNFe (ver ESPECIFICACAO §9). Implementar o provedor escolhido em `app/fiscal/`, homologação primeiro: emissão, contingência offline com fila de reenvio, cancelamento, inutilização, DANFE NFC-e 80 mm com QR Code, grupos IBS/CBS. Configuração de certificado A1 (caminho + senha fora do repositório) e dados da loja. **Nunca** produção sem ordem explícita do Eric.
+Dados fiscais, certificado A1 (guardado com a senha cifrada pela DPAPI) e CSC: **feitos em 12/11/2026 (versão 0.7.0)**, ESPECIFICACAO §17. A emissão depende da decisão API × PyNFe (ver ESPECIFICACAO §9). Implementar o provedor escolhido em `app/fiscal/`, homologação primeiro: emissão, contingência offline com fila de reenvio, cancelamento, inutilização, DANFE NFC-e 80 mm com QR Code, grupos IBS/CBS. Configuração de certificado A1 (caminho + senha fora do repositório) e dados da loja. **Nunca** produção sem ordem explícita do Eric.
 Pedido **8** de 11/11: emissão conforme a escolha feita na venda; vendas "sem documento fiscal" aparecem nos relatórios. Depende do regime e da UF da loja (ESPECIFICACAO §5 e §9).
 
 ## Frente 6 — Impressão — FEITA em 11/11/2026 (versão 0.5.0), menos o DANFE NFC-e

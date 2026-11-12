@@ -19,7 +19,9 @@ a = Analysis(
         # Base de fusos horários: o Windows não tem a do sistema, e sem ela o programa não abre.
         *collect_data_files("tzdata"),
     ],
-    hiddenimports=collect_submodules("uvicorn") + collect_submodules("app") + ["tzdata"],
+    hiddenimports=collect_submodules("uvicorn")
+    + collect_submodules("app")
+    + ["tzdata", "cryptography.x509", "cryptography.hazmat.primitives.serialization.pkcs12"],
     excludes=["tkinter", "pytest", "IPython", "mypy", "ruff"],
     noarchive=False,
 )

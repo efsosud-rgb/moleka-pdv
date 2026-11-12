@@ -406,3 +406,41 @@ Comparação com outro período (mês contra mês, ano contra ano); relatório p
 ### O que não foi verificado
 
 Ver "Verificado" e "Não verificado" da versão 0.6.0 em PLANO.md. Em resumo: a janela **Salvar como** e o **abrir a planilha** só existem dentro da janela do programa no Windows e não foram vistos funcionando; a planilha não foi aberta no Excel (foi lida por duas bibliotecas e aberta no LibreOffice); as telas foram vistas no navegador, não na janela do Windows.
+
+## 17. Dados fiscais da NFC-e e certificado A1 (versão 0.7.0, feita em 12/11/2026)
+
+Menu **Fiscal → Dados fiscais e certificado A1**, o bloco **Fiscal / NFC-e** da tela Início, ou **Arquivo → Configurações → Fiscal (NFC-e)**. Só o gerente. Pedido do Eric (12/11): "Crie de forma que o dono da loja preencha todos esses dados fiscais e tributários e onde possa adicionar o certificado digital da empresa e dados da empresa". **Esta versão não emite NFC-e**: a tela diz isso no alto e na lista do que falta.
+
+### O que o dono preenche (seis partes, à esquerda da tela)
+
+- **Empresa**: regime tributário (CRT 1 Simples Nacional, 4 MEI, 2 Simples acima do sublimite, 3 regime normal), código do município do IBGE (7 números; os 2 primeiros têm de ser os do estado da aba Dados da loja), inscrição municipal e CNAE (se tiver), e duas perguntas: a empresa já é **credenciada para NFC-e na SEFAZ**? a loja **já emite NFC-e por outro sistema**? (se sim: qual sistema, série e último número). Razão social, CNPJ, inscrição estadual e endereço continuam na aba **Dados da loja**; a parte Empresa mostra um resumo deles, com o botão **Mudar**.
+- **Certificado A1**: escolher o arquivo `.pfx`/`.p12` e digitar a senha. O sistema abre o arquivo e mostra titular, CNPJ (e se é o da loja), quem emitiu, validade e quando foi instalado. **Testar o certificado** abre de novo a cópia guardada com a senha guardada. **Trocar** (renovação) pergunta antes; **Remover deste computador** pede confirmação e fica no registro do sistema. Recusa: senha errada, arquivo sem a chave privada, certificado vencido ou que ainda não vale, de pessoa física (e-CPF), sem CNPJ, ou de outra empresa (os 8 primeiros caracteres do CNPJ diferentes dos da loja: o da matriz vale para a filial). Certificado A3 (cartão ou token) não é aceito.
+- **CSC da SEFAZ** (Código de Segurança do Contribuinte): ID (até 6 números) e código (letras e números, até 36) de **homologação** e de **produção**. Código vazio mantém o guardado; a tela só mostra os 4 últimos caracteres.
+- **Numeração**: série (0 a 999) e próximo número (1 a 999.999.999) de cada caixa. Duas regras: cada caixa usa uma série; o próximo número tem de ser maior que o maior número da série já registrado por este sistema. Se a loja já emite por outro sistema, a tela lembra de não repetir número.
+- **Produtos**: resumo por categoria (produtos ativos, quantos sem NCM, sem CFOP e sem CST/CSOSN) e o botão **Preencher…** de cada categoria: NCM, CEST, CFOP, CST/CSOSN e origem para todos os produtos ativos dela. Sem marcar "trocar também", só os campos **vazios** de cada produto são preenchidos (e a origem, que todo produto já tem, não muda); marcando, os campos digitados trocam em todos, depois de uma confirmação. Fica no registro do sistema. No cadastro de cada produto, o grupo "Dados fiscais" ganhou o **CFOP** e a origem virou uma lista de 0 a 8.
+- **Contador**: nome, CRC, telefone, e-mail, CPF ou CNPJ e o que ele orientou.
+
+### Regras de conferência
+
+- NCM com 8 números, CEST com 7, CST/CSOSN com 2 a 4 (CST tem 2, CSOSN tem 3), origem de 0 a 8. **CFOP com 4 números começando com 5** (a NFC-e é venda dentro do estado). O CFOP que começa com 5 mas não está na lista que a NFC-e aceita (5101, 5102, 5103, 5104, 5115, 5405, 5656, 5667 e 5933: MOC 7.0, Anexo I, regra 725) é gravado, mas a lista do que falta pede atenção.
+- CST/CSOSN que não combina com o regime pede atenção: Simples (CRT 1 e 4) usa CSOSN; regime normal (CRT 2 e 3) usa CST; o MEI, na NFC-e, só usa CSOSN 102 ou 300 (NT 2024.001, regras em vigor desde 01/04/2025).
+- Inscrição estadual "ISENTO" pede atenção (quem emite NFC-e tem inscrição estadual; confirmar com o contador).
+
+### O que falta para emitir (à direita da tela)
+
+Lista feita só com o que está gravado (não consulta a SEFAZ nem o contador), em vermelho o que falta e em amarelo o que pede atenção: dados da empresa (razão social, CNPJ, IE e endereço), regime, código do município, credenciamento, certificado (falta, vencido, de outro CNPJ, arquivo ou senha sumidos; atenção a 30 dias do vencimento), CSC de homologação (falta) e de produção (atenção), numeração (atenção até ser conferida e salva), dados fiscais dos produtos ativos e contato do contador. Cada item leva à parte onde se resolve; as partes têm uma bolinha verde, amarela ou vermelha. O indicador do certificado (`/api/status`) usa o certificado instalado.
+
+### Onde ficam os dados
+
+- Regime, município, CSC (só o ID), contador, e os dados do certificado que não são segredo (titular, CNPJ, validade): tabela `configuracao` do banco deste computador (vão na cópia de segurança).
+- **Arquivo do certificado**: cópia em `%APPDATA%\MolekaPDV\certificado\certificado-a1.pfx`. **Senha do certificado e códigos CSC**: `%APPDATA%\MolekaPDV\segredos\`, um arquivo por segredo, cifrado pela DPAPI do Windows (só o mesmo usuário do Windows, neste computador, abre). Nenhum dos dois vai para o banco, para a cópia de segurança, para o registro do sistema, para as respostas da API ou para o repositório.
+- CFOP do produto: coluna nova `produto.cfop` (formato 4 do banco, com cópia de segurança automática antes de atualizar).
+- Ambiente: sempre **homologação** (testes). Produção só com a ordem explícita do Eric (AGENTS.md, regra 3).
+
+### O que ainda não existe
+
+A **emissão** da NFC-e (envio à SEFAZ, contingência, cancelamento, inutilização, DANFE com QR Code) e a decisão do provedor (API intermediária ou PyNFe, §9); alíquotas de ICMS, PIS e COFINS por produto (o regime normal vai precisar); os campos da reforma tributária (IBS/CBS); os dados do **responsável técnico** do sistema, que a nota leva (são do desenvolvedor, não do dono da loja); certificado A3; conferência automática do credenciamento ou do CSC na SEFAZ.
+
+### O que não foi verificado
+
+Ver "Verificado" e "Não verificado" da versão 0.7.0 em PLANO.md. Em resumo: nenhum certificado de verdade foi usado (só certificados fictícios, autoassinados, gerados nos testes); a escolha do arquivo e a tela dentro da janela do programa no Windows não foram vistas; a DPAPI foi testada só na máquina de teste do GitHub; os valores de cada produto e do regime são do contador.
