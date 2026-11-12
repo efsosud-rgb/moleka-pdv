@@ -313,7 +313,7 @@ A tela **Configurações** (menu Arquivo → Configurações, ou o menu lateral)
 
 - Nome da loja, razão social, CNPJ, inscrição estadual, endereço, telefone e uma mensagem para o fim do cupom. Nenhum campo é obrigatório; o cupom e os relatórios mostram só o que estiver preenchido. O programa não traz nenhum dado de exemplo.
 - O CNPJ é conferido pelos dígitos; o CEP tem de ter 8 números; a inscrição estadual aceita números ou "ISENTO".
-- Quando a NFC-e for ligada, serão estes mesmos dados. Senha de certificado e outros segredos não ficam aqui.
+- Quando a NFC-e for ligada, serão estes mesmos dados. O certificado, o CSC e os outros dados da nota ficam na aba Fiscal (NFC-e) (§17).
 
 ### Impressora de cupom
 
