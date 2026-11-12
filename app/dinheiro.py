@@ -90,3 +90,23 @@ def rateio(total: Centavos, pesos: list[int]) -> list[Centavos]:
     for i in fracoes[: abs(sobra)]:
         pisos[i] += 1 if sobra > 0 else -1
     return pisos
+
+
+def media(total: Centavos, quantidade: int) -> Centavos | None:
+    """Valor médio (ex.: ticket médio = faturamento / número de vendas), HALF_UP.
+
+    None quando não há sobre o que calcular: zero vendas não têm média.
+    """
+    if quantidade <= 0:
+        return None
+    return int((Decimal(total) / Decimal(quantidade)).quantize(Decimal(1), rounding=ROUND_HALF_UP))
+
+
+def porcentagem(parte: int, todo: int) -> Decimal | None:
+    """Quanto `parte` representa de `todo`, em por cento, com uma casa (HALF_UP).
+
+    12,5% volta como Decimal("12.5"). None quando `todo` não é positivo.
+    """
+    if todo <= 0:
+        return None
+    return (Decimal(parte) * 100 / Decimal(todo)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)

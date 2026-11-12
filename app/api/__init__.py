@@ -18,6 +18,8 @@ from app.api.estoque import router as estoque_router
 from app.api.financeiro import router as financeiro_router
 from app.api.impressao import router as impressao_router
 from app.api.login import router as login_router
+from app.api.planilhas import router as planilhas_router
+from app.api.relatorios import router as relatorios_router
 from app.api.status import router as status_router
 from app.api.vendas import router as vendas_router
 from app.operadores import RegraError
@@ -70,11 +72,13 @@ def criar_app() -> FastAPI:
     app.include_router(caixa_router, prefix="/api", dependencies=so_logado)
     app.include_router(vendas_router, prefix="/api", dependencies=so_logado)
     app.include_router(impressao_router, prefix="/api", dependencies=so_logado)
-    # Estoque, entrada de nota, financeiro e configurações: só o gerente (a exigência está em
-    # cada módulo).
+    # Estoque, entrada de nota, financeiro, relatórios e configurações: só o gerente (a exigência
+    # está em cada módulo).
     app.include_router(estoque_router, prefix="/api")
     app.include_router(compras_router, prefix="/api")
     app.include_router(financeiro_router, prefix="/api")
+    app.include_router(relatorios_router, prefix="/api")
+    app.include_router(planilhas_router, prefix="/api")
     app.include_router(configuracoes_router, prefix="/api")
     app.include_router(paginas_router)
 

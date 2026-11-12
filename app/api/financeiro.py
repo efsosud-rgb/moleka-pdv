@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import calendar
 from datetime import date
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -48,10 +48,8 @@ def _periodo(inicio: date | None, fim: date | None) -> tuple[date, date]:
 
 def _percentual(parte: int, todo: int) -> str | None:
     """ "12,5%" — quanto `parte` representa de `todo`. None quando não há sobre o que calcular."""
-    if todo <= 0:
-        return None
-    pct = (Decimal(parte) * 100 / Decimal(todo)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
-    return f"{pct}%".replace(".", ",")
+    pct = dinheiro.porcentagem(parte, todo)
+    return None if pct is None else f"{pct}%".replace(".", ",")
 
 
 # ---------------------------------------------------------------- categorias

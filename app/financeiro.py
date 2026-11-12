@@ -39,7 +39,7 @@ from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import ColumnElement, func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app import dinheiro, tempo
 from app.models import (
@@ -311,19 +311,31 @@ def conferir_periodo(inicio: date, fim: date) -> None:
         raise RegraError("Escolha um período de até um ano.")
 
 
-def _vendas_do_periodo(sessao: Session, inicio: date, fim: date) -> list[Venda]:
+def _vendas_do_periodo(
+    sessao: Session, inicio: date, fim: date, *, itens: bool = False, pagamentos: bool = False
+) -> list[Venda]:
+    """As vendas finalizadas no período. `itens` e `pagamentos` já vêm carregados quando pedidos.
+
+    Buscar os de cada venda, um por um, deixava o DRE de um ano lento. Medido em 12/11/2026, no
+    computador de desenvolvimento, com 30 mil vendas fictícias: o DRE caiu de 14 s para menos de
+    3 s, e a rentabilidade, de 7 s para pouco mais de 2 s. No computador do caixa, mais lento,
+    os tempos devem ser maiores (não medido).
+    """
     de, ate = tempo.limites_do_periodo(inicio, fim)
-    return list(
-        sessao.scalars(
-            select(Venda)
-            .where(
-                Venda.status == StatusVenda.FINALIZADA,
-                Venda.finalizada_em >= de,
-                Venda.finalizada_em < ate,
-            )
-            .order_by(Venda.finalizada_em)
+    consulta = (
+        select(Venda)
+        .where(
+            Venda.status == StatusVenda.FINALIZADA,
+            Venda.finalizada_em >= de,
+            Venda.finalizada_em < ate,
         )
+        .order_by(Venda.finalizada_em)
     )
+    if itens:
+        consulta = consulta.options(selectinload(Venda.itens).selectinload(VendaItem.produto))
+    if pagamentos:
+        consulta = consulta.options(selectinload(Venda.pagamentos))
+    return list(sessao.scalars(consulta))
 
 
 def _lancamentos_vivos(sessao: Session, *filtros: ColumnElement[bool]) -> list[Lancamento]:
@@ -477,7 +489,7 @@ class Dre:
 def dre(sessao: Session, inicio: date, fim: date) -> Dre:
     conferir_periodo(inicio, fim)
     resultado = Dre(inicio, fim)
-    for venda in _vendas_do_periodo(sessao, inicio, fim):
+    for venda in _vendas_do_periodo(sessao, inicio, fim, itens=True, pagamentos=True):
         resultado.vendas_quantidade += 1
         resultado.itens_vendidos += venda.subtotal_centavos
         resultado.descontos_do_gerente += venda.desconto_centavos
@@ -538,7 +550,7 @@ def rentabilidade(sessao: Session, inicio: date, fim: date) -> list[LinhaDeRenta
     """
     conferir_periodo(inicio, fim)
     linhas: dict[int, LinhaDeRentabilidade] = {}
-    for venda in _vendas_do_periodo(sessao, inicio, fim):
+    for venda in _vendas_do_periodo(sessao, inicio, fim, itens=True):
         partes = dinheiro.rateio(venda.total_centavos, [i.total_centavos for i in venda.itens])
         for item, parte in zip(venda.itens, partes, strict=True):
             linha = linhas.get(item.produto_id)

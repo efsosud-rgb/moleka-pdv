@@ -12,10 +12,11 @@ dependencies = [
     "pywebview>=5.3",
     "jinja2>=3.1",
     "tzdata>=2024.1",  # o Windows não traz a base de fusos horários (America/Sao_Paulo)
+    "openpyxl>=3.1",  # planilhas do Excel dos relatórios (ver docs/DECISOES.md, 12/11/2026)
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "httpx>=0.27", "ruff>=0.6", "mypy>=1.10"]
+dev = ["pytest>=8", "httpx>=0.27", "ruff>=0.6", "mypy>=1.10", "types-openpyxl"]
 build = ["pyinstaller>=6.10"]
 
 [project.scripts]
@@ -78,4 +79,8 @@ files = [
     "app/backup.py",
     "app/api/configuracoes.py",
     "app/api/impressao.py",
+    "app/relatorios.py",
+    "app/api/relatorios.py",
+    "app/excel.py",
+    "app/api/planilhas.py",
 ]

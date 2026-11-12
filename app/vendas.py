@@ -471,10 +471,7 @@ class ResumoDoDia:
 
     @property
     def ticket_medio_centavos(self) -> int | None:
-        if not self.quantidade:
-            return None
-        media = Decimal(self.total_centavos) / Decimal(self.quantidade)
-        return int(media.quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+        return dinheiro.media(self.total_centavos, self.quantidade)
 
 
 def resumo_do_dia(sessao: Session, dia: date | None = None) -> ResumoDoDia:
