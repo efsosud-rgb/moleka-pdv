@@ -303,7 +303,7 @@ As três telas são só do gerente. Nenhuma das regras abaixo foi combinada ante
 
 ### O que ainda não existe nestas telas
 
-Ficha técnica e produção (para quem fabrica); contagem de vários produtos de uma vez (inventário); prazo e taxa das maquininhas no fluxo de caixa; saldo inicial e conta bancária; contas que se repetem todo mês; centro de custo e anexos; comparação de períodos; margem por categoria de produto; exportar para Excel (imprimir em folha comum chegou na versão 0.5.0, seção 15); lançamento automático de impostos e taxas (hoje são digitados como lançamento).
+Ficha técnica e produção (para quem fabrica); contagem de vários produtos de uma vez (inventário); prazo e taxa das maquininhas no fluxo de caixa; saldo inicial e conta bancária; contas que se repetem todo mês; centro de custo e anexos; comparação de períodos; margem por categoria de produto; lançamento automático de impostos e taxas (hoje são digitados como lançamento).
 
 ## 15. Configurações, impressão e cópia de segurança (Frente 6 e parte da 9, feitas em 11/11/2026, versão 0.5.0)
 
@@ -356,8 +356,53 @@ A tela **Configurações** (menu Arquivo → Configurações, ou o menu lateral)
 
 ### O que ainda não existe nestas telas
 
-Logo e QR Code no cupom; via do estabelecimento; voltar uma cópia pela tela; relatório de vendas por período; exportar para Excel; DANFE NFC-e (Frente 5).
+Logo e QR Code no cupom; via do estabelecimento; voltar uma cópia pela tela; DANFE NFC-e (Frente 5). O relatório de vendas por período e a exportação para o Excel chegaram na versão 0.6.0 (seção 16).
 
 ### O que não foi verificado
 
 Ver "Verificado" e "Não verificado" da versão 0.5.0 em PLANO.md. Em resumo: **nenhum cupom saiu ainda numa impressora de verdade**, e as telas novas não foram vistas dentro da janela do programa no Windows.
+
+## 16. Relatório de vendas e planilhas do Excel (versão 0.6.0, feita em 12/11/2026)
+
+Menu **Relatórios → Vendas por período**, ou o bloco **Relatórios** da tela Início. Só o gerente. Nenhuma das regras abaixo foi combinada antes com o Eric: são o padrão adotado (ver DECISOES de 12/11/2026).
+
+### Regras dos números
+
+- **Venda do período** = venda **finalizada** com a hora da finalização dentro do período. Venda cancelada não soma em nada, nem quando foi cancelada depois, em outro dia.
+- **Faturamento** = soma dos totais das vendas: o que o cliente pagou, já com o desconto do gerente e o desconto ou acréscimo da forma de pagamento. É o mesmo total de vendas da Rentabilidade e do Fluxo de caixa no mesmo período. No DRE, as mesmas vendas entram como receita bruta (itens e acréscimos) menos os descontos concedidos: sem outros lançamentos de receita ou de dedução, a receita líquida do DRE é igual ao faturamento. (Os três casos são conferidos por testes.)
+- **Ticket médio** = faturamento ÷ número de vendas, arredondado no centavo (meio centavo para cima).
+- **Descontos dados** = desconto do gerente + descontos das formas de pagamento. Os acréscimos das formas aparecem separados.
+- **Cancelamentos** contam no dia em que foram feitos (hora do cancelamento), separados em **antes de finalizar** (a venda nem chegou a ser paga) e **depois de finalizada** (estorno; só o gerente faz).
+- **Dia, dia da semana e hora são os da loja** (horário de Brasília), não os do banco (que guarda em UTC): uma venda das 23:30 conta no dia dela, às 23 h.
+- **Por produto**, o valor de cada venda é dividido entre os itens na proporção do preço de cada um (descontos e acréscimos incluídos), sem perder nem criar centavos: a mesma divisão da rentabilidade. A soma dos produtos dá o faturamento.
+- **Curva ABC**: do produto que mais faturou para o que menos. **A** são os que, somados, chegam a 80% do faturamento (o produto que passa dos 80% ainda é A); **B**, os seguintes até 95%; **C**, o resto. Empate no faturamento: ordem alfabética.
+- **Por operador**: cada venda conta para quem a fez. Nas vendas feitas antes da versão 0.3, que não guardavam o operador, vale quem abriu o caixa.
+- **Horários**: cada linha soma todos os dias daquela semana no período, e a tela diz quantos são (um mês pode ter 4 segundas e 5 sábados).
+- **Sem NFC-e**: como o sistema ainda não emite, todas as vendas aparecem sem documento fiscal, com o motivo. O relatório também conta em quantas o caixa pediu NFC-e ao finalizar.
+- Sem venda no período, os valores em dinheiro aparecem como "—", com o motivo ("sem vendas no período"); contagens aparecem como 0.
+
+### A tela
+
+- Uma linha de filtros vale para todas as abas: **período** (Este mês, Hoje, Ontem, Últimos 7 dias, Últimos 30 dias, Mês passado, Este ano ou datas escolhidas, até um ano) e **operador**. Os períodos prontos param em hoje. Ao lado, **Imprimir** (a aba que está na tela, em folha comum, como na seção 15) e **Excel**.
+- **Resumo**: faturamento, ticket médio, descontos, canceladas e vendas sem NFC-e; gráfico de barras do faturamento **por hora** (período de um dia), **por dia** (até 62 dias) ou **por mês** (mais que isso), com o botão **Tabela** que mostra os mesmos números; formas de pagamento com o recebido, o desconto ou acréscimo e a parte de cada uma no faturamento.
+- **Produtos**: a curva ABC, com a quantidade, em quantas vendas o produto apareceu, o faturamento, a porcentagem e a porcentagem acumulada.
+- **Horários**: mapa de dia da semana × hora, em tons de vermelho (mais escuro, mais movimento), por faturamento ou por número de vendas; o maior movimento escrito no alto; botão **Tabela** com os números.
+- **Operadores**: vendas, faturamento, ticket, parte do total, desconto do gerente e cancelamentos de cada um.
+- **Lista de vendas**: cada venda e cada cancelamento do período, com o botão que mostra o comprovante (a venda cancelada sai marcada como cancelada). A lista nunca vem cortada: acima de 2.000 vendas, pede um período menor (os números das outras abas não mudam).
+- Passando o mouse numa barra ou num quadrado (ou usando as setas do teclado no gráfico), aparece o valor daquele dia ou daquela hora.
+
+### Planilhas do Excel
+
+- Botão **Excel** no relatório de vendas (todas as abas, com o período e o operador escolhidos), no **Financeiro** (a aba que está na tela: contas a pagar e a receber com os filtros, fluxo de caixa, DRE ou rentabilidade) e no **Estoque** (a lista da tela, com a pesquisa e o filtro).
+- Os números são os mesmos da tela, vindos da mesma função: a planilha não refaz conta nenhuma. Entram como números de verdade (dá para somar e fazer gráfico no Excel): dinheiro em reais com duas casas, quantidades, porcentagens e datas. Onde a tela mostra "—", a planilha também mostra, e o motivo vai nas notas do pé da aba.
+- Cada aba traz no alto o nome e o CNPJ da loja, o título, o período e os filtros, e a data, quem gerou e a versão do programa. Texto que começa com "=" (o nome de um produto, por exemplo) entra como texto, nunca como fórmula.
+- O nome do arquivo já vem pronto, por exemplo `Moleka - Vendas 01-11-2026 a 12-11-2026.xlsx` (com o nome do operador quando o relatório é de um só).
+- Na janela do programa, o botão abre a janela **Salvar como** do Windows, com o nome sugerido; depois de salvar, o programa oferece abrir a planilha. Se a planilha antiga com o mesmo nome estiver aberta no Excel, a tela pede para fechá-la e tentar de novo (a antiga fica como estava).
+
+### O que ainda não existe
+
+Comparação com outro período (mês contra mês, ano contra ano); relatório por categoria de produto e por cliente; margem (lucro) no relatório de vendas (está na Rentabilidade, no Financeiro); envio da planilha por e-mail; agendamento de relatórios.
+
+### O que não foi verificado
+
+Ver "Verificado" e "Não verificado" da versão 0.6.0 em PLANO.md. Em resumo: a janela **Salvar como** e o **abrir a planilha** só existem dentro da janela do programa no Windows e não foram vistos funcionando; a planilha não foi aberta no Excel (foi lida por duas bibliotecas e aberta no LibreOffice); as telas foram vistas no navegador, não na janela do Windows.

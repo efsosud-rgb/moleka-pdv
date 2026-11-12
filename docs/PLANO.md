@@ -54,6 +54,15 @@ Ordem aprovada pelo Eric em 11/11: Frente 1 → Frente 2 → Frente 3 → Frente
 - [ ] **Não verificado**: cupom saindo numa impressora de verdade (a ELGIN i9 da loja ou qualquer outra); página de código certa para os acentos na i9; corte do papel e gaveta; as telas novas e a impressão dos relatórios dentro da janela do programa no Windows; o botão "Escolher a pasta…" da cópia de segurança (só existe na janela); a cópia numa pasta de pendrive ou de nuvem de verdade.
 - [ ] **Não feito**: DANFE NFC-e (é da Frente 5); logo e QR Code no cupom; voltar uma cópia pela tela; exportar para Excel.
 
+## Feito (12/11/2026, versão 0.6.0)
+
+- [x] **Relatórios → Vendas por período** (só o gerente): faturamento, ticket médio, descontos, canceladas e vendas sem NFC-e; gráfico por hora, por dia ou por mês; formas de pagamento; curva ABC dos produtos; mapa de dia da semana × hora; operadores; lista de vendas e cancelamentos com o comprovante. Filtro de período e de operador. Ver ESPECIFICACAO §16.
+- [x] **Exportar para o Excel** (.xlsx): o relatório de vendas inteiro, as abas do Financeiro (contas, fluxo de caixa, DRE, rentabilidade) e a lista do Estoque, com os mesmos números da tela.
+- [x] DRE e rentabilidade de um ano mais rápidos (ver DECISOES de 12/11).
+- Verificado: 364 testes automáticos (os números do relatório com valores calculados à mão, inclusive a venda das 23:30 que no banco já é do dia seguinte; a planilha relida e comparada com a tela; o salvamento do arquivo); 17 regras conferidas também "ao contrário", estragando uma linha do código para ver se algum teste percebia; roteiro novo no navegador (Chromium, 1366×697) com 74 conferências (`tools/roteiros/relatorio_vendas_no_navegador.js`), que baixa as planilhas e as relê; os três roteiros anteriores repetidos (128, 202 e 152 conferências); as planilhas de um banco com 450 vendas fictícias lidas por outra biblioteca (`python-calamine`) e comparadas com a tela, e abertas no LibreOffice; um banco criado e usado pelo código da 0.5.0 abrindo na 0.6.0; o ambiente do Python montado pela 0.5.0 (`tools/abrir_pelo_codigo.py`) recebendo a biblioteca nova.
+- [ ] **Não verificado**: a janela "Salvar como" e o "Abrir a planilha" dentro da janela do programa no Windows (no navegador de teste a planilha é baixada pelo próprio navegador); a planilha aberta no Excel (foi lida por duas bibliotecas diferentes e aberta no LibreOffice; o separador de milhar e a vírgula seguem a configuração do Windows, não conferido num Excel em português); as telas novas dentro da janela do programa; os tempos no computador do caixa.
+- [ ] **Não feito**: comparação com outro período; relatório por categoria e por cliente; margem no relatório de vendas (está na Rentabilidade).
+
 ## Frente 1 — Operadores e login — FEITA em 11/11/2026
 Ver "Feito (11/11/2026)" acima e ESPECIFICACAO §12. Fica para depois, se o Eric quiser: pedir a senha de novo após um tempo sem uso; obrigar a troca da senha provisória no primeiro login.
 
@@ -77,7 +86,7 @@ Cupom não fiscal em ESC/POS pela fila de impressão do Windows (sem `python-esc
 Saldos (soma de movimentos), entrada e saída com motivo, contagem; importação de XML de NF-e, de-para fornecedor→produto memorizado, custo (último e médio), contas a pagar das parcelas, estorno. Ver ESPECIFICACAO §14. Ficam para depois: contagem de vários produtos de uma vez; ficha técnica e produção, se a loja fabrica.
 
 ## Frente 8 — Financeiro — FEITA em 11/11/2026 (versão 0.4.0)
-Lançamentos (receitas e despesas, categorias com grupo do DRE), fluxo de caixa realizado e contas em aberto, DRE por período, rentabilidade por produto. Ver ESPECIFICACAO §14. Ficam para depois: prazo e taxa das maquininhas no fluxo; comparação de períodos; contas que se repetem; exportar Excel (`openpyxl`) e imprimir A4.
+Lançamentos (receitas e despesas, categorias com grupo do DRE), fluxo de caixa realizado e contas em aberto, DRE por período, rentabilidade por produto. Ver ESPECIFICACAO §14. Ficam para depois: prazo e taxa das maquininhas no fluxo; comparação de períodos; contas que se repetem. Imprimir em folha comum chegou na 0.5.0; exportar para o Excel (`openpyxl`), na 0.6.0.
 
 ## Frente 9 — Instalador e atualização
 Feito em 10/11/2026: PyInstaller em pasta + Inno Setup (`MolekaPDV-Instalador-<versão>.exe`), instalador do WebView2 embutido, atalhos, fontes embutidas, build e teste no GitHub Actions. Cópia de segurança diária feita em 11/11/2026 (versão 0.5.0, pelo próprio programa; ver ESPECIFICACAO §15). Falta: assinatura digital do instalador e verificação de versão nova.

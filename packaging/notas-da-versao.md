@@ -1,4 +1,4 @@
-Quinta versão de teste: agora tem **Configurações**, **impressão do comprovante de venda e do fechamento de caixa** na impressora de cupom, **impressão dos relatórios** em impressora comum e **cópia de segurança diária**. Ainda **não emite NFC-e**: o comprovante impresso **não é documento fiscal**.
+Sexta versão de teste: agora tem o **relatório de vendas por período** e as **planilhas do Excel** dos relatórios. Ainda **não emite NFC-e**: o comprovante impresso **não é documento fiscal**.
 
 ## Como instalar
 
@@ -6,47 +6,41 @@ Quinta versão de teste: agora tem **Configurações**, **impressão do comprova
 2. Se a versão anterior estiver aberta, feche. Dê dois cliques no instalador. Se aparecer a tela azul "O Windows protegeu o computador", clique em **Mais informações** e depois em **Executar assim mesmo**. Isso acontece porque o instalador ainda não tem assinatura digital.
 3. Clique em **Avançar** até **Concluir**. O atalho **Moleka PDV** fica na Área de Trabalho e no menu Iniciar.
 
-Se aparecer **"Erro 4551: uma política de Controle de Aplicativo bloqueou este arquivo"**, o Windows 11 está com o Controle Inteligente de Aplicativos ligado e recusa programa sem assinatura. Nesse caso, use o caminho "Rodar pelo código no Windows, sem instalador", explicado no README.
+Se aparecer **"Erro 4551: uma política de Controle de Aplicativo bloqueou este arquivo"**, o Windows 11 está com o Controle Inteligente de Aplicativos ligado e recusa programa sem assinatura. Nesse caso, use o caminho "Rodar pelo código no Windows, sem instalador", explicado no README. Por esse caminho, a primeira abertura da versão nova instala uma biblioteca a mais (a das planilhas) e precisa de internet.
 
-Não pede senha de administrador. Pode instalar por cima da versão 0.4.0: os dados ficam em `%APPDATA%\MolekaPDV` e continuam como estavam (o formato do banco não mudou nesta versão).
+Não pede senha de administrador. Pode instalar por cima da versão 0.5.0: os dados ficam em `%APPDATA%\MolekaPDV` e continuam como estavam (o formato do banco não mudou nesta versão).
 
 ## O que há de novo
 
-- **Configurações** (menu Arquivo → Configurações; só o gerente), com três abas:
-  - **Dados da loja**: nome, CNPJ, endereço, telefone e a mensagem do fim do cupom. Saem no cabeçalho do cupom e dos relatórios. Nenhum campo é obrigatório.
-  - **Impressão**: escolha a impressora de cupom na lista do Windows, a largura do papel e as letras com acento; **Imprimir teste** manda uma página de teste, e a impressora só aparece como testada depois que você confirma que saiu certo.
-  - **Cópia de segurança**: veja as cópias guardadas, escolha uma **pasta extra** (pendrive que fica na loja ou pasta da nuvem) e faça uma cópia na hora.
-- **Comprovante de venda** na impressora de cupom (térmica, de 80 mm ou de 58 mm):
-  - depois de cada venda, conforme a opção escolhida em Configurações: o sistema oferece o botão, imprime sozinho ou não imprime;
-  - **Ctrl+P** ou o botão **Comprovante**, na tela do Caixa, imprime o comprovante da última venda;
-  - no **Controle de caixa**, o botão com o desenho da impressora mostra o comprovante de qualquer venda na tela, com o botão Imprimir;
-  - se a impressora falhar, **a venda fica gravada do mesmo jeito** e a tela avisa;
-  - opção de abrir a **gaveta de dinheiro** ligada na impressora, na venda em dinheiro.
-- **Resumo e fechamento de caixa** impressos: vendas, recebido por forma, dinheiro na gaveta, esperado, contado e diferença, com linha para assinatura. Depois de fechar o caixa, o papel aparece na tela pronto para imprimir.
-- **Relatórios em impressora comum**: botão **Imprimir** (ou Ctrl+P) em Financeiro (contas a pagar e a receber, fluxo de caixa, DRE e rentabilidade) e em Estoque. Abre a impressão do Windows; para guardar em PDF, escolha a impressora "Microsoft Print to PDF". A folha sai com o nome da loja, o período e os filtros escritos no alto.
-- **Cópia de segurança diária**, feita sozinha: quando o programa abre, quando o caixa fecha e quando você pede. Ficam guardadas as últimas 30. O indicador **Backup**, no rodapé, mostra a situação.
+- **Relatórios → Vendas por período** (só o gerente; também pelo bloco **Relatórios** da tela Início). Escolha o período (hoje, ontem, este mês, mês passado, este ano, os últimos 7 ou 30 dias, ou as datas que quiser) e, se quiser, um operador. Cinco abas:
+  - **Resumo**: faturamento, ticket médio, descontos dados, vendas canceladas e vendas sem NFC-e; gráfico do faturamento por hora (um dia), por dia ou por mês; formas de pagamento.
+  - **Produtos**: o que mais vendeu, com a **curva ABC** (A são os produtos que fazem 80% do faturamento).
+  - **Horários**: mapa do movimento por dia da semana e hora (quanto mais escuro, mais movimento).
+  - **Operadores**: vendas, faturamento, descontos e cancelamentos de cada um.
+  - **Lista de vendas**: cada venda e cada cancelamento do período, com o comprovante.
+  - Todo gráfico tem o botão **Tabela**, com os mesmos números. Passando o mouse numa barra ou num quadrado, aparece o valor.
+- **Botão Excel** no relatório de vendas, no **Financeiro** (contas a pagar e a receber, fluxo de caixa, DRE e rentabilidade) e no **Estoque**. Abre a janela "Salvar como" do Windows com o nome do arquivo já pronto (por exemplo, `Moleka - Vendas 01-11-2026 a 30-11-2026.xlsx`); depois de salvar, o programa oferece abrir a planilha. Os números são os mesmos da tela, como números de verdade: dá para somar e fazer gráfico no Excel.
+- Na tela **Início**, o bloco "DRE e Rentabilidade" agora é **Relatórios**. O DRE e a rentabilidade continuam no Financeiro e no menu do topo.
+- O DRE e a rentabilidade de períodos longos (um ano) abrem mais rápido.
 
 ## Por onde começar
 
-1. **Arquivo → Configurações → Dados da loja**: preencha e salve.
-2. Aba **Impressão**: escolha a impressora de cupom, clique em **Imprimir teste**, olhe o papel e responda se saiu certo. Se os acentos saírem trocados, mude "Letras com acento" e teste de novo.
-3. Aba **Cópia de segurança**: escolha a pasta extra e clique em **Fazer a cópia agora**.
-4. Faça uma venda no **Caixa** e aperte **Ctrl+P**.
+1. Clique no bloco **Relatórios** da tela Início.
+2. Escolha **Mês passado** no período e veja as abas.
+3. Clique em **Excel**, escolha a pasta (Documentos, por exemplo) e clique em **Salvar**. Depois, **Abrir a planilha**.
 
 ## Importante
 
-- **O comprovante não é documento fiscal** (isso sai escrito nele). A NFC-e ainda não é emitida.
-- **Nenhum cupom saiu ainda numa impressora de verdade.** A impressão foi testada com impressoras de teste, que gravam num arquivo o que receberiam; a impressora da loja (ELGIN i9) só pode ser testada aí. O primeiro teste é o da tela Configurações.
-- "Enviado para a impressora" quer dizer que o Windows aceitou o trabalho. Se a impressora estiver desligada, sem papel ou com o cabo solto, o trabalho fica parado na fila do Windows.
-- **Sem pasta extra, a cópia de segurança fica no mesmo disco do sistema**: protege de um erro de uso, mas não se o disco estragar ou o computador for roubado.
-- Voltar uma cópia de segurança ainda é feito à mão, com o programa fechado (o passo a passo está em `docs/ESPECIFICACAO.md`, seção 15). Se precisar, peça ajuda antes de mexer.
-- **Nenhum número é inventado.** Sem dado, a tela e a folha impressa mostram "—" e dizem o motivo.
+- **Nenhum número é inventado.** Sem venda no período, os valores aparecem como "—", com o motivo.
+- **Sem NFC-e** mostra todas as vendas, porque o sistema ainda não emite documento fiscal.
+- Se a planilha com o mesmo nome estiver aberta no Excel, feche antes de salvar de novo (a tela avisa).
+- **Nenhum cupom saiu ainda numa impressora de verdade** (vale o que foi dito na versão 0.5.0).
+- É uma versão de teste: use produtos, notas e vendas de teste. O que for lançado fica gravado no banco deste computador.
 
 ## O que ainda não funciona
 
 - **NFC-e: nenhum documento fiscal é emitido.** Ao finalizar a venda, a opção "com NFC-e" aparece desligada.
-- Logo e QR Code no cupom; voltar uma cópia de segurança pela tela; exportar para Excel; ficha técnica e produção (para quem fabrica).
-- É uma versão de teste: use produtos, notas e vendas de teste. O que for lançado fica gravado no banco deste computador.
+- Comparar com outro período (mês contra mês); relatório por categoria e por cliente; logo e QR Code no cupom; voltar uma cópia de segurança pela tela; ficha técnica e produção (para quem fabrica).
 
 ## Esqueci a senha do gerente
 
@@ -56,4 +50,4 @@ Feche o sistema, aperte `Win + R`, cole o comando abaixo e dê Enter. Aparece um
 "%LOCALAPPDATA%\Programs\MolekaPDV\MolekaPDV.exe" --redefinir-senha
 ```
 
-Os prints abaixo (`janela-pasta.png` e `janela-instalado.png`) foram tirados pelo teste automático num Windows de verdade: o primeiro mostra o primeiro acesso; o segundo, a tela de login. O mesmo teste faz, dentro do programa instalado e sem abrir as telas, um roteiro completo pela API (cadastro, venda, nota fictícia, financeiro). Nesta versão ele também grava os dados da loja, faz a cópia de segurança (a do dia e a da pasta extra), compara a lista de impressoras do sistema com a do Windows e **imprime pela fila de impressão do Windows** numa impressora de teste que grava em arquivo: a página de teste, o comprovante de uma venda e uma venda em dinheiro com o pulso da gaveta, conferindo os bytes. Isso mostra que o cupom chega certo à fila do Windows; **não mostra a impressora da loja** (papel, acentos, corte e gaveta). As telas novas foram conferidas no navegador (152 conferências), não dentro da janela do Windows.
+Os prints abaixo (`janela-pasta.png` e `janela-instalado.png`) foram tirados pelo teste automático num Windows de verdade: o primeiro mostra o primeiro acesso; o segundo, a tela de login. O mesmo teste faz, dentro do programa instalado e sem abrir as telas, um roteiro completo pela API (cadastro, venda, nota fictícia, financeiro, configurações, cópia de segurança e impressão numa impressora de teste). Nesta versão ele também abre o relatório de vendas e **gera uma planilha do Excel dentro do programa empacotado**, conferindo as abas e o faturamento dentro do arquivo. A janela "Salvar como" não entra nesse teste (é uma janela do Windows, que só aparece com alguém clicando). As telas novas foram conferidas no navegador (74 conferências), não dentro da janela do Windows.
