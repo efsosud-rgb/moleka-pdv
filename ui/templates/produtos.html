@@ -46,11 +46,13 @@
 <details class="grupo-fiscal">
 <summary>Dados fiscais para a NFC-e (pode preencher depois)</summary>
 <div class="quatro">
-<div><label class="rotulo" for="p-ncm">NCM</label><input id="p-ncm" name="ncm" class="campo" type="text" maxlength="8" inputmode="numeric"></div>
-<div><label class="rotulo" for="p-cest">CEST</label><input id="p-cest" name="cest" class="campo" type="text" maxlength="7" inputmode="numeric"></div>
-<div><label class="rotulo" for="p-csosn">CST/CSOSN</label><input id="p-csosn" name="cst_csosn" class="campo" type="text" maxlength="4" inputmode="numeric"></div>
-<div><label class="rotulo" for="p-origem">Origem</label><input id="p-origem" name="origem" class="campo" type="text" maxlength="1" inputmode="numeric" value="0"></div>
+<div><label class="rotulo" for="p-ncm">NCM</label><input id="p-ncm" name="ncm" class="campo" type="text" maxlength="10" inputmode="numeric"></div>
+<div><label class="rotulo" for="p-cest">CEST</label><input id="p-cest" name="cest" class="campo" type="text" maxlength="9" inputmode="numeric"></div>
+<div><label class="rotulo" for="p-cfop" title="Na NFC-e começa com 5. Por exemplo: 5102 (mercadoria comprada) ou 5405 (com substituição tributária)">CFOP</label><input id="p-cfop" name="cfop" class="campo" type="text" maxlength="5" inputmode="numeric"></div>
+<div><label class="rotulo" for="p-csosn" title="CST (2 números, regime normal) ou CSOSN (3 números, Simples Nacional)">CST/CSOSN</label><input id="p-csosn" name="cst_csosn" class="campo" type="text" maxlength="4" inputmode="numeric"></div>
 </div>
+<div><label class="rotulo" for="p-origem">Origem da mercadoria</label><div class="sel"><select id="p-origem" name="origem" class="campo">{% for valor, rotulo in origens.items() %}<option value="{{ valor }}"{% if valor == "0" %} selected{% endif %}>{{ rotulo }}</option>{% endfor %}</select>{{ icone("seta", "seta") }}</div></div>
+<p class="vazio">O contador informa estes dados. Para preencher uma categoria inteira de uma vez: Configurações → Fiscal (NFC-e) → Produtos.</p>
 </details>
 <label class="check" data-so-na-edicao hidden><input type="checkbox" name="ativo" checked>Ativo (aparece no caixa)</label>
 <p class="msg-form" role="alert" hidden></p>

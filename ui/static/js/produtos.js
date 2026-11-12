@@ -139,6 +139,7 @@
     form.ncm.value = p.ncm || "";
     form.cest.value = p.cest || "";
     form.cst_csosn.value = p.cst_csosn || "";
+    form.cfop.value = p.cfop || "";
     form.origem.value = p.origem || "0";
     form.ativo.checked = p.ativo;
     soNaEdicao.hidden = false;
@@ -160,7 +161,7 @@
     const dados = {
       codigo: form.codigo.value.trim() || null, descricao: descricao, categoria: form.categoria.value.trim() || null,
       ean: form.ean.value.trim() || null, unidade: form.unidade.value, ncm: form.ncm.value.trim() || null,
-      cest: form.cest.value.trim() || null, cst_csosn: form.cst_csosn.value.trim() || null, origem: form.origem.value.trim() || "0",
+      cest: form.cest.value.trim() || null, cst_csosn: form.cst_csosn.value.trim() || null, cfop: form.cfop.value.trim() || null, origem: form.origem.value || "0",
       custo_centavos: custo, estoque_minimo: String(minimo), ativo: editando === null ? true : form.ativo.checked, precos: faixas,
     };
     const r = editando === null ? await M.api("POST", "/api/produtos", dados) : await M.api("PUT", "/api/produtos/" + editando, dados);

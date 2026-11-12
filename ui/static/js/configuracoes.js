@@ -1,12 +1,13 @@
 /* Configurações (só o gerente): dados da loja, impressora de cupom e cópia de segurança.
-   Tudo o que aparece vem de /api/configuracoes; nada é preenchido com valor de exemplo. */
+   Tudo o que aparece vem de /api/configuracoes; nada é preenchido com valor de exemplo.
+   A aba Fiscal (NFC-e) tem o próprio arquivo: fiscal.js. */
 (function () {
   "use strict";
   const M = window.Moleka;
   const raiz = document.getElementById("configuracoes");
   if (!raiz) return;
 
-  const ABAS = ["loja", "impressao", "backup"];
+  const ABAS = ["loja", "impressao", "backup", "fiscal"];
   const formLoja = document.getElementById("form-loja");
   const formImpressao = document.getElementById("form-impressao");
   const formBackup = document.getElementById("form-backup");
@@ -23,7 +24,9 @@
   function opcao(valor, texto) { return M.el("option", { value: String(valor), text: texto }); }
 
   function mostrarAba(nome, semMexerNoEndereco) {
-    aba = ABAS.indexOf(nome) >= 0 ? nome : "loja";
+    // "#fiscal-certificado" abre a aba Fiscal (a parte, fiscal.js escolhe).
+    const base = String(nome || "").split("-")[0];
+    aba = ABAS.indexOf(base) >= 0 ? base : "loja";
     raiz.querySelectorAll("[data-aba]").forEach(function (b) {
       const ativa = b.dataset.aba === aba;
       b.classList.toggle("ativa", ativa);
@@ -31,6 +34,7 @@
     });
     raiz.querySelectorAll("[data-painel]").forEach(function (p) { p.hidden = p.dataset.painel !== aba; });
     if (!semMexerNoEndereco) window.history.replaceState(null, "", "#" + aba);
+    if (aba === "fiscal" && window.MolekaFiscal) window.MolekaFiscal.mostrar();
   }
 
   // ------------------------------------------------------------------ dados da loja
@@ -244,6 +248,7 @@
   window.addEventListener("hashchange", function () { mostrarAba(window.location.hash.slice(1), true); });
   const teclaSalvar = document.querySelector("[data-salvar]");
   if (teclaSalvar) teclaSalvar.addEventListener("click", function () {
+    if (aba === "fiscal") { if (window.MolekaFiscal) window.MolekaFiscal.salvar(); return; }
     const form = { loja: formLoja, impressao: formImpressao, backup: formBackup }[aba];
     form.requestSubmit();
   });

@@ -17,7 +17,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from app import acesso, config, db, operadores
+from app import acesso, config, dados_fiscais, db, operadores
 from app.models import Operador
 
 router = APIRouter(include_in_schema=False)
@@ -127,9 +127,10 @@ MODULOS: tuple[Modulo, ...] = (
     Modulo(
         "fiscal",
         "Fiscal / NFC-e",
-        "Emissão, contingência e certificado A1",
+        "Dados da nota e certificado A1 (a emissão vem depois)",
         "recibo",
         "amarelo",
+        "/configuracoes#fiscal",
         so_gerente=True,
     ),
 )
@@ -191,7 +192,15 @@ MENUS: tuple[tuple[str, tuple[ItemMenu, ...]], ...] = (
             ItemMenu("Categorias", url="/financeiro#categorias", so_gerente=True),
         ),
     ),
-    ("Fiscal", (ItemMenu("NFC-e emitidas"), ItemMenu("Certificado A1"))),
+    (
+        "Fiscal",
+        (
+            ItemMenu(
+                "Dados fiscais e certificado A1", url="/configuracoes#fiscal", so_gerente=True
+            ),
+            ItemMenu("NFC-e emitidas"),
+        ),
+    ),
     (
         "Relatórios",
         (
@@ -283,6 +292,7 @@ def templates() -> Jinja2Templates:
             modulos=MODULOS,
             menus=MENUS,
             icones=ICONES,
+            origens=dados_fiscais.ORIGENS,  # origem da mercadoria (cadastro de produto)
         )
     return _templates
 

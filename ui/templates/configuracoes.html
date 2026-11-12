@@ -10,6 +10,7 @@
 <button class="aba ativa" type="button" role="tab" aria-selected="true" data-aba="loja">Dados da loja</button>
 <button class="aba" type="button" role="tab" aria-selected="false" data-aba="impressao">Impressão</button>
 <button class="aba" type="button" role="tab" aria-selected="false" data-aba="backup">Cópia de segurança</button>
+<button class="aba" type="button" role="tab" aria-selected="false" data-aba="fiscal" title="Dados para a NFC-e: regime, certificado digital, CSC, numeração e produtos">Fiscal (NFC-e)</button>
 </div>
 </div>
 
@@ -45,7 +46,7 @@
 <h2 id="t-loja-ajuda">Para que serve</h2>
 <p class="vazio">Estes dados saem no <b>cabeçalho do cupom</b> (comprovante de venda e fechamento de caixa). Nenhum campo é obrigatório: o cupom mostra só o que estiver preenchido.</p>
 <p class="vazio">Quando a NFC-e for ligada, o sistema usa estes mesmos dados. Para a nota fiscal, eles terão de estar iguais aos do cadastro da empresa na SEFAZ.</p>
-<p class="vazio">Senha de certificado e outros segredos <b>não</b> ficam nesta tela.</p>
+<p class="vazio">O certificado digital, o CSC e os outros dados da NFC-e ficam na aba <a href="#fiscal">Fiscal (NFC-e)</a>.</p>
 </aside>
 </div>
 
@@ -121,11 +122,170 @@
 <p class="vazio">Voltar uma cópia ainda é feito à mão, com o programa fechado. Se precisar, peça ajuda antes de mexer.</p>
 </aside>
 </div>
+
+<div class="cfg fiscal" data-painel="fiscal" hidden>
+<nav class="cartao passos" aria-label="Partes dos dados fiscais">
+<p class="nao-emite">{{ icone("alerta") }}<span><b>Esta versão ainda não emite NFC-e.</b> Aqui você deixa os dados prontos.</span></p>
+<button class="passo ativo" type="button" data-passo="empresa" aria-current="step"><span class="bola" data-bola="empresa"></span>Empresa</button>
+<button class="passo" type="button" data-passo="certificado"><span class="bola" data-bola="certificado"></span>Certificado A1</button>
+<button class="passo" type="button" data-passo="csc"><span class="bola" data-bola="csc"></span>CSC da SEFAZ</button>
+<button class="passo" type="button" data-passo="numeracao"><span class="bola" data-bola="numeracao"></span>Numeração</button>
+<button class="passo" type="button" data-passo="produtos"><span class="bola" data-bola="produtos"></span>Produtos</button>
+<button class="passo" type="button" data-passo="contador"><span class="bola" data-bola="contador"></span>Contador</button>
+<p class="vazio rodape-passos">Os dados ficam só neste computador.</p>
+</nav>
+
+<section class="cartao principal" aria-label="Dados fiscais">
+<div class="secao" data-secao="empresa">
+<h2>Empresa</h2>
+<div class="resumo-loja"><p data-fs-loja>Carregando…</p><a class="btn3d mini" href="#loja" title="Razão social, CNPJ, IE e endereço ficam na aba Dados da loja">{{ icone("lapis") }}Mudar</a></div>
+<form id="form-fs-empresa" class="form-entrada" autocomplete="off" novalidate>
+<div class="linha l2">
+<div><label class="rotulo" for="fs-crt">Regime tributário</label><div class="sel"><select id="fs-crt" name="crt" class="campo"><option value="">— escolha —</option></select>{{ icone("seta", "seta") }}</div></div>
+<div><label class="rotulo" for="fs-municipio" title="Pergunte ao contador ou pesquise na internet “código IBGE” e o nome da cidade">Código do município (IBGE)</label><input id="fs-municipio" name="codigo_municipio" class="campo" type="text" inputmode="numeric" maxlength="7" placeholder="7 números, ex.: 3550308"></div>
 </div>
+<div class="linha l2">
+<div><label class="rotulo" for="fs-im">Inscrição municipal (se tiver)</label><input id="fs-im" name="inscricao_municipal" class="campo" type="text" maxlength="20"></div>
+<div><label class="rotulo" for="fs-cnae">CNAE principal (se souber)</label><input id="fs-cnae" name="cnae" class="campo" type="text" maxlength="9" placeholder="0000-0/00"></div>
+</div>
+<div class="linha l2">
+<div><label class="rotulo" for="fs-credenciada">Credenciada para NFC-e na SEFAZ?</label><div class="sel"><select id="fs-credenciada" name="credenciada" class="campo"><option value="">—</option></select>{{ icone("seta", "seta") }}</div></div>
+<div><label class="rotulo" for="fs-emite">Já emite NFC-e por outro sistema?</label><div class="sel"><select id="fs-emite" name="emite_hoje" class="campo"><option value="">—</option></select>{{ icone("seta", "seta") }}</div></div>
+</div>
+<div data-fs-detalhe hidden><label class="rotulo" for="fs-emite-detalhe">Qual sistema? Série e número da última NFC-e</label><input id="fs-emite-detalhe" name="emite_hoje_detalhe" class="campo" type="text" maxlength="160" placeholder="Por exemplo: sistema X, série 1, última nota nº 4521"></div>
+<p class="msg-form" role="alert" hidden></p>
+<div class="botoes"><button class="btn3d verde" type="submit" data-atalho="F10">{{ icone("salvar") }}Salvar (F10)</button></div>
+</form>
+</div>
+
+<div class="secao" data-secao="certificado" hidden>
+<h2>Certificado digital A1</h2>
+<div class="cert-atual" data-fs-cert><p class="vazio">Carregando…</p></div>
+<details class="trocar-cert" data-fs-trocar open>
+<summary data-fs-cert-titulo>Instalar o certificado</summary>
+<form id="form-fs-certificado" class="form-entrada" autocomplete="off" novalidate>
+<div><span class="rotulo" id="fs-arquivo-rotulo">Arquivo do certificado (.pfx ou .p12)</span><input id="fs-arquivo" name="arquivo" type="file" accept=".pfx,.p12" hidden aria-labelledby="fs-arquivo-rotulo"><div class="escolher-arquivo"><button class="btn3d mini" type="button" data-fs-escolher aria-describedby="fs-arquivo-nome">{{ icone("pasta") }}Escolher o arquivo…</button><span id="fs-arquivo-nome" data-fs-nome-arquivo>Nenhum arquivo escolhido</span></div></div>
+<div class="linha senha-cert">
+<div><label class="rotulo" for="fs-senha">Senha do certificado</label><input id="fs-senha" name="senha" class="campo" type="password" maxlength="200" autocomplete="new-password"></div>
+<div><button class="btn3d verde" type="submit" data-atalho="F10">{{ icone("cadeado") }}<span data-fs-cert-botao>Instalar o certificado</span> (F10)</button></div>
+</div>
+<p class="msg-form" role="alert" hidden></p>
+</form>
+</details>
+<p class="msg-form" data-fs-cert-msg role="status" hidden></p>
+<ul class="notas">
+<li>Só o certificado <b>A1</b> (um arquivo). O A3, de cartão ou token USB, não funciona aqui.</li>
+<li>A senha fica <b>cifrada pelo Windows</b>, só neste computador. O arquivo e a senha não vão para a internet, para a cópia de segurança nem para o desenvolvedor: guarde o arquivo original num lugar seguro.</li>
+</ul>
+</div>
+
+<div class="secao" data-secao="csc" hidden>
+<h2>CSC da SEFAZ</h2>
+<p class="vazio">O CSC (Código de Segurança do Contribuinte) vai no QR Code da nota. A SEFAZ do estado gera um para <b>testes (homologação)</b> e outro para a nota <b>valer (produção)</b>, cada um com o <b>ID</b> (número curto, como 000001) e o <b>código</b>. O contador sabe pegar.</p>
+<form id="form-fs-csc" class="form-entrada" autocomplete="off" novalidate>
+<fieldset class="csc"><legend>Homologação (testes)</legend>
+<div class="linha csc">
+<div><label class="rotulo" for="fs-csc-h-id">ID do CSC</label><input id="fs-csc-h-id" name="id_homologacao" class="campo" type="text" inputmode="numeric" maxlength="6"></div>
+<div><label class="rotulo" for="fs-csc-h">Código CSC</label><input id="fs-csc-h" name="codigo_homologacao" class="campo" type="password" maxlength="36" autocomplete="new-password" placeholder="digite ou cole"></div>
+</div>
+<div class="situacao-csc"><p class="vazio" data-csc-situacao="homologacao">—</p><label class="check" data-csc-apagar="homologacao" hidden><input type="checkbox" name="apagar_homologacao">Apagar o código</label></div>
+</fieldset>
+<fieldset class="csc"><legend>Produção (nota valendo)</legend>
+<div class="linha csc">
+<div><label class="rotulo" for="fs-csc-p-id">ID do CSC</label><input id="fs-csc-p-id" name="id_producao" class="campo" type="text" inputmode="numeric" maxlength="6"></div>
+<div><label class="rotulo" for="fs-csc-p">Código CSC</label><input id="fs-csc-p" name="codigo_producao" class="campo" type="password" maxlength="36" autocomplete="new-password" placeholder="digite ou cole"></div>
+</div>
+<div class="situacao-csc"><p class="vazio" data-csc-situacao="producao">—</p><label class="check" data-csc-apagar="producao" hidden><input type="checkbox" name="apagar_producao">Apagar o código</label></div>
+</fieldset>
+<p class="msg-form" role="alert" hidden></p>
+<div class="botoes"><label class="check"><input type="checkbox" name="mostrar">Mostrar o código que estou digitando</label><button class="btn3d verde" type="submit" data-atalho="F10">{{ icone("salvar") }}Salvar (F10)</button></div>
+</form>
+</div>
+
+<div class="secao" data-secao="numeracao" hidden>
+<h2>Numeração da NFC-e</h2>
+<p class="vazio">Cada caixa usa uma <b>série</b>, e o número sobe de 1 em 1 a cada nota. Se a loja <b>já emite NFC-e por outro sistema</b>, não pode repetir número: use a mesma série com o número seguinte ao da última nota, ou outra série. Combine com o contador.</p>
+<p class="vazio destaque" data-fs-outro-sistema hidden></p>
+<form id="form-fs-numeracao" class="form-entrada" autocomplete="off" novalidate>
+<table class="tabela" id="tabela-fs-numeracao">
+<thead><tr><th style="width:96px">Caixa</th><th style="width:96px">Série</th><th style="width:150px">Próxima nota nº</th><th title="O maior número desta série que este sistema já registrou">Última registrada aqui</th></tr></thead>
+<tbody><tr><td class="sem-linhas" colspan="4">Carregando…</td></tr></tbody>
+</table>
+<p class="msg-form" role="alert" hidden></p>
+<div class="botoes"><button class="btn3d verde" type="submit" data-atalho="F10">{{ icone("salvar") }}Salvar (F10)</button></div>
+</form>
+</div>
+
+<div class="secao" data-secao="produtos" hidden>
+<h2>Dados fiscais dos produtos</h2>
+<p class="vazio">Cada produto precisa de <b>NCM</b>, <b>CFOP</b> e <b>CST</b> (ou <b>CSOSN</b>, no Simples); o contador informa quais são. Preencha no cadastro de cada produto (Cadastros → Produtos, parte “Dados fiscais”) ou uma categoria inteira de uma vez, no botão <b>Preencher</b>.</p>
+<p class="vazio destaque" data-fs-regime>—</p>
+<div class="rolagem">
+<table class="tabela compacta" id="tabela-fs-categorias">
+<thead><tr><th>Categoria</th><th class="num">Produtos</th><th class="num">Sem NCM</th><th class="num">Sem CFOP</th><th class="num" title="Sem CST (regime normal) ou CSOSN (Simples)">Sem CST/CSOSN</th><th>Situação</th><th style="width:118px"><span class="so-leitor">Preencher</span></th></tr></thead>
+<tbody><tr><td class="sem-linhas" colspan="7">Carregando…</td></tr></tbody>
+</table>
+</div>
+</div>
+
+<div class="secao" data-secao="contador" hidden>
+<h2>Contador</h2>
+<p class="vazio">O contador confere o regime, pega o CSC e diz o NCM, o CFOP e o CST ou CSOSN de cada produto. Anote aqui para ter à mão.</p>
+<form id="form-fs-contador" class="form-entrada" autocomplete="off" novalidate>
+<div class="linha l2">
+<div><label class="rotulo" for="fs-ct-nome">Nome do contador</label><input id="fs-ct-nome" name="nome" class="campo" type="text" maxlength="80"></div>
+<div><label class="rotulo" for="fs-ct-crc">CRC (se souber)</label><input id="fs-ct-crc" name="crc" class="campo" type="text" maxlength="20"></div>
+</div>
+<div class="linha l3">
+<div><label class="rotulo" for="fs-ct-telefone">Telefone</label><input id="fs-ct-telefone" name="telefone" class="campo" type="text" maxlength="20"></div>
+<div><label class="rotulo" for="fs-ct-email">E-mail</label><input id="fs-ct-email" name="email" class="campo" type="email" maxlength="80"></div>
+<div><label class="rotulo" for="fs-ct-documento">CPF/CNPJ (se souber)</label><input id="fs-ct-documento" name="documento" class="campo" type="text" maxlength="18"></div>
+</div>
+<div><label class="rotulo" for="fs-ct-obs">O que o contador orientou (opcional)</label><textarea id="fs-ct-obs" name="observacoes" class="campo" rows="3" maxlength="600"></textarea></div>
+<p class="msg-form" role="alert" hidden></p>
+<div class="botoes"><button class="btn3d verde" type="submit" data-atalho="F10">{{ icone("salvar") }}Salvar (F10)</button></div>
+</form>
+</div>
+</section>
+
+<aside class="cartao lado" aria-labelledby="t-fs-falta">
+<h2 id="t-fs-falta">O que falta para emitir</h2>
+<p class="vazio" data-fs-resumo>Carregando…</p>
+<ul class="pendencias" data-fs-pendencias></ul>
+<p class="vazio rodape-fs">Ambiente: <b data-fs-ambiente>—</b>. A nota que vale de verdade (produção) só será ligada depois dos testes, com a autorização do desenvolvedor.</p>
+</aside>
+</div>
+</div>
+{% endblock %}
+{% block dialogos %}
+<dialog class="dialogo largo" id="dlg-fs-categoria" aria-labelledby="dfc-titulo">
+<h2 id="dfc-titulo">Preencher a categoria</h2>
+<p data-texto></p>
+<form class="form-entrada" autocomplete="off" novalidate>
+<div class="quatro">
+<div><label class="rotulo" for="dfc-ncm">NCM</label><input id="dfc-ncm" name="ncm" class="campo" type="text" inputmode="numeric" maxlength="10"></div>
+<div><label class="rotulo" for="dfc-cest">CEST</label><input id="dfc-cest" name="cest" class="campo" type="text" inputmode="numeric" maxlength="9"></div>
+<div><label class="rotulo" for="dfc-cfop">CFOP</label><input id="dfc-cfop" name="cfop" class="campo" type="text" inputmode="numeric" maxlength="5" list="lista-fs-cfop"></div>
+<div><label class="rotulo" for="dfc-cst">CST/CSOSN</label><input id="dfc-cst" name="cst_csosn" class="campo" type="text" inputmode="numeric" maxlength="4"></div>
+</div>
+<div><label class="rotulo" for="dfc-origem">Origem da mercadoria</label><div class="sel"><select id="dfc-origem" name="origem" class="campo"><option value="">não mexer</option></select>{{ icone("seta", "seta") }}</div></div>
+<label class="check"><input type="checkbox" name="sobrescrever">Trocar também nos produtos que já têm esses dados</label>
+<p class="vazio">Deixe em branco o que não quiser mexer. Sem marcar a opção acima, só os campos <b>vazios</b> de cada produto são preenchidos; a origem, que todo produto já tem (0 – nacional), só muda marcando a opção.</p>
+<p class="msg-form" role="alert" hidden></p>
+<div class="botoes">
+<button class="btn3d" type="button" data-fechar-dialogo>Voltar (Esc)</button>
+<button class="btn3d verde" type="submit">Preencher</button>
+</div>
+</form>
+</dialog>
+<datalist id="lista-fs-cfop"></datalist>
+<template id="ic-fs-ok">{{ icone("check") }}</template>
+<template id="ic-fs-falta">{{ icone("x") }}</template>
+<template id="ic-fs-atencao">{{ icone("alerta") }}</template>
 {% endblock %}
 {% block teclas %}
 <button class="tecla" type="button" data-acao="sobre" data-atalho="F1"><kbd>F1</kbd>Ajuda</button>
 <button class="tecla" type="button" data-salvar><kbd>F10</kbd>Salvar</button>
 <a class="tecla" href="/inicio" data-atalho="Escape"><kbd>Esc</kbd>Início</a>
 {% endblock %}
-{% block scripts %}<script src="/static/js/configuracoes.js?v={{ versao }}" defer></script>{% endblock %}
+{% block scripts %}<script src="/static/js/configuracoes.js?v={{ versao }}" defer></script><script src="/static/js/fiscal.js?v={{ versao }}" defer></script>{% endblock %}

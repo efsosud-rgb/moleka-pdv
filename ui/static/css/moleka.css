@@ -757,6 +757,66 @@ button.chip:focus-visible{outline:3px solid #FCF00C;outline-offset:2px}
 .cfg .lado .tabela td{padding:5px 8px}
 .cfg .lado [data-im-conferir]{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 .cfg .lado .papel{flex:1;min-height:90px;font-size:11px;padding:10px}
+/* Configurações → Fiscal (NFC-e): partes à esquerda, formulário no meio, o que falta à direita */
+.cfg.fiscal{gap:14px}
+.cfg.fiscal > .passos{flex:0 0 184px;gap:6px;padding:12px}
+.passos .nao-emite{display:flex;gap:8px;align-items:flex-start;margin:0 0 4px;padding:8px 10px;border:1px solid #E2CF95;border-radius:10px;background:#FFF6CC;font-size:12.5px;line-height:1.4;color:#542424}
+.passos .nao-emite .ic{flex:none;width:18px;height:18px;margin-top:1px;color:#C8202A}
+.passo{display:flex;align-items:center;gap:9px;width:100%;min-height:40px;padding:8px 10px;border:1px solid #E2CF95;border-radius:10px;background:linear-gradient(#FFFDF4,#FFF1BF);font:800 14px Nunito,Inter,sans-serif;color:#542424;text-align:left;cursor:pointer}
+.passo:hover{background:#FFF6CC}
+.passo:focus-visible{outline:3px solid #1F6FD1;outline-offset:1px}
+.passo.ativo{color:#FFFFFF;background:linear-gradient(#EA3F3F,#D42828);border-color:#B81E22;text-shadow:0 1px 0 rgba(0,0,0,.25)}
+.bola{flex:none;width:12px;height:12px;border-radius:50%;background:#C9B98A}
+.bola.ok{background:#1B7F39}
+.bola.atencao{background:#F2C200}
+.bola.falta{background:#C8202A}
+.passo.ativo .bola{box-shadow:0 0 0 2px #FFFFFF}
+.passos .rodape-passos{margin-top:auto}
+.cfg.fiscal > .lado{flex-basis:304px;gap:6px;padding:12px 16px}
+.cfg .secao{display:flex;flex-direction:column;gap:7px}
+.cfg .secao .form-entrada{gap:7px}
+.cfg .secao[hidden]{display:none}
+.cfg h3{font-weight:900;font-size:15px;color:#542424}
+.resumo-loja{display:flex;align-items:center;gap:12px;padding:6px 10px;border:1px dashed #DCC88A;border-radius:10px;background:#FFFDF6}
+.resumo-loja p{flex:1;min-width:0;font-size:12.5px;line-height:1.4;color:#2A1A18}
+.resumo-loja .btn3d{flex:none}
+.escolher-arquivo{display:flex;align-items:center;gap:10px;min-height:38px}
+.escolher-arquivo .btn3d{flex:none}
+.escolher-arquivo [data-fs-nome-arquivo]{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px;color:#5A4237}
+.cfg .botoes .check{margin-right:auto;font-size:13.5px}
+.cfg .linha.senha-cert{grid-template-columns:minmax(0,1fr) auto}
+.cfg .linha.senha-cert .btn3d{min-height:40px;padding:8px 14px;font-size:14.5px}
+#tabela-fs-numeracao td:first-child{white-space:nowrap}
+.cert-atual{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid #EADBA8;border-radius:10px;background:#FFFDF6}
+.dados-cert{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;margin:0;font-size:13.5px}
+.dados-cert dt{font-weight:800;color:#5A4237}
+.dados-cert dd{margin:0;overflow-wrap:anywhere}
+.cfg .notas{margin:0;padding-left:18px;font-size:12.5px;line-height:1.45;color:#5A4237}
+.trocar-cert{display:flex;flex-direction:column;gap:6px}
+.trocar-cert summary{cursor:pointer;font-weight:900;font-size:15px;color:#542424}
+.trocar-cert[open] summary{margin-bottom:6px}
+.situacao-csc{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:24px}
+.situacao-csc .check{flex:none;font-size:13px}
+.situacao-csc .check input{width:16px;height:16px}
+fieldset.csc{display:flex;flex-direction:column;gap:6px;margin:0;padding:4px 12px 10px;border:1px solid #EADBA8;border-radius:10px}
+fieldset.csc legend{padding:0 4px;font-weight:800;font-size:13px;color:#542424}
+.cfg .linha.csc{grid-template-columns:140px minmax(0,1fr)}
+.cfg .vazio.destaque{padding:6px 10px;border-radius:8px;background:#FFF6CC;color:#542424}
+#tabela-fs-numeracao .campo{min-height:34px;padding:4px 8px;font-size:14.5px}
+.cfg .tabela td.falta{font-weight:800;color:#B81E22}
+.cfg textarea.campo{min-height:60px;resize:vertical;font-family:inherit}
+.pendencias{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}
+.pend button{display:grid;grid-template-columns:20px minmax(0,1fr);gap:0 8px;width:100%;padding:5px 8px;border:0;border-radius:8px;background:transparent;font:inherit;color:#2A1A18;text-align:left;cursor:pointer}
+.pend button:hover{background:#FFF6CC}
+.pend button:focus-visible{outline:3px solid #1F6FD1}
+.pend .ic{grid-row:span 2;width:18px;height:18px;margin-top:1px}
+.pend .t{font-weight:800;font-size:13px;color:#542424}
+.pend .d{font-size:12px;line-height:1.35;color:#5A4237}
+.pend.ok .ic{color:#1B7F39}
+.pend.falta .ic{color:#C8202A}
+.pend.falta .t{color:#9E1A20}
+.pend.atencao .ic{color:#B58A00}
+.cfg .lado .rodape-fs{margin-top:auto;padding-top:6px;border-top:1px solid #F3E8C4}
 
 /* O cupom na tela: letra de largura fixa, como sai na impressora térmica. */
 .papel{overflow:auto;padding:12px 14px;border:1px solid #E2CF95;border-radius:6px;background:#FFFEF8;box-shadow:0 2px 0 #E2CF95;font:12.5px/1.4 Consolas,"Cascadia Mono","Courier New",monospace;color:#2A1A18;white-space:pre}

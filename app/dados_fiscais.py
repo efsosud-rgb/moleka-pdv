@@ -43,10 +43,10 @@ AVISO = (
     "(homologação) entra numa próxima versão."
 )
 CRTS: dict[str, str] = {
-    "1": "Simples Nacional (microempresa ou EPP)",
+    "1": "Simples Nacional (ME ou EPP)",
     "4": "MEI (microempreendedor individual)",
-    "2": "Simples Nacional, acima do sublimite de receita",
-    "3": "Regime normal (Lucro Presumido ou Lucro Real)",
+    "2": "Simples Nacional, acima do sublimite",
+    "3": "Regime normal (Presumido ou Real)",
 }
 RESPOSTAS: dict[str, str] = {"sim": "Sim", "nao": "Não", "nao-sei": "Não sei"}
 ORIGENS: dict[str, str] = {
@@ -688,7 +688,14 @@ def pendencias(sessao: Session, agora: datetime | None = None) -> list[Pendencia
     uf_codigo = uf_do_codigo(empresa.codigo_municipio)
     if not empresa.codigo_municipio:
         itens.append(
-            Pendencia("municipio", "falta", titulo, "Digite o código, de 7 números.", "empresa")
+            Pendencia(
+                "municipio",
+                "falta",
+                titulo,
+                "Digite o código, de 7 números (o contador sabe; ou pesquise na internet "
+                "“código IBGE” e o nome da cidade).",
+                "empresa",
+            )
         )
     elif loja.uf and uf_codigo != loja.uf:
         itens.append(

@@ -91,13 +91,14 @@ def test_expressao_do_valor_em_reais_pega_um_valor_de_verdade():
 
 def test_modulos_sem_tela_avisam_que_estao_em_construcao(cliente):
     html = cliente.get("/inicio").text
-    # O que ainda não existe (Fiscal, vendas por período) aparece como "em breve", não como link.
-    assert html.count("em breve") >= 3
+    # O que ainda não existe (a lista de NFC-e emitidas) aparece como "em breve", não como link.
     assert "data-em-breve" in html
-    assert re.search(r'class="cartao tile em-breve"[^>]*>.*?Fiscal / NFC-e', html, re.S)
-    # Estoque, Entrada de NF e Financeiro já são telas de verdade: têm link e não têm aviso.
-    for modulo in ("/estoque", "/entrada-nf", "/financeiro"):
+    assert re.search(r'data-em-breve>NFC-e emitidas<small>em breve</small>', html)
+    # Estoque, Entrada de NF e Financeiro já são telas de verdade: têm link e não têm aviso. O
+    # bloco Fiscal leva aos dados fiscais (a emissão ainda não existe, e o bloco diz isso).
+    for modulo in ("/estoque", "/entrada-nf", "/financeiro", "/configuracoes#fiscal"):
         assert f'<a class="cartao tile" href="{modulo}"' in html, modulo
+    assert "Dados da nota e certificado A1 (a emissão vem depois)" in html
     for tela in PAGINAS[1:]:
         assert "Tela em construção" not in cliente.get(tela).text, tela
 
@@ -112,6 +113,7 @@ def test_menus_levam_as_telas_novas(cliente):
         "/financeiro#dre",
         "/financeiro#rentabilidade",
         "/financeiro#categorias",
+        "/configuracoes#fiscal",
     ):
         assert f'<a href="{destino}"' in html, destino
 
