@@ -36,7 +36,15 @@ RAIZ = Path(__file__).resolve().parent.parent
 PORTA = 8765
 # Biblioteca da janela própria. Se ela não instalar ou não carregar, o sistema abre no navegador.
 BIBLIOTECA_DA_JANELA = "pywebview"
-MODULOS_ESSENCIAIS = ("pydantic_core", "pydantic", "sqlalchemy", "fastapi", "uvicorn", "jinja2")
+MODULOS_ESSENCIAIS = (
+    "pydantic_core",
+    "pydantic",
+    "sqlalchemy",
+    "fastapi",
+    "uvicorn",
+    "jinja2",
+    "openpyxl",  # planilhas do Excel (versão 0.6.0)
+)
 SINAIS_DE_BLOQUEIO = ("Controle de Aplicativo", "Application Control", "4551")
 
 resumo: list[str] = []

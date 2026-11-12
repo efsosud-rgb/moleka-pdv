@@ -117,13 +117,18 @@ def test_relatorio_sem_vendas_nao_inventa_numero(cliente, loja):
     assert (r["vendas"], r["faturamento_centavos"], r["ticket_medio_centavos"]) == (0, None, None)
     assert (r["itens_centavos"], r["desconto_gerente_centavos"]) == (None, None)
     assert (r["sem_documento_fiscal"], r["sem_documento_fiscal_centavos"]) == (0, None)
-    assert (r["dias"], r["operadores"], r["horarios"], r["produtos"], r["classes"]) == (
+    assert r["descontos_centavos"] is None
+    assert (r["dias"], r["meses"], r["operadores"], r["horarios"], r["produtos"]) == (
         [],
         [],
         [],
         [],
         [],
     )
+    assert (r["classes"], r["por_hora"]) == ([], [])
+    assert [(s["vendas"], s["faturamento_centavos"]) for s in r["por_dia_da_semana"]] == [
+        (0, None)
+    ] * 7
     assert r["motivo"] == "sem vendas no período"
     assert [(f["rotulo"], f["recebido_centavos"], f["motivo"]) for f in r["formas"]] == [
         ("Dinheiro", None, "nenhuma venda nesta forma"),
@@ -151,11 +156,13 @@ def test_relatorio_de_vendas_do_periodo(cliente, caixa, loja, vender):
         r["acrescimos_formas_centavos"],
     ) == (11595, 495, 380, 30)
     assert 11595 - 495 - 380 + 30 == r["faturamento_centavos"]
+    assert r["descontos_centavos"] == 495 + 380  # gerente + formas
     assert (r["sem_documento_fiscal"], r["sem_documento_fiscal_centavos"]) == (4, 10750)
     assert r["marcadas_para_nfce"] == 0
     assert r["motivo_fiscal"].startswith("o sistema ainda não emite NFC-e")
     assert (r["canceladas_antes"], r["canceladas_antes_centavos"]) == (1, 5990)
     assert (r["canceladas_depois"], r["canceladas_depois_centavos"]) == (1, 500)
+    assert (r["canceladas"], r["canceladas_centavos"]) == (2, 5990 + 500)
     assert r["motivo"] == ""
 
     # Por dia da loja: a venda das 23:30 fica no D1 (no banco ela está no dia seguinte, em UTC).
@@ -224,6 +231,33 @@ def test_relatorio_de_vendas_do_periodo(cliente, caixa, loja, vender):
             (D2.weekday(), 20, 1, 1070),
         ]
     )
+    # Somas da mesma grade por dia da semana (sempre os 7) e por hora (só as com venda).
+    esperado = {D1.weekday(): (2, 8650, 4325), D2.weekday(): (2, 2100, 1050)}
+    assert [
+        (
+            s["dia_semana"],
+            s["rotulo"],
+            s["dias_no_periodo"],
+            s["vendas"],
+            s["faturamento_centavos"],
+            s["ticket_medio_centavos"],
+        )
+        for s in r["por_dia_da_semana"]
+    ] == [
+        (
+            i,
+            nome,
+            1 if i in {D1.weekday(), D2.weekday(), D3.weekday()} else 0,
+            *esperado.get(i, (0, None, None)),
+        )
+        for i, nome in enumerate(
+            ("segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo")
+        )
+    ]
+    assert [
+        (h["hora"], h["vendas"], h["faturamento_centavos"], h["ticket_medio_centavos"])
+        for h in r["por_hora"]
+    ] == [(9, 1, 1030, 1030), (14, 1, 2000, 2000), (20, 1, 1070, 1070), (23, 1, 6650, 6650)]
 
     # Produtos. Venda 2: 66,50 dividido 45,00 : 29,95 -> 39,926 e 26,573 -> 39,93 e 26,57.
     # Venda 5: 10,70 dividido 6,00 : 5,00 -> 5,836 e 4,863 -> 5,84 e 4,86.
@@ -268,6 +302,13 @@ def test_o_relatorio_bate_com_a_rentabilidade_e_o_fluxo_de_caixa(cliente, caixa,
     }
     por_forma = {f["forma"]: f["recebido_centavos"] for f in r["formas"] if f["vendas"]}
     assert por_forma == fluxo["recebido_por_forma"]
+    # No DRE: receita bruta (itens + acréscimos das formas) - descontos concedidos. Sem outros
+    # lançamentos de receita ou de dedução (como aqui), a receita líquida é o faturamento.
+    dre = cliente.get("/api/financeiro/dre", params=params).json()
+    linhas = {linha["chave"]: linha["valor_centavos"] for linha in dre["linhas"] if linha["chave"]}
+    assert linhas["receita_bruta"] == r["itens_centavos"] + r["acrescimos_formas_centavos"]
+    assert linhas["descontos"] == -r["descontos_centavos"]
+    assert linhas["receita_liquida"] == r["faturamento_centavos"]
 
 
 def test_filtro_por_operador(cliente, caixa, loja, vender):
@@ -294,6 +335,27 @@ def test_filtro_por_operador(cliente, caixa, loja, vender):
         404,
         "Operador não encontrado.",
     )
+
+
+def test_venda_antiga_sem_operador_conta_para_quem_abriu_o_caixa(cliente, caixa, loja, vender):
+    """As vendas da versão 0.2 não guardavam o operador: nelas vale quem abriu o caixa."""
+    venda = vender([(loja["picole"], 2)], quem=caixa)  # 10,00, feita pelo caixa
+    with db.nova_sessao() as sessao:
+        sessao.get(Venda, venda["id"]).operador_id = None  # como ficou gravada na versão 0.2
+        sessao.commit()
+    hoje = tempo.hoje()
+    r = cliente.get("/api/relatorios/vendas", params=_periodo(hoje, hoje)).json()
+    # O caixa foi aberto pelo gerente (fixture `loja`).
+    assert [(o["nome"], o["vendas"], o["faturamento_centavos"]) for o in r["operadores"]] == [
+        ("Gerente de Teste", 1, 1000)
+    ]
+    ids = _operadores(cliente)
+    filtro = _periodo(hoje, hoje, operador_id=ids["Gerente de Teste"])
+    assert (
+        cliente.get("/api/relatorios/vendas", params=filtro).json()["faturamento_centavos"] == 1000
+    )
+    lista = cliente.get("/api/relatorios/vendas/lista", params=_periodo(hoje, hoje)).json()
+    assert [v["operador"] for v in lista["vendas"]] == ["Gerente de Teste"]
 
 
 def test_curva_abc_nos_limites():
@@ -368,7 +430,8 @@ def test_relatorio_soma_por_mes(cliente, loja, vender):
     r, por_mes = meses(date(2026, 9, 1), date(2026, 10, 31))
     assert por_mes == [("2026-09-01", 1, 2000, 2000, 0), ("2026-10-01", 1, 1000, 1000, 1)]
     assert sum(m[2] for m in por_mes) == r["faturamento_centavos"] == 3000
-    assert r["dias_da_semana"] == [8, 9, 9, 9, 9, 9, 8]  # 1º/9/2026 é terça; 61 dias
+    # 1º/9/2026 é terça; 61 dias
+    assert [s["dias_no_periodo"] for s in r["por_dia_da_semana"]] == [8, 9, 9, 9, 9, 9, 8]
     # Um mês só com o cancelamento aparece, sem faturamento (e não com zero).
     _r, so_o_cancelamento = meses(date(2026, 10, 21), date(2026, 10, 21))
     assert so_o_cancelamento == [("2026-10-01", 0, None, None, 1)]

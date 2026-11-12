@@ -261,6 +261,15 @@
     });
   });
 
+  // A planilha leva a mesma lista da tela: mesma pesquisa, mesmo filtro.
+  document.getElementById("btn-excel").addEventListener("click", function () {
+    const filtros = new URLSearchParams();
+    if (busca.value.trim()) filtros.set("busca", busca.value.trim());
+    if (situacao.value) filtros.set("situacao", situacao.value);
+    if (verInativos.checked) filtros.set("inativos", "true");
+    M.baixarPlanilha("/api/planilhas/estoque?" + filtros.toString());
+  });
+
   form.tipo.addEventListener("change", function () { M.mensagem(form, ""); ajustarFormulario(); });
   situacao.addEventListener("change", carregar);
   verInativos.addEventListener("change", carregar);

@@ -216,6 +216,30 @@ try {
   $rent = Pedir GET "/api/financeiro/rentabilidade?inicio=$hoje&fim=$hoje"
   Conferir 'rentabilidade do picolé (receita; custo; margem; %)' "$($rent.linhas[0].receita_centavos);$($rent.linhas[0].custo_centavos);$($rent.linhas[0].margem_centavos);$($rent.linhas[0].margem_percentual)" '4395;2000;2395;54,5%'
 
+  # Relatório de vendas e planilha do Excel (versão 0.6.0). A planilha sai do openpyxl de dentro
+  # do programa empacotado: o teste abre o .xlsx (um .zip) e procura o faturamento na aba Resumo.
+  $r = Invoke-WebRequest "$base/relatorios/vendas" -WebSession $janela -UseBasicParsing -TimeoutSec 10
+  if ($r.Content -notmatch 'data-tela="relatorios"') { throw 'a tela /relatorios/vendas não abriu para o gerente logado' }
+  Write-Host "OK: /relatorios/vendas com o gerente logado ($($r.RawContentLength) bytes)"
+  $rel = Pedir GET "/api/relatorios/vendas?inicio=$hoje&fim=$hoje"
+  Conferir 'relatório de vendas de hoje (vendas; faturamento; ticket; classe do picolé)' "$($rel.vendas);$($rel.faturamento_centavos);$($rel.ticket_medio_centavos);$($rel.produtos[0].classe)" '1;4395;4395;A'
+  $planilha = Join-Path $Saida "vendas-$rotulo.xlsx"
+  $baixada = Invoke-WebRequest "$base/api/planilhas/vendas?inicio=$hoje&fim=$hoje" -WebSession $janela -UseBasicParsing -TimeoutSec 60 -OutFile $planilha -PassThru
+  Conferir 'tipo do arquivo da planilha' $baixada.Headers['Content-Type'] 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  Add-Type -AssemblyName System.IO.Compression.FileSystem
+  $zip = [IO.Compression.ZipFile]::OpenRead((Resolve-Path $planilha))
+  try {
+    $livro = New-Object IO.StreamReader(($zip.Entries | Where-Object FullName -eq 'xl/workbook.xml').Open())
+    $abas = ([regex]::Matches($livro.ReadToEnd(), '<sheet [^>]*name="([^"]+)"') | ForEach-Object { $_.Groups[1].Value }) -join ';'
+    $livro.Dispose()
+    Conferir 'abas da planilha de vendas' $abas 'Resumo;Por dia;Formas de pagamento;Operadores;Produtos;Horários (R$);Horários (vendas);Lista de vendas'
+    $folha = New-Object IO.StreamReader(($zip.Entries | Where-Object FullName -eq 'xl/worksheets/sheet1.xml').Open())
+    $resumo = $folha.ReadToEnd()
+    $folha.Dispose()
+    if ($resumo -notmatch '<v>43\.95</v>') { throw 'a aba Resumo da planilha não tem o faturamento 43,95' }
+    Write-Host "OK: planilha do Excel gerada pelo programa empacotado ($((Get-Item $planilha).Length) bytes), com o faturamento 43,95 na aba Resumo"
+  } finally { $zip.Dispose() }
+
   # Configurações (versão 0.5.0): começam em branco, e os dados da loja ficam gravados.
   $cfg = Pedir GET '/api/configuracoes'
   Conferir 'configurações novas (loja em branco; sem impressora; 48 colunas; oferecer o botão)' "$($cfg.loja.nome_fantasia);$($cfg.impressao.impressora);$($cfg.impressao.colunas);$($cfg.impressao.quando)" ';;48;perguntar'

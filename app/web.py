@@ -112,13 +112,15 @@ MODULOS: tuple[Modulo, ...] = (
         "/financeiro",
         so_gerente=True,
     ),
+    # Fora do menu lateral, que já está cheio numa tela de 1366x768; o DRE e a rentabilidade
+    # continuam no Financeiro e no menu do topo.
     Modulo(
-        "dre",
-        "DRE e Rentabilidade",
-        "Resultado do período e margem por produto",
+        "relatorios",
+        "Relatórios",
+        "Vendas por período, por produto e por horário",
         "grafico",
         "vermelho",
-        "/financeiro#dre",
+        "/relatorios/vendas",
         no_menu_lateral=False,
         so_gerente=True,
     ),
@@ -193,7 +195,7 @@ MENUS: tuple[tuple[str, tuple[ItemMenu, ...]], ...] = (
     (
         "Relatórios",
         (
-            ItemMenu("Vendas por período"),
+            ItemMenu("Vendas por período", url="/relatorios/vendas", so_gerente=True),
             ItemMenu("Rentabilidade por produto", url="/financeiro#rentabilidade", so_gerente=True),
         ),
     ),
@@ -354,6 +356,13 @@ def financeiro(
     request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
 ) -> Response:
     return _tela(request, "financeiro.html", "financeiro", operador, so_gerente=True)
+
+
+@router.get("/relatorios/vendas", response_class=HTMLResponse)
+def tela_relatorio_de_vendas(
+    request: Request, operador: Operador | None = Depends(acesso.operador_opcional)
+) -> Response:
+    return _tela(request, "relatorio_vendas.html", "relatorios", operador, so_gerente=True)
 
 
 @router.get("/estoque", response_class=HTMLResponse)

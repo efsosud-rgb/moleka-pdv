@@ -96,6 +96,22 @@ class OperadorOut(BaseModel):
     valor_cancelado_centavos: int
 
 
+class DiaDaSemanaOut(BaseModel):
+    dia_semana: int  # 0 = segunda ... 6 = domingo
+    rotulo: str
+    dias_no_periodo: int  # quantas segundas (terças...) o período tem
+    vendas: int
+    faturamento_centavos: int | None  # None = nenhuma venda neste dia da semana
+    ticket_medio_centavos: int | None
+
+
+class HoraOut(BaseModel):
+    hora: int  # 0 a 23, horário da loja
+    vendas: int
+    faturamento_centavos: int
+    ticket_medio_centavos: int | None
+
+
 class HorarioOut(BaseModel):
     dia_semana: int  # 0 = segunda ... 6 = domingo
     hora: int  # 0 a 23, horário da loja
@@ -132,12 +148,15 @@ class RelatorioVendasOut(BaseModel):
     faturamento_centavos: int | None  # None = sem vendas (ver `motivo`)
     ticket_medio_centavos: int | None
     itens_centavos: int | None  # valor dos itens, antes de qualquer desconto
+    descontos_centavos: int | None  # desconto do gerente + descontos das formas de pagamento
     desconto_gerente_centavos: int | None
     descontos_formas_centavos: int | None
     acrescimos_formas_centavos: int | None
     sem_documento_fiscal: int  # vendas
     sem_documento_fiscal_centavos: int | None
     marcadas_para_nfce: int
+    canceladas: int  # antes + depois de finalizar
+    canceladas_centavos: int
     canceladas_antes: int
     canceladas_antes_centavos: int
     canceladas_depois: int
@@ -146,8 +165,9 @@ class RelatorioVendasOut(BaseModel):
     meses: list[MesOut]  # só os meses com venda ou cancelamento
     formas: list[FormaOut]
     operadores: list[OperadorOut]
-    horarios: list[HorarioOut]
-    dias_da_semana: list[int]  # quantas segundas, terças... o período tem (0 = segunda)
+    horarios: list[HorarioOut]  # só os pares (dia da semana, hora) com venda
+    por_dia_da_semana: list[DiaDaSemanaOut]  # sempre os 7, de segunda a domingo
+    por_hora: list[HoraOut]  # só as horas com venda
     produtos: list[ProdutoOut]
     classes: list[ClasseOut]
     motivo: str  # por que não há número, quando não há
@@ -203,12 +223,15 @@ def montar(sessao: Session, inicio: date, fim: date, operador_id: int | None) ->
         faturamento_centavos=se_vendeu(fat),
         ticket_medio_centavos=r.total.ticket_medio,
         itens_centavos=se_vendeu(r.itens),
+        descontos_centavos=se_vendeu(r.desconto_gerente + r.descontos_formas),
         desconto_gerente_centavos=se_vendeu(r.desconto_gerente),
         descontos_formas_centavos=se_vendeu(r.descontos_formas),
         acrescimos_formas_centavos=se_vendeu(r.acrescimos_formas),
         sem_documento_fiscal=r.total.vendas,
         sem_documento_fiscal_centavos=se_vendeu(fat),
         marcadas_para_nfce=r.marcadas_para_nfce,
+        canceladas=r.cancelamentos.antes + r.cancelamentos.depois,
+        canceladas_centavos=r.cancelamentos.valor_antes + r.cancelamentos.valor_depois,
         canceladas_antes=r.cancelamentos.antes,
         canceladas_antes_centavos=r.cancelamentos.valor_antes,
         canceladas_depois=r.cancelamentos.depois,
@@ -269,7 +292,32 @@ def montar(sessao: Session, inicio: date, fim: date, operador_id: int | None) ->
             )
             for (dia_semana, hora), soma in sorted(r.por_horario.items())
         ],
-        dias_da_semana=relatorios.dias_da_semana_no_periodo(inicio, fim),
+        por_dia_da_semana=[
+            DiaDaSemanaOut(
+                dia_semana=dia_semana,
+                rotulo=DIAS_DA_SEMANA[dia_semana],
+                dias_no_periodo=quantos,
+                vendas=soma.vendas,
+                faturamento_centavos=soma.faturamento if soma.vendas else None,
+                ticket_medio_centavos=soma.ticket_medio,
+            )
+            for dia_semana, (soma, quantos) in enumerate(
+                zip(
+                    relatorios.somar_por_dia_da_semana(r.por_horario),
+                    relatorios.dias_da_semana_no_periodo(inicio, fim),
+                    strict=True,
+                )
+            )
+        ],
+        por_hora=[
+            HoraOut(
+                hora=hora,
+                vendas=soma.vendas,
+                faturamento_centavos=soma.faturamento,
+                ticket_medio_centavos=soma.ticket_medio,
+            )
+            for hora, soma in relatorios.somar_por_hora(r.por_horario).items()
+        ],
         produtos=produtos,
         classes=classes,
         motivo="" if vendeu else SEM_VENDAS,

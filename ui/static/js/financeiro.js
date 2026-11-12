@@ -669,6 +669,20 @@
   }
 
   document.getElementById("btn-imprimir").addEventListener("click", imprimir);
+
+  /* A planilha da aba que está na tela, com o mesmo período e os mesmos filtros. */
+  const PLANILHAS = { lancamentos: "contas", fluxo: "fluxo", dre: "dre", rentabilidade: "rentabilidade" };
+  document.getElementById("btn-excel").addEventListener("click", function () {
+    const faixa = intervalo();
+    if (!faixa) { M.avisar("Digite a data inicial e a data final do período, assim: 01/11/2026."); return; }
+    if (!PLANILHAS[aba]) return;
+    const consulta = new URLSearchParams({ inicio: faixa[0], fim: faixa[1] });
+    if (aba === "lancamentos") {
+      if (lcTipo.value) consulta.set("tipo", lcTipo.value);
+      if (lcSituacao.value) consulta.set("situacao", lcSituacao.value);
+    }
+    M.baixarPlanilha("/api/planilhas/" + PLANILHAS[aba] + "?" + consulta.toString());
+  });
   document.getElementById("btn-novo").addEventListener("click", function () { abrirLancamento(null); });
   // F3 abre um lançamento novo em qualquer aba desta tela.
   document.addEventListener("keydown", function (evento) {

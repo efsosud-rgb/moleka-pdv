@@ -4,8 +4,8 @@ Regras (ESPECIFICACAO §16):
 - Venda do período = venda **finalizada** com a hora de finalização dentro do período, no horário
   da loja. Venda cancelada não soma em nada (nem quando foi cancelada depois, em outro dia).
 - Faturamento = soma dos totais das vendas (o que o cliente pagou, já com o desconto do gerente
-  e o desconto ou acréscimo das formas de pagamento). É o mesmo número da receita de vendas do
-  DRE e da rentabilidade no mesmo período.
+  e o desconto ou acréscimo das formas de pagamento). É o mesmo total de vendas da rentabilidade
+  e do fluxo de caixa no mesmo período; no DRE, é a receita bruta das vendas menos os descontos.
 - Cancelamentos contam no dia em que foram feitos (hora do cancelamento), separados em "antes de
   finalizar" (a venda nem chegou a ser paga) e "depois de finalizar" (estorno; só o gerente faz).
 - Por produto, o faturamento de cada venda é dividido entre os itens na proporção do valor de
@@ -178,6 +178,25 @@ def somar_por_mes(dias: list[DiaDeVendas]) -> list[MesDeVendas]:
         mes.soma.faturamento += d.soma.faturamento
         mes.canceladas += d.canceladas
     return [meses[chave] for chave in sorted(meses)]
+
+
+def somar_por_dia_da_semana(por_horario: dict[tuple[int, int], Soma]) -> list[Soma]:
+    """A grade de horários somada por dia da semana: sempre 7 posições (0 = segunda)."""
+    somas = [Soma() for _ in range(7)]
+    for (dia_semana, _hora), soma in por_horario.items():
+        somas[dia_semana].vendas += soma.vendas
+        somas[dia_semana].faturamento += soma.faturamento
+    return somas
+
+
+def somar_por_hora(por_horario: dict[tuple[int, int], Soma]) -> dict[int, Soma]:
+    """A grade de horários somada por hora (só as horas com venda), da mais cedo à mais tarde."""
+    horas: dict[int, Soma] = {}
+    for (_dia_semana, hora), soma in por_horario.items():
+        da_hora = horas.setdefault(hora, Soma())
+        da_hora.vendas += soma.vendas
+        da_hora.faturamento += soma.faturamento
+    return {hora: horas[hora] for hora in sorted(horas)}
 
 
 def dias_da_semana_no_periodo(inicio: date, fim: date) -> list[int]:

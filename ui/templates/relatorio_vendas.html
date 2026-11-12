@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icone %}
+{% block titulo_pagina %}Vendas por período{% endblock %}
+{% block titulo %}Vendas por período{% endblock %}
+{% block conteudo %}
+<div class="rel" id="relatorio-vendas">
+<div class="filtros-rel" data-filtros>
+<label class="rotulo" for="periodo">Período</label>
+<div class="sel"><select id="periodo" class="campo"><option value="mes">Este mês</option><option value="hoje">Hoje</option><option value="ontem">Ontem</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="mes-passado">Mês passado</option><option value="ano">Este ano</option><option value="datas">Escolher datas…</option></select>{{ icone("seta", "seta") }}</div>
+<span class="faixa" data-faixa>—</span>
+<span class="datas" data-datas hidden><input id="pd-inicio" class="campo" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" data-data aria-label="Data inicial"><span>a</span><input id="pd-fim" class="campo" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" data-data aria-label="Data final"></span>
+<label class="rotulo" for="operador">Operador</label>
+<div class="sel"><select id="operador" class="campo"><option value="">Todos</option></select>{{ icone("seta", "seta") }}</div>
+<span class="espaco"></span>
+<button class="btn3d mini" type="button" id="btn-imprimir" data-atalho="Ctrl+P" title="Imprime a aba que está na tela, em qualquer impressora do Windows (Ctrl+P)" aria-label="Imprimir esta aba (Ctrl+P)">{{ icone("impressora") }}Imprimir</button>
+<button class="btn3d mini" type="button" id="btn-excel" title="Salva o relatório inteiro (todas as abas, com o período e o operador escolhidos) numa planilha do Excel">{{ icone("baixar") }}Excel</button>
+</div>
+<div class="abas" role="tablist" aria-label="Partes do relatório de vendas">
+<button class="aba ativa" type="button" role="tab" aria-selected="true" data-aba="resumo">Resumo</button>
+<button class="aba" type="button" role="tab" aria-selected="false" data-aba="produtos" title="O que mais vendeu, com a curva ABC">Produtos</button>
+<button class="aba" type="button" role="tab" aria-selected="false" data-aba="horarios" title="Movimento por dia da semana e hora">Horários</button>
+<button class="aba" type="button" role="tab" aria-selected="false" data-aba="operadores">Operadores</button>
+<button class="aba" type="button" role="tab" aria-selected="false" data-aba="vendas" title="Cada venda e cada cancelamento do período, com o comprovante">Lista de vendas</button>
+</div>
+
+<div class="painel-rel resumo-rel" data-painel="resumo">
+<div class="kpis cinco">
+<div class="cartao kpi"><div class="r">Faturamento</div><div class="v" data-k="faturamento">—</div><div class="m" data-k="faturamento_m">—</div></div>
+<div class="cartao kpi"><div class="r">Ticket médio</div><div class="v" data-k="ticket">—</div><div class="m" data-k="ticket_m">—</div></div>
+<div class="cartao kpi"><div class="r">Descontos dados</div><div class="v" data-k="descontos">—</div><div class="m" data-k="descontos_m">—</div></div>
+<div class="cartao kpi"><div class="r">Canceladas</div><div class="v" data-k="canceladas">—</div><div class="m" data-k="canceladas_m">—</div></div>
+<div class="cartao kpi"><div class="r">Sem NFC-e</div><div class="v" data-k="sem_nfce">—</div><div class="m" data-k="sem_nfce_m">—</div></div>
+</div>
+<div class="rel-meio">
+<section class="cartao graf-rel" aria-labelledby="t-graf">
+<div class="cab-cartao"><h2 id="t-graf" data-graf-titulo>Vendas por dia</h2><span data-graf-sub>—</span>
+<div class="alternar" role="group" aria-label="Mostrar como"><button type="button" class="ativo" aria-pressed="true" data-ver="grafico">Gráfico</button><button type="button" aria-pressed="false" data-ver="tabela">Tabela</button></div>
+</div>
+<div class="area-graf" data-area-graf tabindex="0" role="group" aria-roledescription="gráfico" aria-label="Gráfico de barras. Use as setas para ler cada barra, ou o botão Tabela."></div>
+<div class="dica-graf" data-dica-graf role="status" aria-live="polite" hidden></div>
+<div class="rolagem" data-tabela-graf hidden>
+<table class="tabela" id="tabela-graf"><thead><tr><th>Dia</th></tr></thead><tbody><tr><td class="sem-linhas">Carregando…</td></tr></tbody></table>
+</div>
+<p class="nota">Faturamento: o que os clientes pagaram nas vendas finalizadas, já com descontos e acréscimos (venda cancelada não entra). É o mesmo total de vendas da <a href="/financeiro#rentabilidade">Rentabilidade</a> e do <a href="/financeiro#fluxo">Fluxo de caixa</a>; no <a href="/financeiro#dre">DRE</a>, é a receita das vendas menos os descontos.</p>
+</section>
+<section class="cartao formas-rel" aria-labelledby="t-formas">
+<div class="cab-cartao"><h2 id="t-formas">Formas de pagamento</h2></div>
+<div class="rolagem">
+<table class="tabela" id="tabela-formas">
+<thead><tr><th title="Embaixo de cada forma, quantas vendas foram pagas (no todo ou em parte) nela: uma venda paga em duas formas conta nas duas">Forma</th><th class="num" title="O que entrou na forma, sem o troco; embaixo, o desconto ou o acréscimo da forma">Recebido (R$)</th><th class="num" title="Quanto a forma representa do faturamento">%</th></tr></thead>
+<tbody><tr><td class="sem-linhas" colspan="3">Carregando…</td></tr></tbody>
+</table>
+</div>
+</section>
+</div>
+</div>
+
+<div class="painel-rel" data-painel="produtos" hidden>
+<div class="kpis tres">
+<div class="cartao kpi" title="Os produtos que, somados, fazem a maior parte do faturamento"><div class="r">Classe A</div><div class="v" data-c="A">—</div><div class="m" data-c="A_m">—</div></div>
+<div class="cartao kpi"><div class="r">Classe B</div><div class="v" data-c="B">—</div><div class="m" data-c="B_m">—</div></div>
+<div class="cartao kpi"><div class="r">Classe C</div><div class="v" data-c="C">—</div><div class="m" data-c="C_m">—</div></div>
+</div>
+<section class="cartao rolavel" aria-label="Produtos vendidos">
+<div class="rolagem">
+<table class="tabela" id="tabela-produtos">
+<thead><tr><th class="num" style="width:48px">Nº</th><th style="width:90px">Código</th><th>Produto</th><th class="num">Quantidade</th><th class="num" title="Em quantas vendas o produto apareceu">Vendas</th><th class="num">Faturamento (R$)</th><th class="num" title="Quanto o produto representa do faturamento">% do total</th><th class="num" title="Soma das porcentagens, do primeiro produto até este">% acumulado</th><th style="width:76px">Classe</th></tr></thead>
+<tbody><tr><td class="sem-linhas" colspan="9">Carregando…</td></tr></tbody>
+</table>
+</div>
+<p class="nota">Curva ABC: do produto que mais faturou para o que menos, <b>A</b> são os que, somados, chegam a 80% do faturamento (o que passa dos 80% ainda é A); <b>B</b>, os seguintes até 95%; <b>C</b>, o resto. O valor de cada venda é dividido entre os itens na proporção do preço de cada um, já com descontos e acréscimos: a soma dos produtos dá o faturamento.</p>
+</section>
+</div>
+
+<div class="painel-rel" data-painel="horarios" hidden>
+<section class="cartao rolavel mapa-rel" aria-labelledby="t-mapa">
+<div class="cab-cartao"><h2 id="t-mapa">Movimento por dia da semana e hora</h2><span data-pico>—</span>
+<div class="alternar" role="group" aria-label="Medida"><button type="button" class="ativo" aria-pressed="true" data-medida="faturamento">Faturamento</button><button type="button" aria-pressed="false" data-medida="vendas">Nº de vendas</button></div>
+<div class="alternar" role="group" aria-label="Mostrar como"><button type="button" class="ativo" aria-pressed="true" data-ver-mapa="grafico">Mapa</button><button type="button" aria-pressed="false" data-ver-mapa="tabela">Tabela</button></div>
+</div>
+<div class="mapa-area" data-mapa-area>
+<div class="mapa" data-mapa aria-hidden="true"></div>
+<div class="legenda-mapa" data-legenda aria-hidden="true"></div>
+</div>
+<div class="dica-graf" data-dica-mapa hidden></div>
+<div class="rolagem" data-tabela-mapa hidden>
+<table class="tabela compacta" id="tabela-horarios"><thead><tr><th>Dia da semana</th></tr></thead><tbody><tr><td class="sem-linhas">Carregando…</td></tr></tbody></table>
+</div>
+<p class="nota">Hora em que a venda foi finalizada, no horário da loja. Cada linha soma todos os dias daquela semana no período; entre parênteses, quantos o período tem (um mês pode ter 4 segundas e 5 sábados, por exemplo). Quadrado sem cor: nenhuma venda. Os números de cada quadrado estão no botão Tabela.</p>
+</section>
+</div>
+
+<div class="painel-rel" data-painel="operadores" hidden>
+<section class="cartao rolavel" aria-label="Vendas por operador">
+<div class="rolagem">
+<table class="tabela compacta" id="tabela-operadores">
+<thead><tr><th>Operador</th><th class="num">Vendas</th><th class="num">Faturamento (R$)</th><th class="num">Ticket médio (R$)</th><th class="num" title="Quanto o operador representa do faturamento">% do total</th><th class="num" title="Desconto do gerente dado nas vendas deste operador">Desconto (R$)</th><th class="num" title="Vendas canceladas antes de finalizar">Canc. antes</th><th class="num" title="Vendas canceladas depois de finalizadas (estorno)">Canc. depois</th><th class="num" title="Total das vendas canceladas, antes e depois de finalizar">Cancelado (R$)</th></tr></thead>
+<tbody><tr><td class="sem-linhas" colspan="9">Carregando…</td></tr></tbody>
+</table>
+</div>
+<p class="nota">Cada venda conta para o operador que a fez. Nas vendas feitas antes da versão 0.3, que não guardavam o operador, vale quem abriu o caixa. Cancelamentos contam no dia em que foram feitos.</p>
+</section>
+</div>
+
+<div class="painel-rel" data-painel="vendas" hidden>
+<section class="cartao rolavel" aria-label="Lista de vendas">
+<div class="filtro">
+<div class="sel larga"><select id="vd-situacao" class="campo" aria-label="Situação"><option value="">Vendas e cancelamentos</option><option value="finalizadas">Só as finalizadas</option><option value="canceladas">Só as canceladas</option></select>{{ icone("seta", "seta") }}</div>
+<span class="conta" data-vd-contagem>—</span>
+</div>
+<div class="rolagem">
+<table class="tabela" id="tabela-lista">
+<thead><tr><th class="num" style="width:64px">Nº</th><th style="width:146px">Data e hora</th><th style="width:270px">Situação</th><th>Operador</th><th>Cliente</th><th>Formas</th><th class="num" style="width:104px">Total (R$)</th><th style="width:70px" title="Se o caixa pediu NFC-e ao finalizar (o sistema ainda não emite)">NFC-e</th><th style="width:60px"><span class="so-leitor">Comprovante</span></th></tr></thead>
+<tbody><tr><td class="sem-linhas" colspan="9">Carregando…</td></tr></tbody>
+</table>
+</div>
+<p class="nota">Data e hora: a da finalização; na venda cancelada antes de finalizar, a do cancelamento. O comprovante de uma venda cancelada sai marcado como cancelado.</p>
+</section>
+</div>
+</div>
+<template id="ic-impressora">{{ icone("impressora") }}</template>
+{% endblock %}
+{% block scripts %}<script src="/static/js/relatorio_vendas.js?v={{ versao }}" defer></script>{% endblock %}

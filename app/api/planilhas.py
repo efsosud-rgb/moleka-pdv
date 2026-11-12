@@ -299,9 +299,9 @@ def abas_de_vendas(
             C("Quantidade", "quantidade", 12),
             C("Vendas", "inteiro", 9),
             C("Faturamento", "dinheiro", 16),
-            C("% do faturamento", "porcento", 12),
-            C("% acumulado", "porcento", 12),
-            C("Classe", largura=8),
+            C("% do faturamento", "porcento", 15),
+            C("% acumulado", "porcento", 13),
+            C("Classe", largura=9),
         ],
         linhas=[
             [
@@ -328,7 +328,7 @@ def abas_de_vendas(
             "Vendas = em quantas vendas o produto apareceu.",
         ],
     )
-    horas = sorted({h.hora for h in r.horarios})
+    horas = [h.hora for h in r.por_hora]
     grade_valor: dict[tuple[int, int], int] = {}
     grade_vendas: dict[tuple[int, int], int] = {}
     for h in r.horarios:
@@ -336,15 +336,19 @@ def abas_de_vendas(
         grade_vendas[(h.dia_semana, h.hora)] = h.vendas
 
     def grade(nome: str, titulo: str, tipo: str, valores: dict[tuple[int, int], int]) -> excel.Aba:
+        def medida(soma: api_relatorios.DiaDaSemanaOut | api_relatorios.HoraOut) -> int | None:
+            return soma.faturamento_centavos if tipo == "dinheiro" else soma.vendas
+
         linhas = []
         for dia, rotulo in enumerate(api_relatorios.DIAS_DA_SEMANA):
-            linha: list[object] = [f"{rotulo} ({r.dias_da_semana[dia]})"]
+            semana = r.por_dia_da_semana[dia]
+            linha: list[object] = [f"{rotulo} ({semana.dias_no_periodo})"]
             linha += [valores.get((dia, hora), "") for hora in horas]
-            linha.append(sum(valores.get((dia, hora), 0) for hora in horas) or "")
+            linha.append(medida(semana) or "")
             linhas.append(linha)
         total: list[object] = ["Total"]
-        total += [sum(valores.get((dia, hora), 0) for dia in range(7)) for hora in horas]
-        total.append(sum(valores.values()))
+        total += [medida(h) for h in r.por_hora]
+        total.append(r.faturamento_centavos if tipo == "dinheiro" else r.vendas)
         return excel.Aba(
             nome=nome,
             titulo=titulo,
@@ -440,7 +444,9 @@ def planilha_de_vendas(
     inicio, fim = api_relatorios.periodo(inicio, fim)
     abas = abas_de_vendas(sessao, inicio, fim, operador_id)
     conteudo = excel.montar(cabecalho(sessao, gerente), abas)
-    return resposta(conteudo, excel.nome_do_arquivo("Vendas", inicio, fim))
+    nome = api_relatorios.nome_do_operador(sessao, operador_id)
+    titulo = f"Vendas ({nome})" if nome else "Vendas"  # a planilha de um operador não cobre a geral
+    return resposta(conteudo, excel.nome_do_arquivo(titulo, inicio, fim))
 
 
 # ---------------------------------------------------------------- financeiro

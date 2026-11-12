@@ -124,7 +124,8 @@
 
   // ------------------------------------------------------------------ caixas de pergunta
   /* Pergunta de sim ou não. Devolve uma promessa com { ok, motivo }.
-     opcoes: { titulo, texto, sim: "Cancelar a venda", perigo: true, motivo: "obrigatorio" | "opcional" } */
+     opcoes: { titulo, texto, sim: "Cancelar a venda", nao: "Voltar (Esc)", perigo: true,
+               motivo: "obrigatorio" | "opcional" } */
   Moleka.confirmar = function (opcoes) {
     const dialogo = document.getElementById("dlg-confirmar");
     return new Promise(function (resolver) {
@@ -138,6 +139,7 @@
       campo.value = "";
       const sim = form.querySelector('button[type="submit"]');
       sim.textContent = opcoes.sim || "Confirmar";
+      form.querySelector("[data-fechar-dialogo]").textContent = opcoes.nao || "Voltar (Esc)";
       sim.className = "btn3d " + (opcoes.perigo ? "vermelho" : "verde");
       Moleka.mensagem(form, "");
       function fechar(ok) {
@@ -380,6 +382,79 @@
     Moleka.trocar.apply(null, [folha].concat(partes));
     window.print();
     return true;
+  };
+
+  // ------------------------------------------------------------------ planilha do Excel
+  /* O nome que o servidor sugere no cabeçalho Content-Disposition (filename*=UTF-8''...). */
+  function nomeSugerido(cabecalho) {
+    const utf8 = /filename\*=UTF-8''([^;]+)/i.exec(cabecalho || "");
+    if (utf8) {
+      try { return decodeURIComponent(utf8[1].trim()); } catch (falha) { /* segue para o outro */ }
+    }
+    const simples = /filename="([^"]+)"/i.exec(cabecalho || "");
+    return simples ? simples[1] : "";
+  }
+
+  function paraBase64(blob) {
+    return new Promise(function (resolver, rejeitar) {
+      const leitor = new FileReader();
+      leitor.onload = function () { resolver(String(leitor.result).replace(/^data:[^,]*,/, "")); };
+      leitor.onerror = function () { rejeitar(leitor.error); };
+      leitor.readAsDataURL(blob);
+    });
+  }
+
+  let baixando = false;
+  /* Baixa uma planilha do Excel da API (caminho com os filtros da tela) e salva no computador.
+     Na janela do programa abre o "Salvar como" do Windows e, depois, oferece abrir a planilha;
+     num navegador comum (desenvolvimento e testes), usa o download do navegador.
+     Devolve true quando a planilha foi salva. */
+  Moleka.baixarPlanilha = async function (caminho) {
+    if (baixando) return false; // dois cliques seguidos: vale o primeiro
+    baixando = true;
+    try {
+      Moleka.avisar("Montando a planilha…");
+      let resposta;
+      try {
+        resposta = await fetch(caminho, { cache: "no-store" });
+      } catch (falha) {
+        Moleka.avisar("Sem resposta do sistema. Feche o Moleka PDV e abra de novo.");
+        return false;
+      }
+      if (!resposta.ok) {
+        if (resposta.status === 401) { window.location.href = "/"; return false; }
+        let erro = "";
+        try { const dados = await resposta.json(); erro = typeof dados.detail === "string" ? dados.detail : ""; } catch (falha) { erro = ""; }
+        Moleka.avisar("Não foi possível montar a planilha: " + (erro || "erro " + resposta.status) + ".");
+        return false;
+      }
+      const nome = nomeSugerido(resposta.headers.get("Content-Disposition")) || "Moleka.xlsx";
+      const blob = await resposta.blob();
+      const api = ponte();
+      if (api && api.salvar_arquivo) {
+        const salvo = await api.salvar_arquivo(nome, await paraBase64(blob));
+        if (!salvo || !salvo.ok) {
+          if (salvo && salvo.erro) Moleka.avisar(salvo.erro); // sem erro: a pessoa desistiu
+          return false;
+        }
+        const abrir = await Moleka.confirmar({ titulo: "Planilha salva", texto: "A planilha foi salva em " + salvo.caminho + ".", sim: "Abrir a planilha", nao: "Agora não (Esc)" });
+        if (abrir.ok && api.abrir_arquivo) {
+          const aberto = await api.abrir_arquivo(salvo.caminho);
+          if (!aberto || !aberto.ok) Moleka.avisar(aberto && aberto.erro ? aberto.erro : "Não deu para abrir a planilha.");
+        }
+        return true;
+      }
+      const endereco = URL.createObjectURL(blob);
+      const link = Moleka.el("a", { href: endereco, download: nome, hidden: true });
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(function () { URL.revokeObjectURL(endereco); }, 30000);
+      Moleka.avisar("Planilha “" + nome + "” baixada.");
+      return true;
+    } finally {
+      baixando = false;
+    }
   };
 
   /* Linha de mensagem dos formulários: <p class="msg-form" role="alert" hidden>.

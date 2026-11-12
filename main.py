@@ -167,6 +167,7 @@ class Ponte:
 
     def __init__(self) -> None:
         self._janela = None
+        self._salvos: set[str] = set()  # arquivos gravados por salvar_arquivo nesta execução
 
     def sair(self) -> None:
         if self._janela is not None:
@@ -188,6 +189,56 @@ class Ponte:
             tipo = webview.FOLDER_DIALOG
         escolhida = self._janela.create_file_dialog(tipo)
         return str(escolhida[0]) if escolhida else ""
+
+    def salvar_arquivo(self, nome: str, conteudo_base64: str) -> dict[str, object]:
+        """Abre a janela "Salvar como" do Windows com o nome sugerido e grava a planilha.
+
+        Devolve {"ok": True, "caminho": ...}; {"ok": False, "erro": ""} se a pessoa desistiu;
+        ou {"ok": False, "erro": "..."} com o motivo, se não deu para gravar.
+        """
+        from app import salvar
+
+        if self._janela is None:
+            return salvar.resultado(False, erro="A janela do programa ainda não está pronta.")
+        conteudo = salvar.ler_conteudo(conteudo_base64)
+        if isinstance(conteudo, str):
+            return salvar.resultado(False, erro=conteudo)
+        import webview
+
+        # O nome da opção mudou entre versões do pywebview; vale o que existir.
+        tipo = getattr(getattr(webview, "FileDialog", None), "SAVE", None)
+        if tipo is None:
+            tipo = webview.SAVE_DIALOG
+        escolha = self._janela.create_file_dialog(
+            tipo, save_filename=salvar.nome_seguro(nome), file_types=salvar.TIPOS_DO_DIALOGO
+        )
+        caminho = salvar.caminho_escolhido(escolha)
+        if caminho is None:
+            return salvar.resultado(False)
+        gravado = salvar.gravar(caminho, conteudo)
+        if gravado["ok"]:
+            self._salvos.add(str(gravado["caminho"]))
+            log.info("Planilha salva em %s", gravado["caminho"])
+        return gravado
+
+    def abrir_arquivo(self, caminho: str) -> dict[str, object]:
+        """Abre no programa padrão do Windows (o Excel) uma planilha que acabou de ser salva.
+        Só abre o que salvar_arquivo gravou nesta execução, nada além disso."""
+        from app import salvar
+
+        if caminho not in self._salvos:
+            return salvar.resultado(False, erro="Esta planilha não foi salva agora pelo programa.")
+        if os.name != "nt":
+            return salvar.resultado(False, erro="Abrir a planilha só funciona no Windows.")
+        try:
+            os.startfile(caminho)  # type: ignore[attr-defined]  # só existe no Windows
+        except OSError as erro:
+            return salvar.resultado(
+                False,
+                erro=f"A planilha foi salva, mas não abriu: {erro.strerror or erro}. Abra pelo "
+                "Explorador de Arquivos. Se o computador não tiver o Excel, o LibreOffice abre.",
+            )
+        return salvar.resultado(True, caminho=caminho)
 
 
 def abrir_janela(url: str, *, tela_cheia: bool, janela_pequena: bool) -> None:

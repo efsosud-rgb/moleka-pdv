@@ -186,6 +186,24 @@ def test_planilha_de_vendas_tem_os_numeros_da_tela(cliente, caixa, loja, vender)
     ]
 
 
+def test_planilha_de_vendas_de_um_operador(cliente, caixa, loja, vender):
+    """Com o filtro de operador, o nome do arquivo e o alto da planilha dizem de quem é."""
+    from urllib.parse import quote
+
+    _cenario(cliente, caixa, loja, vender)
+    ids = {o["nome"]: o["id"] for o in cliente.get("/api/operadores").json()}
+    params = {**_periodo(D1, D3), "operador_id": ids["Caixa de Teste"]}
+    resposta, livro = _baixar(cliente, "/api/planilhas/vendas", **params)
+    nome = f"Moleka - Vendas (Caixa de Teste) {D1:%d-%m-%Y} a {D3:%d-%m-%Y}.xlsx"
+    assert f"filename*=UTF-8''{quote(nome)}" in resposta.headers["content-disposition"]
+    assert livro["Resumo"]["A4"].value == "Operador: Caixa de Teste"
+    _titulo, linhas = _tabela(livro["Resumo"], "Indicador")
+    faturamento = next(linha for linha in linhas if linha[0] == "Faturamento")
+    assert (_reais(faturamento[1]), faturamento[2]) == (1070, 1)  # só a venda 5
+    desconhecido = cliente.get("/api/planilhas/vendas", params={**params, "operador_id": 9999})
+    assert desconhecido.status_code == 404
+
+
 def test_planilha_de_vendas_por_mes(cliente, loja, vender):
     from tests.test_relatorio_vendas import _vendas_em_dois_meses
 
